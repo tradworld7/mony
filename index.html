@@ -11,12 +11,11 @@
             --secondary-color: #b21f1f;
             --accent-color: #fdbb2d;
         }
-         mkdir trade-world-full
-cd trade-world-full
-mkdir -p public admin
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
+            padding-top: 20px;
         }
         
         .balance-card {
@@ -25,69 +24,84 @@ mkdir -p public admin
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
         .balance-amount {
             font-size: 2.5rem;
             font-weight: bold;
+            margin: 10px 0;
         }
         
         .package-card {
             transition: all 0.3s;
             cursor: pointer;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .package-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            border-bottom: 3px solid var(--primary-color);
         }
     </style>
 </head>
 <body>
     <div class="container py-4">
         <header class="text-center mb-4">
-            <h1 class="text-primary">Trade World</h1>
+            <h1 class="text-primary" style="font-weight: 700;">TRADE WORLD</h1>
+            <p class="text-muted">Your trusted investment platform</p>
         </header>
         
         <!-- Balance Section -->
         <div class="balance-card text-center">
             <h3>MY BALANCE</h3>
             <div class="balance-amount" id="userBalance">₹0.00</div>
+            <div id="balanceNotification" class="text-warning" style="display: none;"></div>
         </div>
         
         <!-- Main Dashboard (visible after login) -->
         <div id="dashboard" style="display: none;">
             <!-- Packages Section -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>Investment Packages</h3>
+            <div class="card mb-4 border-0 shadow">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0">INVESTMENT PACKAGES</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <div class="card package-card">
+                            <div class="card package-card h-100">
                                 <div class="card-body text-center">
-                                    <h4>₹500 Package</h4>
-                                    <p>Monthly: ₹50 (10%)</p>
-                                    <button class="btn btn-primary">Invest Now</button>
+                                    <h4 class="text-primary">₹500 Package</h4>
+                                    <p class="text-muted">Daily: ₹10 (2%)</p>
+                                    <p class="text-muted">Monthly: ₹150 (30%)</p>
+                                    <button class="btn btn-primary mt-2">Invest Now</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <div class="card package-card">
+                            <div class="card package-card h-100">
                                 <div class="card-body text-center">
-                                    <h4>₹1,000 Package</h4>
-                                    <p>Monthly: ₹100 (10%)</p>
-                                    <button class="btn btn-primary">Invest Now</button>
+                                    <h4 class="text-primary">₹1,000 Package</h4>
+                                    <p class="text-muted">Daily: ₹20 (2%)</p>
+                                    <p class="text-muted">Monthly: ₹300 (30%)</p>
+                                    <button class="btn btn-primary mt-2">Invest Now</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <div class="card package-card">
+                            <div class="card package-card h-100">
                                 <div class="card-body text-center">
-                                    <h4>₹5,000 Package</h4>
-                                    <p>Monthly: ₹500 (10%)</p>
-                                    <button class="btn btn-primary">Invest Now</button>
+                                    <h4 class="text-primary">₹5,000 Package</h4>
+                                    <p class="text-muted">Daily: ₹100 (2%)</p>
+                                    <p class="text-muted">Monthly: ₹1,500 (30%)</p>
+                                    <button class="btn btn-primary mt-2">Invest Now</button>
                                 </div>
                             </div>
                         </div>
@@ -96,16 +110,16 @@ mkdir -p public admin
             </div>
             
             <!-- Referral Section -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>Referral Program</h3>
+            <div class="card mb-4 border-0 shadow">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0">REFERRAL PROGRAM</h3>
                 </div>
                 <div class="card-body">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="referralLink" value="https://tradeworld.com/ref/AB1234" readonly>
-                        <button class="btn btn-outline-secondary" id="copyBtn">Copy</button>
+                        <input type="text" class="form-control" id="referralLink" value="https://tradworld7.github.io/mony/?ref=TW1234" readonly>
+                        <button class="btn btn-outline-primary" id="copyBtn">Copy</button>
                     </div>
-                    <p>Earn 10% commission on every referral investment!</p>
+                    <p class="text-muted">Earn 10% commission on every referral investment!</p>
                 </div>
             </div>
         </div>
@@ -114,14 +128,14 @@ mkdir -p public admin
         <div id="authForms">
             <div class="row justify-content-center">
                 <div class="col-md-6">
-                    <div class="card">
+                    <div class="card border-0 shadow">
                         <div class="card-body">
                             <ul class="nav nav-tabs" id="authTabs">
                                 <li class="nav-item">
-                                    <a class="nav-link active" id="login-tab">Login</a>
+                                    <a class="nav-link active" id="login-tab">LOGIN</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="signup-tab">Sign Up</a>
+                                    <a class="nav-link" id="signup-tab">SIGN UP</a>
                                 </li>
                             </ul>
                             
@@ -134,7 +148,10 @@ mkdir -p public admin
                                     <div class="mb-3">
                                         <input type="password" class="form-control" id="loginPassword" placeholder="Password">
                                     </div>
-                                    <button class="btn btn-primary w-100" id="loginBtn">Login</button>
+                                    <button class="btn btn-primary w-100" id="loginBtn">LOGIN</button>
+                                    <div class="text-center mt-3">
+                                        <a href="#" id="forgotPassword">Forgot Password?</a>
+                                    </div>
                                 </div>
                                 
                                 <!-- Signup Form -->
@@ -151,7 +168,7 @@ mkdir -p public admin
                                     <div class="mb-3">
                                         <input type="text" class="form-control" id="mobile" placeholder="Mobile Number">
                                     </div>
-                                    <button class="btn btn-success w-100" id="signupBtn">Create Account</button>
+                                    <button class="btn btn-success w-100" id="signupBtn">CREATE ACCOUNT</button>
                                 </div>
                             </div>
                         </div>
@@ -165,7 +182,15 @@ mkdir -p public admin
     <script>
         // Sample user data (in real app, use database)
         const users = [
-            { id: 'TW1001', email: 'user@example.com', password: 'password123', name: 'Demo User', balance: 1000 }
+            { 
+                id: 'TW1001', 
+                email: 'user@example.com', 
+                password: 'password123', 
+                name: 'Demo User', 
+                mobile: '9876543210',
+                balance: 5000,
+                investments: []
+            }
         ];
         
         // Current user
@@ -175,6 +200,17 @@ mkdir -p public admin
         const authForms = document.getElementById('authForms');
         const dashboard = document.getElementById('dashboard');
         const userBalance = document.getElementById('userBalance');
+        const balanceNotification = document.getElementById('balanceNotification');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if(savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            }
+        });
         
         // Tab switching
         document.getElementById('login-tab').addEventListener('click', function() {
@@ -200,12 +236,11 @@ mkdir -p public admin
             
             if(user) {
                 currentUser = user;
-                authForms.style.display = 'none';
-                dashboard.style.display = 'block';
-                userBalance.textContent = `₹${user.balance.toFixed(2)}`;
-                alert('Login successful!');
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showDashboard();
+                showAlert('Login successful!', 'success');
             } else {
-                alert('Invalid credentials');
+                showAlert('Invalid email or password', 'error');
             }
         });
         
@@ -223,15 +258,28 @@ mkdir -p public admin
                     password,
                     name,
                     mobile,
-                    balance: 0
+                    balance: 0,
+                    investments: []
                 };
                 
                 users.push(newUser);
-                alert('Account created successfully! Please login.');
+                showAlert('Account created successfully! Please login.', 'success');
                 document.getElementById('login-tab').click();
+                
+                // Clear form
+                document.getElementById('fullName').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('mobile').value = '';
             } else {
-                alert('Please fill all fields');
+                showAlert('Please fill all fields', 'error');
             }
+        });
+        
+        // Forgot password
+        document.getElementById('forgotPassword').addEventListener('click', function(e) {
+            e.preventDefault();
+            showAlert('Please contact support to reset your password', 'info');
         });
         
         // Copy referral link
@@ -239,8 +287,52 @@ mkdir -p public admin
             const link = document.getElementById('referralLink');
             link.select();
             document.execCommand('copy');
-            alert('Referral link copied!');
+            showAlert('Referral link copied to clipboard!', 'success');
         });
+        
+        // Show dashboard after login
+        function showDashboard() {
+            authForms.style.display = 'none';
+            dashboard.style.display = 'block';
+            userBalance.textContent = `₹${currentUser.balance.toFixed(2)}`;
+            
+            // Setup investment buttons
+            document.querySelectorAll('.package-card button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const packageAmount = parseInt(this.parentElement.querySelector('h4').textContent.replace('₹', '').replace(' Package', ''));
+                    
+                    if(currentUser.balance >= packageAmount) {
+                        currentUser.balance -= packageAmount;
+                        currentUser.investments.push({
+                            amount: packageAmount,
+                            date: new Date().toLocaleDateString()
+                        });
+                        
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        userBalance.textContent = `₹${currentUser.balance.toFixed(2)}`;
+                        showAlert(`Successfully invested in ₹${packageAmount} package!`, 'success');
+                    } else {
+                        showAlert('Insufficient balance for this investment', 'error');
+                    }
+                });
+            });
+        }
+        
+        // Show alert message
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} fixed-top mx-auto mt-3`;
+            alertDiv.style.maxWidth = '500px';
+            alertDiv.style.width = '90%';
+            alertDiv.style.zIndex = '1000';
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
     </script>
 </body>
 </html>
