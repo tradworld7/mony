@@ -29,6 +29,16 @@
             font-size: 2.5rem;
             font-weight: bold;
         }
+        
+        .package-card {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .package-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -43,44 +53,104 @@
             <div class="balance-amount" id="userBalance">₹0.00</div>
         </div>
         
-        <!-- Login/Signup Forms -->
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <ul class="nav nav-tabs" id="authTabs">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="login-tab">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="signup-tab">Sign Up</a>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content mt-3">
-                            <!-- Login Form -->
-                            <div id="loginForm">
-                                <div class="mb-3">
-                                    <input type="text" class="form-control" placeholder="Email or User ID">
+        <!-- Main Dashboard (visible after login) -->
+        <div id="dashboard" style="display: none;">
+            <!-- Packages Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Investment Packages</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card package-card">
+                                <div class="card-body text-center">
+                                    <h4>₹500 Package</h4>
+                                    <p>Monthly: ₹50 (10%)</p>
+                                    <button class="btn btn-primary">Invest Now</button>
                                 </div>
-                                <div class="mb-3">
-                                    <input type="password" class="form-control" placeholder="Password">
-                                </div>
-                                <button class="btn btn-primary w-100">Login</button>
                             </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card package-card">
+                                <div class="card-body text-center">
+                                    <h4>₹1,000 Package</h4>
+                                    <p>Monthly: ₹100 (10%)</p>
+                                    <button class="btn btn-primary">Invest Now</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card package-card">
+                                <div class="card-body text-center">
+                                    <h4>₹5,000 Package</h4>
+                                    <p>Monthly: ₹500 (10%)</p>
+                                    <button class="btn btn-primary">Invest Now</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Referral Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Referral Program</h3>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="referralLink" value="https://tradeworld.com/ref/AB1234" readonly>
+                        <button class="btn btn-outline-secondary" id="copyBtn">Copy</button>
+                    </div>
+                    <p>Earn 10% commission on every referral investment!</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auth Forms -->
+        <div id="authForms">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <ul class="nav nav-tabs" id="authTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="login-tab">Login</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="signup-tab">Sign Up</a>
+                                </li>
+                            </ul>
                             
-                            <!-- Signup Form (initially hidden) -->
-                            <div id="signupForm" style="display: none;">
-                                <div class="mb-3">
-                                    <input type="text" class="form-control" placeholder="Full Name">
+                            <div class="tab-content mt-3">
+                                <!-- Login Form -->
+                                <div id="loginForm">
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" id="loginEmail" placeholder="Email or User ID">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="password" class="form-control" id="loginPassword" placeholder="Password">
+                                    </div>
+                                    <button class="btn btn-primary w-100" id="loginBtn">Login</button>
                                 </div>
-                                <div class="mb-3">
-                                    <input type="email" class="form-control" placeholder="Email">
+                                
+                                <!-- Signup Form -->
+                                <div id="signupForm" style="display: none;">
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" id="fullName" placeholder="Full Name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="email" class="form-control" id="email" placeholder="Email">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="password" class="form-control" id="password" placeholder="Password">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" id="mobile" placeholder="Mobile Number">
+                                    </div>
+                                    <button class="btn btn-success w-100" id="signupBtn">Create Account</button>
                                 </div>
-                                <div class="mb-3">
-                                    <input type="password" class="form-control" placeholder="Password">
-                                </div>
-                                <button class="btn btn-success w-100">Create Account</button>
                             </div>
                         </div>
                     </div>
@@ -91,6 +161,19 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Sample user data (in real app, use database)
+        const users = [
+            { id: 'TW1001', email: 'user@example.com', password: 'password123', name: 'Demo User', balance: 1000 }
+        ];
+        
+        // Current user
+        let currentUser = null;
+        
+        // DOM Elements
+        const authForms = document.getElementById('authForms');
+        const dashboard = document.getElementById('dashboard');
+        const userBalance = document.getElementById('userBalance');
+        
         // Tab switching
         document.getElementById('login-tab').addEventListener('click', function() {
             document.getElementById('loginForm').style.display = 'block';
@@ -104,6 +187,57 @@
             document.getElementById('signupForm').style.display = 'block';
             this.classList.add('active');
             document.getElementById('login-tab').classList.remove('active');
+        });
+        
+        // Login function
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if(user) {
+                currentUser = user;
+                authForms.style.display = 'none';
+                dashboard.style.display = 'block';
+                userBalance.textContent = `₹${user.balance.toFixed(2)}`;
+                alert('Login successful!');
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+        
+        // Signup function
+        document.getElementById('signupBtn').addEventListener('click', function() {
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const mobile = document.getElementById('mobile').value;
+            
+            if(name && email && password && mobile) {
+                const newUser = {
+                    id: 'TW' + Math.floor(1000 + Math.random() * 9000),
+                    email,
+                    password,
+                    name,
+                    mobile,
+                    balance: 0
+                };
+                
+                users.push(newUser);
+                alert('Account created successfully! Please login.');
+                document.getElementById('login-tab').click();
+            } else {
+                alert('Please fill all fields');
+            }
+        });
+        
+        // Copy referral link
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const link = document.getElementById('referralLink');
+            link.select();
+            document.execCommand('copy');
+            alert('Referral link copied!');
         });
     </script>
 </body>
