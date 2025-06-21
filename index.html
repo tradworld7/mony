@@ -16,7 +16,6 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
-            overflow-x: hidden;
         }
         
         .balance-card {
@@ -501,24 +500,44 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sample user data (in real app, use localStorage or backend)
-        let users = [
-            { 
-                id: 'TW1001', 
-                email: 'user@example.com', 
-                password: 'password123', 
-                name: 'Demo User', 
-                mobile: '9876543210',
-                balance: 5000,
+        // Initialize data storage if not exists
+        if(!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify([]));
+        }
+        
+        if(!localStorage.getItem('adminData')) {
+            localStorage.setItem('adminData', JSON.stringify({
+                users: [],
+                transactions: [],
+                transfers: [],
+                withdrawals: [],
                 investments: [],
-                referrals: [
-                    { id: 'TW1002', name: 'John Doe', date: '2023-05-15', invested: 1000, commission: 100, active: true },
-                    { id: 'TW1003', name: 'Jane Smith', date: '2023-06-20', invested: 500, commission: 50, active: true },
-                    { id: 'TW1004', name: 'Mike Johnson', date: '2023-07-10', invested: 0, commission: 0, active: false }
-                ],
-                withdrawalHistory: []
-            }
-        ];
+                referrals: []
+            }));
+        }
+        
+        // Sample admin user (for demo purposes)
+        const adminUser = {
+            id: 'ADMIN001',
+            email: 'admin@tradeworld.com',
+            password: 'admin123',
+            name: 'Admin',
+            mobile: '9999999999',
+            balance: 0,
+            status: 'active',
+            role: 'admin'
+        };
+        
+        // Check if admin exists, if not add to both user and admin data
+        let users = JSON.parse(localStorage.getItem('users'));
+        let adminData = JSON.parse(localStorage.getItem('adminData'));
+        
+        if(!users.some(u => u.role === 'admin')) {
+            users.push(adminUser);
+            adminData.users.push(adminUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('adminData', JSON.stringify(adminData));
+        }
         
         // Current user
         let currentUser = null;
@@ -536,314 +555,432 @@
             if(currentUser) {
                 updateReferralDashboard();
             }
-        });
-        
-        // Menu Toggle
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('sideMenu').classList.toggle('active');
-            document.getElementById('mainContent').classList.toggle('shifted');
-        });
-        
-        // Menu Item Click Handlers
-        document.getElementById('dashboardMenuItem').addEventListener('click', function() {
-            showDashboard();
-            toggleMenu();
-        });
-        
-        document.getElementById('investMenuItem').addEventListener('click', function() {
-            showDashboard();
-            toggleMenu();
-            // Scroll to investment section
-            document.querySelector('.package-card').scrollIntoView({ behavior: 'smooth' });
-        });
-        
-        document.getElementById('withdrawMenuItem').addEventListener('click', function() {
-            showDashboard();
-            toggleMenu();
-            // Scroll to withdrawal section
-            document.getElementById('withdrawAmount').scrollIntoView({ behavior: 'smooth' });
-        });
-        
-        document.getElementById('referralMenuItem').addEventListener('click', function() {
-            showReferralDashboard();
-            toggleMenu();
-        });
-        
-        document.getElementById('historyMenuItem').addEventListener('click', function() {
-            showNotification('History section will be implemented soon', 'info');
-            toggleMenu();
-        });
-        
-        document.getElementById('profileMenuItem').addEventListener('click', function() {
-            showNotification('Profile section will be implemented soon', 'info');
-            toggleMenu();
-        });
-        
-        document.getElementById('logoutMenuItem').addEventListener('click', function() {
-            logout();
-            toggleMenu();
-        });
-        
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.remove('active');
-            document.getElementById('mainContent').classList.remove('shifted');
-        }
-        
-        // Tab switching
-        document.getElementById('login-tab').addEventListener('click', function() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('signupForm').style.display = 'none';
-            this.classList.add('active');
-            document.getElementById('signup-tab').classList.remove('active');
-        });
-        
-        document.getElementById('signup-tab').addEventListener('click', function() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'block';
-            this.classList.add('active');
-            document.getElementById('login-tab').classList.remove('active');
-        });
-        
-        // Login function
-        document.getElementById('loginBtn').addEventListener('click', function() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
             
-            const user = users.find(u => u.email === email && u.password === password);
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Menu Toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sideMenu').classList.toggle('active');
+                document.getElementById('mainContent').classList.toggle('shifted');
+            });
             
-            if(user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
+            // Menu Item Click Handlers
+            document.getElementById('dashboardMenuItem').addEventListener('click', function() {
                 showDashboard();
-                showNotification('Login successful!', 'success');
-                updateReferralDashboard();
-            } else {
-                showNotification('Invalid email or password', 'error');
-            }
-        });
-        
-        // Signup function
-        document.getElementById('signupBtn').addEventListener('click', function() {
-            const name = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const mobile = document.getElementById('mobile').value;
-            const referralCode = document.getElementById('referralCode').value;
+                toggleMenu();
+            });
             
-            if(name && email && password && mobile) {
-                // Check if email already exists
-                if(users.some(u => u.email === email)) {
-                    showNotification('Email already registered', 'error');
-                    return;
+            document.getElementById('investMenuItem').addEventListener('click', function() {
+                showDashboard();
+                toggleMenu();
+                document.querySelector('.package-card').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            document.getElementById('withdrawMenuItem').addEventListener('click', function() {
+                showDashboard();
+                toggleMenu();
+                document.getElementById('withdrawAmount').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            document.getElementById('referralMenuItem').addEventListener('click', function() {
+                showReferralDashboard();
+                toggleMenu();
+            });
+            
+            document.getElementById('historyMenuItem').addEventListener('click', function() {
+                showNotification('History section will be implemented soon', 'info');
+                toggleMenu();
+            });
+            
+            document.getElementById('profileMenuItem').addEventListener('click', function() {
+                showNotification('Profile section will be implemented soon', 'info');
+                toggleMenu();
+            });
+            
+            document.getElementById('logoutMenuItem').addEventListener('click', function() {
+                logout();
+                toggleMenu();
+            });
+            
+            // Tab switching
+            document.getElementById('login-tab').addEventListener('click', function() {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('signupForm').style.display = 'none';
+                this.classList.add('active');
+                document.getElementById('signup-tab').classList.remove('active');
+            });
+            
+            document.getElementById('signup-tab').addEventListener('click', function() {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'block';
+                this.classList.add('active');
+                document.getElementById('login-tab').classList.remove('active');
+            });
+            
+            // Login function
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const users = JSON.parse(localStorage.getItem('users'));
+                const user = users.find(u => (u.email === email || u.id === email) && u.password === password);
+                
+                if(user) {
+                    currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    showDashboard();
+                    showNotification('Login successful!', 'success');
+                    updateReferralDashboard();
+                } else {
+                    showNotification('Invalid email or password', 'error');
                 }
+            });
+            
+            // Signup function
+            document.getElementById('signupBtn').addEventListener('click', function() {
+                const name = document.getElementById('fullName').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const mobile = document.getElementById('mobile').value;
+                const referralCode = document.getElementById('referralCode').value;
                 
-                const newUser = {
-                    id: 'TW' + Math.floor(1000 + Math.random() * 9000),
-                    email,
-                    password,
-                    name,
-                    mobile,
-                    balance: 0,
-                    investments: [],
-                    referrals: [],
-                    withdrawalHistory: []
-                };
-                
-                // If referral code is provided, add to referrer's list
-                if(referralCode) {
-                    const referrer = users.find(u => u.id === referralCode);
-                    if(referrer) {
-                        referrer.referrals.push({
-                            id: newUser.id,
-                            name: name,
-                            date: new Date().toLocaleDateString(),
-                            invested: 0,
-                            commission: 0,
-                            active: false
-                        });
+                if(name && email && password && mobile) {
+                    let users = JSON.parse(localStorage.getItem('users'));
+                    let adminData = JSON.parse(localStorage.getItem('adminData'));
+                    
+                    // Check if email already exists
+                    if(users.some(u => u.email === email)) {
+                        showNotification('Email already registered', 'error');
+                        return;
                     }
+                    
+                    const newUser = {
+                        id: 'TW' + Math.floor(1000 + Math.random() * 9000),
+                        email,
+                        password,
+                        name,
+                        mobile,
+                        balance: 0,
+                        status: 'active',
+                        joinDate: new Date().toLocaleDateString(),
+                        investments: [],
+                        withdrawals: [],
+                        referrals: []
+                    };
+                    
+                    // Save to users
+                    users.push(newUser);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    // Also save to admin data
+                    adminData.users.push(newUser);
+                    
+                    // If referral code is provided, add to referrer's list
+                    if(referralCode) {
+                        const referrer = users.find(u => u.id === referralCode);
+                        if(referrer) {
+                            // Update referrer's referral list
+                            referrer.referrals.push({
+                                id: newUser.id,
+                                name: name,
+                                date: new Date().toLocaleDateString(),
+                                invested: 0,
+                                commission: 0,
+                                active: false
+                            });
+                            
+                            // Add to admin referral data
+                            const referral = {
+                                referrerId: referrer.id,
+                                referrerName: referrer.name,
+                                referredId: newUser.id,
+                                referredName: newUser.name,
+                                joinDate: new Date().toLocaleDateString(),
+                                invested: 0,
+                                commission: 0,
+                                status: 'pending'
+                            };
+                            
+                            if(!adminData.referrals) adminData.referrals = [];
+                            adminData.referrals.push(referral);
+                            
+                            // Update both storages
+                            localStorage.setItem('users', JSON.stringify(users));
+                        }
+                    }
+                    
+                    localStorage.setItem('adminData', JSON.stringify(adminData));
+                    
+                    showNotification('Account created successfully! Please login.', 'success');
+                    document.getElementById('login-tab').click();
+                    
+                    // Clear form
+                    document.getElementById('fullName').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('mobile').value = '';
+                    document.getElementById('referralCode').value = '';
+                } else {
+                    showNotification('Please fill all fields', 'error');
                 }
-                
-                users.push(newUser);
-                showNotification('Account created successfully! Please login.', 'success');
-                document.getElementById('login-tab').click();
-                
-                // Clear form
-                document.getElementById('fullName').value = '';
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                document.getElementById('mobile').value = '';
-                document.getElementById('referralCode').value = '';
-            } else {
-                showNotification('Please fill all fields', 'error');
-            }
-        });
-        
-        // Forgot password
-        document.getElementById('forgotPassword').addEventListener('click', function(e) {
-            e.preventDefault();
-            showNotification('Please contact support to reset your password', 'info');
-        });
-        
-        // Copy referral link
-        document.getElementById('copyBtn').addEventListener('click', function() {
-            copyReferralLink();
-        });
-        
-        document.getElementById('copyBtnDashboard').addEventListener('click', function() {
-            copyReferralLink();
-        });
-        
-        function copyReferralLink() {
-            const link = document.getElementById('referralLink');
-            link.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard!', 'success');
-        }
-        
-        // Invest button
-        document.querySelectorAll('.invest-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            });
+            
+            // Forgot password
+            document.getElementById('forgotPassword').addEventListener('click', function(e) {
+                e.preventDefault();
+                showNotification('Please contact support to reset your password', 'info');
+            });
+            
+            // Copy referral link
+            document.getElementById('copyBtn').addEventListener('click', copyReferralLink);
+            document.getElementById('copyBtnDashboard').addEventListener('click', copyReferralLink);
+            
+            // Invest button
+            document.querySelectorAll('.invest-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if(!currentUser) {
+                        showNotification('Please login first', 'error');
+                        return;
+                    }
+                    
+                    const amount = parseInt(this.getAttribute('data-amount'));
+                    
+                    if(currentUser.balance >= amount) {
+                        let users = JSON.parse(localStorage.getItem('users'));
+                        let adminData = JSON.parse(localStorage.getItem('adminData'));
+                        
+                        // Find current user in users array
+                        const userIndex = users.findIndex(u => u.id === currentUser.id);
+                        if(userIndex !== -1) {
+                            // Update user balance
+                            users[userIndex].balance -= amount;
+                            
+                            // Add investment
+                            const investment = {
+                                amount: amount,
+                                date: new Date().toLocaleDateString(),
+                                package: `₹${amount} Package`
+                            };
+                            
+                            if(!users[userIndex].investments) users[userIndex].investments = [];
+                            users[userIndex].investments.push(investment);
+                            
+                            // Update admin data
+                            const adminUserIndex = adminData.users.findIndex(u => u.id === currentUser.id);
+                            if(adminUserIndex !== -1) {
+                                adminData.users[adminUserIndex].balance = users[userIndex].balance;
+                                if(!adminData.users[adminUserIndex].investments) adminData.users[adminUserIndex].investments = [];
+                                adminData.users[adminUserIndex].investments.push(investment);
+                            }
+                            
+                            // Add to admin investments
+                            const adminInvestment = {
+                                id: 'INV' + Math.floor(1000 + Math.random() * 9000),
+                                userId: currentUser.id,
+                                userName: currentUser.name,
+                                package: `₹${amount} Package`,
+                                amount: amount,
+                                dailyProfit: amount * 0.02, // 2% daily
+                                startDate: new Date().toLocaleDateString(),
+                                status: 'active'
+                            };
+                            
+                            if(!adminData.investments) adminData.investments = [];
+                            adminData.investments.push(adminInvestment);
+                            
+                            // Create transaction record
+                            const transaction = {
+                                id: 'TXN' + Math.floor(1000 + Math.random() * 9000),
+                                userId: currentUser.id,
+                                userName: currentUser.name,
+                                amount: amount,
+                                type: 'investment',
+                                date: new Date().toLocaleDateString(),
+                                status: 'completed'
+                            };
+                            
+                            if(!adminData.transactions) adminData.transactions = [];
+                            adminData.transactions.push(transaction);
+                            
+                            // Update current user
+                            currentUser = users[userIndex];
+                            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                            
+                            // Save all changes
+                            localStorage.setItem('users', JSON.stringify(users));
+                            localStorage.setItem('adminData', JSON.stringify(adminData));
+                            
+                            updateBalance();
+                            showNotification(`Successfully invested in ₹${amount} package!`, 'success');
+                        }
+                    } else {
+                        showNotification('Insufficient balance for this investment', 'error');
+                    }
+                });
+            });
+            
+            // Withdrawal method selection
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const method = this.getAttribute('data-method');
+                    document.getElementById('upiFields').style.display = 'none';
+                    document.getElementById('bankFields').style.display = 'none';
+                    document.getElementById('cryptoFields').style.display = 'none';
+                    
+                    if(method === 'upi') {
+                        document.getElementById('upiFields').style.display = 'block';
+                    } else if(method === 'bank') {
+                        document.getElementById('bankFields').style.display = 'block';
+                    } else if(method === 'crypto') {
+                        document.getElementById('cryptoFields').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Withdraw button
+            document.getElementById('withdrawBtn').addEventListener('click', function() {
                 if(!currentUser) {
                     showNotification('Please login first', 'error');
                     return;
                 }
                 
-                const amount = parseInt(this.getAttribute('data-amount'));
+                const amount = parseFloat(document.getElementById('withdrawAmount').value);
+                const method = document.querySelector('.method-card.active').getAttribute('data-method');
                 
-                if(currentUser.balance >= amount) {
-                    currentUser.balance -= amount;
-                    currentUser.investments.push({
-                        amount: amount,
-                        date: new Date().toLocaleDateString()
-                    });
-                    
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    updateBalance();
-                    showNotification(`Successfully invested in ₹${amount} package!`, 'success');
-                } else {
-                    showNotification('Insufficient balance for this investment', 'error');
+                if(!amount || amount <= 0) {
+                    showNotification('Please enter valid amount', 'error');
+                    return;
                 }
-            });
-        });
-        
-        // Withdrawal method selection
-        document.querySelectorAll('.method-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
                 
-                const method = this.getAttribute('data-method');
-                document.getElementById('upiFields').style.display = 'none';
-                document.getElementById('bankFields').style.display = 'none';
-                document.getElementById('cryptoFields').style.display = 'none';
+                if(amount < 100) {
+                    showNotification('Minimum withdrawal amount is ₹100', 'error');
+                    return;
+                }
+                
+                let paymentDetails = {};
+                let walletAddress = '';
                 
                 if(method === 'upi') {
-                    document.getElementById('upiFields').style.display = 'block';
+                    walletAddress = document.getElementById('upiId').value;
+                    if(!walletAddress) {
+                        showNotification('Please enter UPI ID', 'error');
+                        return;
+                    }
+                    paymentDetails = { method: 'upi', upiId: walletAddress };
                 } else if(method === 'bank') {
-                    document.getElementById('bankFields').style.display = 'block';
+                    const accountNumber = document.getElementById('accountNumber').value;
+                    const ifscCode = document.getElementById('ifscCode').value;
+                    const accountName = document.getElementById('accountName').value;
+                    
+                    if(!accountNumber || !ifscCode || !accountName) {
+                        showNotification('Please fill all bank details', 'error');
+                        return;
+                    }
+                    paymentDetails = { method: 'bank', accountNumber, ifscCode, accountName };
+                    walletAddress = accountNumber;
                 } else if(method === 'crypto') {
-                    document.getElementById('cryptoFields').style.display = 'block';
+                    walletAddress = document.getElementById('walletAddress').value;
+                    const network = document.getElementById('cryptoNetwork').value;
+                    
+                    if(!walletAddress) {
+                        showNotification('Please enter wallet address', 'error');
+                        return;
+                    }
+                    paymentDetails = { method: 'crypto', walletAddress, network };
                 }
-            });
-        });
-        
-        // Withdraw button
-        document.getElementById('withdrawBtn').addEventListener('click', function() {
-            if(!currentUser) {
-                showNotification('Please login first', 'error');
-                return;
-            }
-            
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            const method = document.querySelector('.method-card.active').getAttribute('data-method');
-            
-            if(!amount || amount <= 0) {
-                showNotification('Please enter valid amount', 'error');
-                return;
-            }
-            
-            if(amount < 100) {
-                showNotification('Minimum withdrawal amount is ₹100', 'error');
-                return;
-            }
-            
-            let paymentDetails = {};
-            
-            if(method === 'upi') {
-                const upiId = document.getElementById('upiId').value;
-                if(!upiId) {
-                    showNotification('Please enter UPI ID', 'error');
-                    return;
-                }
-                paymentDetails = { method: 'upi', upiId };
-            } else if(method === 'bank') {
-                const accountNumber = document.getElementById('accountNumber').value;
-                const ifscCode = document.getElementById('ifscCode').value;
-                const accountName = document.getElementById('accountName').value;
                 
-                if(!accountNumber || !ifscCode || !accountName) {
-                    showNotification('Please fill all bank details', 'error');
-                    return;
-                }
-                paymentDetails = { method: 'bank', accountNumber, ifscCode, accountName };
-            } else if(method === 'crypto') {
-                const walletAddress = document.getElementById('walletAddress').value;
-                const network = document.getElementById('cryptoNetwork').value;
+                let users = JSON.parse(localStorage.getItem('users'));
+                let adminData = JSON.parse(localStorage.getItem('adminData'));
                 
-                if(!walletAddress) {
-                    showNotification('Please enter wallet address', 'error');
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if(userIndex === -1) {
+                    showNotification('User not found', 'error');
                     return;
                 }
-                paymentDetails = { method: 'crypto', walletAddress, network };
-            }
-            
-            if(currentUser.balance < amount) {
-                showNotification('Insufficient balance', 'error');
-                return;
-            }
-            
-            // Process withdrawal
-            currentUser.balance -= amount;
-            currentUser.withdrawalHistory.push({
-                amount: amount,
-                date: new Date().toLocaleDateString(),
-                method: method,
-                status: 'Pending',
-                details: paymentDetails
+                
+                if(users[userIndex].balance < amount) {
+                    showNotification('Insufficient balance', 'error');
+                    return;
+                }
+                
+                // Process withdrawal
+                users[userIndex].balance -= amount;
+                
+                // Create withdrawal record
+                const withdrawal = {
+                    id: 'WDR' + Math.floor(1000 + Math.random() * 9000),
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    amount: amount,
+                    method: method,
+                    walletAddress: walletAddress,
+                    date: new Date().toLocaleDateString(),
+                    status: 'pending',
+                    details: paymentDetails
+                };
+                
+                if(!users[userIndex].withdrawals) users[userIndex].withdrawals = [];
+                users[userIndex].withdrawals.push(withdrawal);
+                
+                // Update admin data
+                if(!adminData.withdrawals) adminData.withdrawals = [];
+                adminData.withdrawals.push(withdrawal);
+                
+                // Update admin user balance
+                const adminUserIndex = adminData.users.findIndex(u => u.id === currentUser.id);
+                if(adminUserIndex !== -1) {
+                    adminData.users[adminUserIndex].balance = users[userIndex].balance;
+                }
+                
+                // Update current user
+                currentUser = users[userIndex];
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Save all changes
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('adminData', JSON.stringify(adminData));
+                
+                showNotification(`Withdrawal request of ₹${amount.toFixed(2)} submitted!`, 'success');
+                
+                // Clear form
+                document.getElementById('withdrawAmount').value = '';
+                if(method === 'upi') document.getElementById('upiId').value = '';
+                if(method === 'bank') {
+                    document.getElementById('accountNumber').value = '';
+                    document.getElementById('ifscCode').value = '';
+                    document.getElementById('accountName').value = '';
+                }
+                if(method === 'crypto') document.getElementById('walletAddress').value = '';
+                
+                // Update balance
+                updateBalance();
             });
             
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            // View Referral Dashboard
+            document.getElementById('viewReferralBtn').addEventListener('click', function() {
+                if(!currentUser) {
+                    showNotification('Please login first', 'error');
+                    return;
+                }
+                showReferralDashboard();
+            });
             
-            showNotification(`Withdrawal request of ₹${amount.toFixed(2)} submitted!`, 'success');
-            
-            // Clear form
-            document.getElementById('withdrawAmount').value = '';
-            if(method === 'upi') document.getElementById('upiId').value = '';
-            if(method === 'bank') {
-                document.getElementById('accountNumber').value = '';
-                document.getElementById('ifscCode').value = '';
-                document.getElementById('accountName').value = '';
-            }
-            if(method === 'crypto') document.getElementById('walletAddress').value = '';
-            
-            // Update balance
-            updateBalance();
-        });
+            // Back to Dashboard from Referral
+            document.getElementById('backToDashboardBtn').addEventListener('click', function() {
+                showDashboard();
+            });
+        }
         
-        // View Referral Dashboard
-        document.getElementById('viewReferralBtn').addEventListener('click', function() {
-            if(!currentUser) {
-                showNotification('Please login first', 'error');
-                return;
-            }
-            showReferralDashboard();
-        });
-        
-        // Back to Dashboard from Referral
-        document.getElementById('backToDashboardBtn').addEventListener('click', function() {
-            showDashboard();
-        });
+        function toggleMenu() {
+            document.getElementById('sideMenu').classList.remove('active');
+            document.getElementById('mainContent').classList.remove('shifted');
+        }
         
         // Show dashboard after login
         function showDashboard() {
@@ -871,26 +1008,27 @@
         function updateReferralDashboard() {
             if(!currentUser) return;
             
-            const totalReferrals = currentUser.referrals.length;
-            const activeReferrals = currentUser.referrals.filter(r => r.active).length;
-            const totalCommission = currentUser.referrals.reduce((sum, r) => sum + r.commission, 0);
+            const adminData = JSON.parse(localStorage.getItem('adminData'));
+            const userReferrals = adminData.referrals ? adminData.referrals.filter(r => r.referrerId === currentUser.id) : [];
             
-            document.getElementById('totalReferrals').textContent = totalReferrals;
-            document.getElementById('activeReferrals').textContent = activeReferrals;
+            document.getElementById('totalReferrals').textContent = userReferrals.length;
+            document.getElementById('activeReferrals').textContent = userReferrals.filter(r => r.status === 'active').length;
+            
+            const totalCommission = userReferrals.reduce((sum, r) => sum + r.commission, 0);
             document.getElementById('totalCommission').textContent = `₹${totalCommission.toFixed(2)}`;
             
             // Update referral table
             const tableBody = document.getElementById('referralTableBody');
             tableBody.innerHTML = '';
             
-            currentUser.referrals.forEach(ref => {
+            userReferrals.forEach(ref => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${ref.name}</td>
-                    <td>${ref.date}</td>
+                    <td>${ref.referredName}</td>
+                    <td>${ref.joinDate}</td>
                     <td>₹${ref.invested.toFixed(2)}</td>
                     <td>₹${ref.commission.toFixed(2)}</td>
-                    <td><span class="badge ${ref.active ? 'bg-success' : 'bg-secondary'}">${ref.active ? 'Active' : 'Inactive'}</span></td>
+                    <td><span class="badge ${ref.status === 'active' ? 'bg-success' : 'bg-secondary'}">${ref.status.charAt(0).toUpperCase() + ref.status.slice(1)}</span></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -905,6 +1043,14 @@
             if(currentUser) {
                 document.getElementById('userBalance').textContent = `₹${currentUser.balance.toFixed(2)}`;
             }
+        }
+        
+        // Copy referral link
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink');
+            link.select();
+            document.execCommand('copy');
+            showNotification('Referral link copied to clipboard!', 'success');
         }
         
         // Logout function
