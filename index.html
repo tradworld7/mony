@@ -4,1076 +4,994 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #1a2a6c;
-            --secondary-color: #b21f1f;
-            --accent-color: #fdbb2d;
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        
+        h1, h2, h3, h4 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        p {
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #2ecc71;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Header Styles */
+        .site-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            color: white;
+            margin: 5px 0;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        
+        /* Profile Section */
+        .profile-section {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .profile-info p {
+            margin: 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .profile-info span {
+            font-weight: bold;
+            float: right;
+        }
+        
+        /* Balance Section */
+        .balance-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
         .balance-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 10px;
-            padding: 20px;
+            text-align: center;
+        }
+        
+        .balance-card .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        /* Transfer Section */
+        .transfer-section {
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .transfer-form .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .transfer-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .transfer-form input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        /* Referral Section */
+        .referral-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .referral-id {
+            text-align: center;
+        }
+        
+        .id-display {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        
+        .referral-stats p {
+            margin-bottom: 15px;
+        }
+        
+        .referral-stats span {
+            float: right;
+            font-weight: bold;
+        }
+        
+        /* Packages Section */
+        .package-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
         .package-card {
-            transition: all 0.3s;
-            cursor: pointer;
-            margin-bottom: 20px;
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
         }
         
-        .package-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        .nav-tabs .nav-link.active {
+        .package-card .price {
+            font-size: 28px;
             font-weight: bold;
-            border-bottom: 3px solid var(--primary-color);
+            color: #2c3e50;
+            margin: 10px 0;
         }
         
-        .notification {
+        .package-card .return {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        /* Trading Section */
+        .trading-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .candle {
+            position: absolute;
+            width: 8px;
+            background-color: #333;
+        }
+        
+        .candle.up {
+            background-color: #27ae60;
+        }
+        
+        .candle.down {
+            background-color: #e74c3c;
+        }
+        
+        .candle-wick {
+            position: absolute;
+            width: 2px;
+            background-color: #333;
+            left: 3px;
+        }
+        
+        .profit-stats p {
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .profit-stats span {
+            float: right;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        /* Withdrawal Section */
+        .withdraw-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .withdraw-form .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .withdraw-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .withdraw-form input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
             position: fixed;
-            top: 20px;
-            right: 20px;
             z-index: 1000;
-            max-width: 300px;
-        }
-        
-        /* Side Menu Styles */
-        .side-menu {
-            position: fixed;
             left: 0;
             top: 0;
-            height: 100vh;
-            width: 250px;
-            background: linear-gradient(to bottom, var(--primary-color), #0f1a4b);
-            color: white;
-            padding: 20px 0;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            z-index: 100;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .side-menu.active {
-            transform: translateX(0);
-        }
-        
-        .menu-item {
-            padding: 12px 20px;
-            margin: 5px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-        
-        .menu-item:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        
-        .menu-item i {
-            margin-right: 15px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .menu-toggle {
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            z-index: 99;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--primary-color);
-        }
-        
-        .main-content {
-            transition: margin-left 0.3s;
-            margin-left: 0;
-        }
-        
-        .main-content.shifted {
-            margin-left: 250px;
-        }
-        
-        /* Enhanced Withdrawal Section */
-        .withdrawal-methods {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .method-card {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .method-card:hover, .method-card.active {
-            border-color: var(--primary-color);
-            background-color: rgba(26, 42, 108, 0.05);
-        }
-        
-        .method-card i {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-        
-        /* Referral Dashboard */
-        .referral-stats {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            flex: 1;
-            background-color: white;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .stat-card h4 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-        
-        .referral-table {
             width: 100%;
-            border-collapse: collapse;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
         }
         
-        .referral-table th, .referral-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
         }
         
-        .referral-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
         }
         
-        /* Responsive adjustments */
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .side-menu {
-                width: 200px;
-            }
-            
-            .main-content.shifted {
-                margin-left: 200px;
-            }
-            
-            .withdrawal-methods {
+            .header-container {
                 flex-direction: column;
+                text-align: center;
             }
             
-            .referral-stats {
-                flex-direction: column;
+            .user-actions {
+                justify-content: center;
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .profile-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .profile-icon {
+                margin: 0 auto;
+            }
+            
+            .profile-info {
+                grid-template-columns: 1fr;
+                text-align: left;
+            }
+            
+            .trading-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .withdraw-card {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            .logo h1 {
+                font-size: 20px;
+            }
+            
+            .balance-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .package-cards {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Side Menu Toggle Button -->
-    <div class="menu-toggle" id="menuToggle">
-        <i class="fas fa-bars"></i>
+    <!-- Main Website -->
+    <header class="site-header">
+        <div class="container header-container">
+            <div class="logo">
+                <h1>TRADE WORLD</h1>
+            </div>
+            <div class="user-actions">
+                <button class="btn btn-primary login-btn">Login</button>
+                <button class="btn btn-success signup-btn">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Profile Section -->
+        <section id="profile" class="profile-section card" style="display: none;">
+            <div class="profile-icon" id="profile-icon">U</div>
+            <div class="profile-info">
+                <p>User ID: <span id="profile-id">-</span></p>
+                <p>Name: <span id="profile-name">-</span></p>
+                <p>Email: <span id="profile-email">-</span></p>
+                <p>Mobile: <span id="profile-phone">-</span></p>
+                <p>Sponsor ID: <span id="profile-sponsor">-</span></p>
+                <p>Join Date: <span id="join-date">-</span></p>
+            </div>
+        </section>
+
+        <!-- My Balance Section -->
+        <section id="my-balance" class="balance-section">
+            <h2 class="section-title">My Balance</h2>
+            <div class="balance-cards">
+                <div class="card balance-card">
+                    <h3>Available Balance</h3>
+                    <p class="amount">$0.00</p>
+                </div>
+                <div class="card balance-card">
+                    <h3>Referral Earnings</h3>
+                    <p class="amount">$0.00</p>
+                </div>
+                <div class="card balance-card">
+                    <h3>Trading Profit</h3>
+                    <p class="amount">$0.00</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- USDT Transfer Section -->
+        <section class="transfer-section card">
+            <h2 class="section-title">USDT Transfer</h2>
+            <form id="transfer-form">
+                <div class="form-group">
+                    <label for="recipient-id">Recipient User ID</label>
+                    <input type="text" id="recipient-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="transfer-amount">Amount (USD)</label>
+                    <input type="number" id="transfer-amount" min="1" step="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Transfer</button>
+            </form>
+        </section>
+
+        <!-- Referral System Section -->
+        <section id="referrals" class="referral-section">
+            <h2 class="section-title">Referral System</h2>
+            <div class="card referral-info">
+                <div class="referral-id">
+                    <h3>Your Referral Link</h3>
+                    <p class="id-display" id="referral-link">https://tradworld7.github.io/mony/?ref=TW1381</p>
+                    <button class="btn btn-primary copy-btn">Copy Link</button>
+                </div>
+                <div class="referral-stats">
+                    <h3>Your Referrals</h3>
+                    <p>Total Referrals: <span id="total-referrals">0</span></p>
+                    <p>Active Referrals: <span id="active-referrals">0</span></p>
+                    <p>Earnings from Referrals: <span id="referral-earnings">$0.00</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Packages Section -->
+        <section id="packages" class="packages-section">
+            <h2 class="section-title">Investment Packages</h2>
+            <div class="package-cards">
+                <div class="card package-card">
+                    <h3>Starter</h3>
+                    <p class="price">$10</p>
+                    <p class="return">Get $20 back</p>
+                    <button class="btn btn-success buy-btn">Buy Now</button>
+                </div>
+                <div class="card package-card">
+                    <h3>Professional</h3>
+                    <p class="price">$20</p>
+                    <p class="return">Get $40 back</p>
+                    <button class="btn btn-success buy-btn">Buy Now</button>
+                </div>
+                <div class="card package-card">
+                    <h3>Premium</h3>
+                    <p class="price">$30</p>
+                    <p class="return">Get $60 back</p>
+                    <button class="btn btn-success buy-btn">Buy Now</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trading Profit Section -->
+        <section id="trading" class="trading-section">
+            <h2 class="section-title">Trading Profit</h2>
+            <div class="card trading-card">
+                <div class="chart-placeholder" id="trading-chart">
+                    <!-- Candle chart will be generated here -->
+                </div>
+                <div class="trading-info">
+                    <h3>Automated Crypto Trading</h3>
+                    <p>Our advanced algorithms trade for you 24/7 to maximize your profits.</p>
+                    <div class="profit-stats">
+                        <p>Today's Profit: <span id="today-profit">$0.00</span></p>
+                        <p>Weekly Profit: <span id="weekly-profit">$0.00</span></p>
+                        <p>Total Profit: <span id="total-profit">$0.00</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Withdrawal Section -->
+        <section id="withdraw" class="withdraw-section">
+            <h2 class="section-title">Withdraw Funds</h2>
+            <div class="card withdraw-card">
+                <div class="withdraw-info">
+                    <h3>Withdrawal Information</h3>
+                    <p>Withdrawals are processed every Sunday</p>
+                    <p>Minimum withdrawal amount: $10</p>
+                    <p>Referral payments are withdrawn at $10 increments</p>
+                </div>
+                <div class="withdraw-form">
+                    <h3>Request Withdrawal</h3>
+                    <div class="form-group">
+                        <label for="amount">Amount (USD)</label>
+                        <input type="number" id="amount" min="10" step="10" placeholder="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="wallet">USDT (BEP20) Wallet Address</label>
+                        <input type="text" id="wallet" placeholder="Enter your wallet address">
+                    </div>
+                    <button class="btn btn-primary withdraw-btn" disabled>Withdraw (Available Sunday)</button>
+                </div>
+            </div>
+        </section>
     </div>
-    
-    <!-- Side Menu -->
-    <div class="side-menu" id="sideMenu">
-        <div class="text-center mb-4">
-            <h4 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">TRADE WORLD</h4>
-        </div>
-        
-        <div class="menu-item" id="dashboardMenuItem">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-        </div>
-        
-        <div class="menu-item" id="investMenuItem">
-            <i class="fas fa-rupee-sign"></i>
-            <span>Invest</span>
-        </div>
-        
-        <div class="menu-item" id="withdrawMenuItem">
-            <i class="fas fa-wallet"></i>
-            <span>Withdraw</span>
-        </div>
-        
-        <div class="menu-item" id="referralMenuItem">
-            <i class="fas fa-users"></i>
-            <span>Referral</span>
-        </div>
-        
-        <div class="menu-item" id="historyMenuItem">
-            <i class="fas fa-history"></i>
-            <span>History</span>
-        </div>
-        
-        <div class="menu-item" id="profileMenuItem">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </div>
-        
-        <div class="menu-item" id="logoutMenuItem">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </div>
-    </div>
-    
-    <div class="main-content" id="mainContent">
-        <div class="container py-4">
-            <header class="text-center mb-4">
-                <h1 class="text-primary" style="font-weight: 700;">TRADE WORLD</h1>
-                <p class="text-muted">Your trusted investment platform</p>
-            </header>
-            
-            <!-- Balance Section -->
-            <div class="balance-card text-center">
-                <h3>MY BALANCE</h3>
-                <div class="balance-amount" id="userBalance">₹0.00</div>
-            </div>
-            
-            <!-- Main Dashboard -->
-            <div id="dashboard" style="display: none;">
-                <!-- Packages Section -->
-                <div class="card mb-4 border-0 shadow">
-                    <div class="card-header bg-white">
-                        <h3 class="mb-0">INVESTMENT PACKAGES</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="card package-card h-100">
-                                    <div class="card-body text-center">
-                                        <h4 class="text-primary">₹500 Package</h4>
-                                        <p class="text-muted">Daily: ₹10 (2%)</p>
-                                        <p class="text-muted">Monthly: ₹150 (30%)</p>
-                                        <button class="btn btn-primary mt-2 invest-btn" data-amount="500">Invest Now</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card package-card h-100">
-                                    <div class="card-body text-center">
-                                        <h4 class="text-primary">₹1,000 Package</h4>
-                                        <p class="text-muted">Daily: ₹20 (2%)</p>
-                                        <p class="text-muted">Monthly: ₹300 (30%)</p>
-                                        <button class="btn btn-primary mt-2 invest-btn" data-amount="1000">Invest Now</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card package-card h-100">
-                                    <div class="card-body text-center">
-                                        <h4 class="text-primary">₹5,000 Package</h4>
-                                        <p class="text-muted">Daily: ₹100 (2%)</p>
-                                        <p class="text-muted">Monthly: ₹1,500 (30%)</p>
-                                        <button class="btn btn-primary mt-2 invest-btn" data-amount="5000">Invest Now</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content card">
+            <span class="close">&times;</span>
+            <h2>Create Your Account</h2>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="sponsor-id">Sponsor ID*</label>
+                    <input type="text" id="sponsor-id" required>
                 </div>
-                
-                <!-- Referral Section -->
-                <div class="card mb-4 border-0 shadow">
-                    <div class="card-header bg-white">
-                        <h3 class="mb-0">REFERRAL PROGRAM</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" id="referralLink" value="https://tradworld7.github.io/mony/?ref=TW1234" readonly>
-                            <button class="btn btn-outline-primary" id="copyBtn">Copy</button>
-                        </div>
-                        <p class="text-muted">Earn 10% commission on every referral investment!</p>
-                        <button class="btn btn-info mt-2" id="viewReferralBtn">View Referral Dashboard</button>
-                    </div>
+                <div class="form-group">
+                    <label for="full-name">Full Name*</label>
+                    <input type="text" id="full-name" required>
                 </div>
-                
-                <!-- Withdrawal Section -->
-                <div class="card mb-4 border-0 shadow">
-                    <div class="card-header bg-white">
-                        <h3 class="mb-0">WITHDRAW FUNDS</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="withdrawal-methods">
-                            <div class="method-card active" data-method="upi">
-                                <i class="fas fa-mobile-alt"></i>
-                                <div>UPI</div>
-                            </div>
-                            <div class="method-card" data-method="bank">
-                                <i class="fas fa-university"></i>
-                                <div>Bank Transfer</div>
-                            </div>
-                            <div class="method-card" data-method="crypto">
-                                <i class="fab fa-bitcoin"></i>
-                                <div>Crypto Wallet</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Withdrawal Amount (₹)</label>
-                            <input type="number" class="form-control" id="withdrawAmount" placeholder="Enter amount">
-                            <small class="text-muted">Minimum withdrawal: ₹100</small>
-                        </div>
-                        
-                        <div class="mb-3" id="upiFields">
-                            <label class="form-label">UPI ID</label>
-                            <input type="text" class="form-control" id="upiId" placeholder="Enter your UPI ID">
-                        </div>
-                        
-                        <div class="mb-3" id="bankFields" style="display: none;">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Account Number</label>
-                                    <input type="text" class="form-control" id="accountNumber" placeholder="Enter account number">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">IFSC Code</label>
-                                    <input type="text" class="form-control" id="ifscCode" placeholder="Enter IFSC code">
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label class="form-label">Account Holder Name</label>
-                                    <input type="text" class="form-control" id="accountName" placeholder="Enter account holder name">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3" id="cryptoFields" style="display: none;">
-                            <label class="form-label">Wallet Address</label>
-                            <input type="text" class="form-control" id="walletAddress" placeholder="Enter your wallet address">
-                            <div class="mt-2">
-                                <label class="form-label">Network</label>
-                                <select class="form-select" id="cryptoNetwork">
-                                    <option value="trc20">TRC20</option>
-                                    <option value="erc20">ERC20</option>
-                                    <option value="bep20">BEP20</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-success w-100" id="withdrawBtn">REQUEST WITHDRAWAL</button>
-                        <div class="text-center mt-2">
-                            <small class="text-muted">Withdrawals are processed within 24 hours</small>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="email">Email*</label>
+                    <input type="email" id="email" required>
                 </div>
-            </div>
-            
-            <!-- Referral Dashboard (Hidden by default) -->
-            <div id="referralDashboard" style="display: none;">
-                <div class="card mb-4 border-0 shadow">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">REFERRAL DASHBOARD</h3>
-                        <button class="btn btn-sm btn-primary" id="backToDashboardBtn">
-                            <i class="fas fa-arrow-left"></i> Back to Dashboard
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="referral-stats">
-                            <div class="stat-card">
-                                <h4>Total Referrals</h4>
-                                <div id="totalReferrals">0</div>
-                            </div>
-                            <div class="stat-card">
-                                <h4>Active Referrals</h4>
-                                <div id="activeReferrals">0</div>
-                            </div>
-                            <div class="stat-card">
-                                <h4>Earned Commission</h4>
-                                <div id="totalCommission">₹0.00</div>
-                            </div>
-                        </div>
-                        
-                        <h4 class="mt-4 mb-3">Your Referral Link</h4>
-                        <div class="input-group mb-4">
-                            <input type="text" class="form-control" id="referralLinkDashboard" value="https://tradworld7.github.io/mony/?ref=TW1234" readonly>
-                            <button class="btn btn-outline-primary" id="copyBtnDashboard">Copy</button>
-                        </div>
-                        
-                        <h4 class="mb-3">Referral History</h4>
-                        <div class="table-responsive">
-                            <table class="table referral-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Join Date</th>
-                                        <th>Invested</th>
-                                        <th>Commission</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="referralTableBody">
-                                    <!-- Referral data will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number*</label>
+                    <input type="tel" id="phone" required>
                 </div>
-            </div>
-            
-            <!-- Auth Forms -->
-            <div id="authForms">
-                <div class="row justify-content-center">
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow">
-                            <div class="card-body">
-                                <ul class="nav nav-tabs" id="authTabs">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" id="login-tab">LOGIN</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="signup-tab">SIGN UP</a>
-                                    </li>
-                                </ul>
-                                
-                                <div class="tab-content mt-3">
-                                    <!-- Login Form -->
-                                    <div id="loginForm">
-                                        <div class="mb-3">
-                                            <input type="text" class="form-control" id="loginEmail" placeholder="Email or User ID">
-                                        </div>
-                                        <div class="mb-3">
-                                            <input type="password" class="form-control" id="loginPassword" placeholder="Password">
-                                        </div>
-                                        <button class="btn btn-primary w-100" id="loginBtn">LOGIN</button>
-                                        <div class="text-center mt-3">
-                                            <a href="#" id="forgotPassword">Forgot Password?</a>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Signup Form -->
-                                    <div id="signupForm" style="display: none;">
-                                        <div class="mb-3">
-                                            <input type="text" class="form-control" id="fullName" placeholder="Full Name">
-                                        </div>
-                                        <div class="mb-3">
-                                            <input type="email" class="form-control" id="email" placeholder="Email">
-                                        </div>
-                                        <div class="mb-3">
-                                            <input type="password" class="form-control" id="password" placeholder="Password">
-                                        </div>
-                                        <div class="mb-3">
-                                            <input type="text" class="form-control" id="mobile" placeholder="Mobile Number">
-                                        </div>
-                                        <div class="mb-3">
-                                            <input type="text" class="form-control" id="referralCode" placeholder="Referral Code (Optional)">
-                                        </div>
-                                        <button class="btn btn-success w-100" id="signupBtn">CREATE ACCOUNT</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="password">Password*</label>
+                    <input type="password" id="password" required>
                 </div>
-            </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password*</label>
+                    <input type="password" id="confirm-password" required>
+                </div>
+                <button type="submit" class="btn btn-success submit-btn">Create Account</button>
+            </form>
         </div>
     </div>
 
-    <!-- Notification Div -->
-    <div id="notification" class="alert alert-success notification" style="display: none;"></div>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content card">
+            <span class="close">&times;</span>
+            <h2>Login to Your Account</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email*</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password*</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary submit-btn">Login</button>
+            </form>
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Initialize data storage if not exists
-        if(!localStorage.getItem('users')) {
-            localStorage.setItem('users', JSON.stringify([]));
-        }
-        
-        if(!localStorage.getItem('adminData')) {
-            localStorage.setItem('adminData', JSON.stringify({
-                users: [],
-                transactions: [],
-                transfers: [],
-                withdrawals: [],
-                investments: [],
-                referrals: []
-            }));
-        }
-        
-        // Sample admin user (for demo purposes)
-        const adminUser = {
-            id: 'ADMIN001',
-            email: 'admin@tradeworld.com',
-            password: 'admin123',
-            name: 'Admin',
-            mobile: '9999999999',
-            balance: 0,
-            status: 'active',
-            role: 'admin'
-        };
-        
-        // Check if admin exists, if not add to both user and admin data
-        let users = JSON.parse(localStorage.getItem('users'));
-        let adminData = JSON.parse(localStorage.getItem('adminData'));
-        
-        if(!users.some(u => u.role === 'admin')) {
-            users.push(adminUser);
-            adminData.users.push(adminUser);
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('adminData', JSON.stringify(adminData));
-        }
-        
-        // Current user
+        // User Data Storage
+        let users = [];
         let currentUser = null;
+        let withdrawals = [];
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already logged in
-            const savedUser = localStorage.getItem('currentUser');
-            if(savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showDashboard();
-            }
+        // Initialize with demo data
+        function initializeData() {
+            const savedUsers = localStorage.getItem('tradeWorldUsers');
+            const savedWithdrawals = localStorage.getItem('tradeWorldWithdrawals');
             
-            // Initialize referral data if user is logged in
-            if(currentUser) {
-                updateReferralDashboard();
-            }
-            
-            // Set up event listeners
-            setupEventListeners();
-        });
-        
-        function setupEventListeners() {
-            // Menu Toggle
-            document.getElementById('menuToggle').addEventListener('click', function() {
-                document.getElementById('sideMenu').classList.toggle('active');
-                document.getElementById('mainContent').classList.toggle('shifted');
-            });
-            
-            // Menu Item Click Handlers
-            document.getElementById('dashboardMenuItem').addEventListener('click', function() {
-                showDashboard();
-                toggleMenu();
-            });
-            
-            document.getElementById('investMenuItem').addEventListener('click', function() {
-                showDashboard();
-                toggleMenu();
-                document.querySelector('.package-card').scrollIntoView({ behavior: 'smooth' });
-            });
-            
-            document.getElementById('withdrawMenuItem').addEventListener('click', function() {
-                showDashboard();
-                toggleMenu();
-                document.getElementById('withdrawAmount').scrollIntoView({ behavior: 'smooth' });
-            });
-            
-            document.getElementById('referralMenuItem').addEventListener('click', function() {
-                showReferralDashboard();
-                toggleMenu();
-            });
-            
-            document.getElementById('historyMenuItem').addEventListener('click', function() {
-                showNotification('History section will be implemented soon', 'info');
-                toggleMenu();
-            });
-            
-            document.getElementById('profileMenuItem').addEventListener('click', function() {
-                showNotification('Profile section will be implemented soon', 'info');
-                toggleMenu();
-            });
-            
-            document.getElementById('logoutMenuItem').addEventListener('click', function() {
-                logout();
-                toggleMenu();
-            });
-            
-            // Tab switching
-            document.getElementById('login-tab').addEventListener('click', function() {
-                document.getElementById('loginForm').style.display = 'block';
-                document.getElementById('signupForm').style.display = 'none';
-                this.classList.add('active');
-                document.getElementById('signup-tab').classList.remove('active');
-            });
-            
-            document.getElementById('signup-tab').addEventListener('click', function() {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'block';
-                this.classList.add('active');
-                document.getElementById('login-tab').classList.remove('active');
-            });
-            
-            // Login function
-            document.getElementById('loginBtn').addEventListener('click', function() {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                
-                const users = JSON.parse(localStorage.getItem('users'));
-                const user = users.find(u => (u.email === email || u.id === email) && u.password === password);
-                
-                if(user) {
-                    currentUser = user;
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-                    showDashboard();
-                    showNotification('Login successful!', 'success');
-                    updateReferralDashboard();
-                } else {
-                    showNotification('Invalid email or password', 'error');
-                }
-            });
-            
-            // Signup function
-            document.getElementById('signupBtn').addEventListener('click', function() {
-                const name = document.getElementById('fullName').value;
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const mobile = document.getElementById('mobile').value;
-                const referralCode = document.getElementById('referralCode').value;
-                
-                if(name && email && password && mobile) {
-                    let users = JSON.parse(localStorage.getItem('users'));
-                    let adminData = JSON.parse(localStorage.getItem('adminData'));
-                    
-                    // Check if email already exists
-                    if(users.some(u => u.email === email)) {
-                        showNotification('Email already registered', 'error');
-                        return;
-                    }
-                    
-                    const newUser = {
-                        id: 'TW' + Math.floor(1000 + Math.random() * 9000),
-                        email,
-                        password,
-                        name,
-                        mobile,
-                        balance: 0,
-                        status: 'active',
-                        joinDate: new Date().toLocaleDateString(),
-                        investments: [],
-                        withdrawals: [],
+            if (savedUsers) {
+                users = JSON.parse(savedUsers);
+            } else {
+                // Create demo users
+                users = [
+                    {
+                        id: 'TW1381',
+                        name: 'Admin User',
+                        email: 'admin@tradworld.com',
+                        phone: '9876543210',
+                        password: 'admin123',
+                        sponsorId: 'T1381',
+                        balance: 1000,
+                        referralEarnings: 500,
+                        tradingProfit: 200,
+                        joinDate: new Date().toISOString(),
                         referrals: []
-                    };
-                    
-                    // Save to users
-                    users.push(newUser);
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Also save to admin data
-                    adminData.users.push(newUser);
-                    
-                    // If referral code is provided, add to referrer's list
-                    if(referralCode) {
-                        const referrer = users.find(u => u.id === referralCode);
-                        if(referrer) {
-                            // Update referrer's referral list
-                            referrer.referrals.push({
-                                id: newUser.id,
-                                name: name,
-                                date: new Date().toLocaleDateString(),
-                                invested: 0,
-                                commission: 0,
-                                active: false
-                            });
-                            
-                            // Add to admin referral data
-                            const referral = {
-                                referrerId: referrer.id,
-                                referrerName: referrer.name,
-                                referredId: newUser.id,
-                                referredName: newUser.name,
-                                joinDate: new Date().toLocaleDateString(),
-                                invested: 0,
-                                commission: 0,
-                                status: 'pending'
-                            };
-                            
-                            if(!adminData.referrals) adminData.referrals = [];
-                            adminData.referrals.push(referral);
-                            
-                            // Update both storages
-                            localStorage.setItem('users', JSON.stringify(users));
-                        }
+                    },
+                    {
+                        id: 'TW1420',
+                        name: 'Demo User',
+                        email: 'user@example.com',
+                        phone: '9876543211',
+                        password: 'user123',
+                        sponsorId: 'TW1381',
+                        balance: 500,
+                        referralEarnings: 100,
+                        tradingProfit: 50,
+                        joinDate: new Date().toISOString(),
+                        referrals: []
                     }
-                    
-                    localStorage.setItem('adminData', JSON.stringify(adminData));
-                    
-                    showNotification('Account created successfully! Please login.', 'success');
-                    document.getElementById('login-tab').click();
-                    
-                    // Clear form
-                    document.getElementById('fullName').value = '';
-                    document.getElementById('email').value = '';
-                    document.getElementById('password').value = '';
-                    document.getElementById('mobile').value = '';
-                    document.getElementById('referralCode').value = '';
-                } else {
-                    showNotification('Please fill all fields', 'error');
-                }
-            });
+                ];
+                localStorage.setItem('tradeWorldUsers', JSON.stringify(users));
+            }
             
-            // Forgot password
-            document.getElementById('forgotPassword').addEventListener('click', function(e) {
-                e.preventDefault();
-                showNotification('Please contact support to reset your password', 'info');
-            });
-            
-            // Copy referral link
-            document.getElementById('copyBtn').addEventListener('click', copyReferralLink);
-            document.getElementById('copyBtnDashboard').addEventListener('click', copyReferralLink);
-            
-            // Invest button
-            document.querySelectorAll('.invest-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    if(!currentUser) {
-                        showNotification('Please login first', 'error');
-                        return;
-                    }
-                    
-                    const amount = parseInt(this.getAttribute('data-amount'));
-                    
-                    if(currentUser.balance >= amount) {
-                        let users = JSON.parse(localStorage.getItem('users'));
-                        let adminData = JSON.parse(localStorage.getItem('adminData'));
-                        
-                        // Find current user in users array
-                        const userIndex = users.findIndex(u => u.id === currentUser.id);
-                        if(userIndex !== -1) {
-                            // Update user balance
-                            users[userIndex].balance -= amount;
-                            
-                            // Add investment
-                            const investment = {
-                                amount: amount,
-                                date: new Date().toLocaleDateString(),
-                                package: `₹${amount} Package`
-                            };
-                            
-                            if(!users[userIndex].investments) users[userIndex].investments = [];
-                            users[userIndex].investments.push(investment);
-                            
-                            // Update admin data
-                            const adminUserIndex = adminData.users.findIndex(u => u.id === currentUser.id);
-                            if(adminUserIndex !== -1) {
-                                adminData.users[adminUserIndex].balance = users[userIndex].balance;
-                                if(!adminData.users[adminUserIndex].investments) adminData.users[adminUserIndex].investments = [];
-                                adminData.users[adminUserIndex].investments.push(investment);
-                            }
-                            
-                            // Add to admin investments
-                            const adminInvestment = {
-                                id: 'INV' + Math.floor(1000 + Math.random() * 9000),
-                                userId: currentUser.id,
-                                userName: currentUser.name,
-                                package: `₹${amount} Package`,
-                                amount: amount,
-                                dailyProfit: amount * 0.02, // 2% daily
-                                startDate: new Date().toLocaleDateString(),
-                                status: 'active'
-                            };
-                            
-                            if(!adminData.investments) adminData.investments = [];
-                            adminData.investments.push(adminInvestment);
-                            
-                            // Create transaction record
-                            const transaction = {
-                                id: 'TXN' + Math.floor(1000 + Math.random() * 9000),
-                                userId: currentUser.id,
-                                userName: currentUser.name,
-                                amount: amount,
-                                type: 'investment',
-                                date: new Date().toLocaleDateString(),
-                                status: 'completed'
-                            };
-                            
-                            if(!adminData.transactions) adminData.transactions = [];
-                            adminData.transactions.push(transaction);
-                            
-                            // Update current user
-                            currentUser = users[userIndex];
-                            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                            
-                            // Save all changes
-                            localStorage.setItem('users', JSON.stringify(users));
-                            localStorage.setItem('adminData', JSON.stringify(adminData));
-                            
-                            updateBalance();
-                            showNotification(`Successfully invested in ₹${amount} package!`, 'success');
-                        }
-                    } else {
-                        showNotification('Insufficient balance for this investment', 'error');
-                    }
-                });
-            });
-            
-            // Withdrawal method selection
-            document.querySelectorAll('.method-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const method = this.getAttribute('data-method');
-                    document.getElementById('upiFields').style.display = 'none';
-                    document.getElementById('bankFields').style.display = 'none';
-                    document.getElementById('cryptoFields').style.display = 'none';
-                    
-                    if(method === 'upi') {
-                        document.getElementById('upiFields').style.display = 'block';
-                    } else if(method === 'bank') {
-                        document.getElementById('bankFields').style.display = 'block';
-                    } else if(method === 'crypto') {
-                        document.getElementById('cryptoFields').style.display = 'block';
-                    }
-                });
-            });
-            
-            // Withdraw button
-            document.getElementById('withdrawBtn').addEventListener('click', function() {
-                if(!currentUser) {
-                    showNotification('Please login first', 'error');
-                    return;
-                }
-                
-                const amount = parseFloat(document.getElementById('withdrawAmount').value);
-                const method = document.querySelector('.method-card.active').getAttribute('data-method');
-                
-                if(!amount || amount <= 0) {
-                    showNotification('Please enter valid amount', 'error');
-                    return;
-                }
-                
-                if(amount < 100) {
-                    showNotification('Minimum withdrawal amount is ₹100', 'error');
-                    return;
-                }
-                
-                let paymentDetails = {};
-                let walletAddress = '';
-                
-                if(method === 'upi') {
-                    walletAddress = document.getElementById('upiId').value;
-                    if(!walletAddress) {
-                        showNotification('Please enter UPI ID', 'error');
-                        return;
-                    }
-                    paymentDetails = { method: 'upi', upiId: walletAddress };
-                } else if(method === 'bank') {
-                    const accountNumber = document.getElementById('accountNumber').value;
-                    const ifscCode = document.getElementById('ifscCode').value;
-                    const accountName = document.getElementById('accountName').value;
-                    
-                    if(!accountNumber || !ifscCode || !accountName) {
-                        showNotification('Please fill all bank details', 'error');
-                        return;
-                    }
-                    paymentDetails = { method: 'bank', accountNumber, ifscCode, accountName };
-                    walletAddress = accountNumber;
-                } else if(method === 'crypto') {
-                    walletAddress = document.getElementById('walletAddress').value;
-                    const network = document.getElementById('cryptoNetwork').value;
-                    
-                    if(!walletAddress) {
-                        showNotification('Please enter wallet address', 'error');
-                        return;
-                    }
-                    paymentDetails = { method: 'crypto', walletAddress, network };
-                }
-                
-                let users = JSON.parse(localStorage.getItem('users'));
-                let adminData = JSON.parse(localStorage.getItem('adminData'));
-                
-                const userIndex = users.findIndex(u => u.id === currentUser.id);
-                if(userIndex === -1) {
-                    showNotification('User not found', 'error');
-                    return;
-                }
-                
-                if(users[userIndex].balance < amount) {
-                    showNotification('Insufficient balance', 'error');
-                    return;
-                }
-                
-                // Process withdrawal
-                users[userIndex].balance -= amount;
-                
-                // Create withdrawal record
-                const withdrawal = {
-                    id: 'WDR' + Math.floor(1000 + Math.random() * 9000),
-                    userId: currentUser.id,
-                    userName: currentUser.name,
-                    amount: amount,
-                    method: method,
-                    walletAddress: walletAddress,
-                    date: new Date().toLocaleDateString(),
-                    status: 'pending',
-                    details: paymentDetails
-                };
-                
-                if(!users[userIndex].withdrawals) users[userIndex].withdrawals = [];
-                users[userIndex].withdrawals.push(withdrawal);
-                
-                // Update admin data
-                if(!adminData.withdrawals) adminData.withdrawals = [];
-                adminData.withdrawals.push(withdrawal);
-                
-                // Update admin user balance
-                const adminUserIndex = adminData.users.findIndex(u => u.id === currentUser.id);
-                if(adminUserIndex !== -1) {
-                    adminData.users[adminUserIndex].balance = users[userIndex].balance;
-                }
-                
-                // Update current user
-                currentUser = users[userIndex];
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // Save all changes
-                localStorage.setItem('users', JSON.stringify(users));
-                localStorage.setItem('adminData', JSON.stringify(adminData));
-                
-                showNotification(`Withdrawal request of ₹${amount.toFixed(2)} submitted!`, 'success');
-                
-                // Clear form
-                document.getElementById('withdrawAmount').value = '';
-                if(method === 'upi') document.getElementById('upiId').value = '';
-                if(method === 'bank') {
-                    document.getElementById('accountNumber').value = '';
-                    document.getElementById('ifscCode').value = '';
-                    document.getElementById('accountName').value = '';
-                }
-                if(method === 'crypto') document.getElementById('walletAddress').value = '';
-                
-                // Update balance
-                updateBalance();
-            });
-            
-            // View Referral Dashboard
-            document.getElementById('viewReferralBtn').addEventListener('click', function() {
-                if(!currentUser) {
-                    showNotification('Please login first', 'error');
-                    return;
-                }
-                showReferralDashboard();
-            });
-            
-            // Back to Dashboard from Referral
-            document.getElementById('backToDashboardBtn').addEventListener('click', function() {
-                showDashboard();
-            });
+            if (savedWithdrawals) {
+                withdrawals = JSON.parse(savedWithdrawals);
+            }
         }
         
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.remove('active');
-            document.getElementById('mainContent').classList.remove('shifted');
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('tradeWorldUsers', JSON.stringify(users));
+            localStorage.setItem('tradeWorldWithdrawals', JSON.stringify(withdrawals));
         }
         
-        // Show dashboard after login
-        function showDashboard() {
-            document.getElementById('authForms').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('referralDashboard').style.display = 'none';
-            updateBalance();
+        // Generate random candle chart data
+        function generateCandleChart() {
+            const chart = document.getElementById('trading-chart');
+            chart.innerHTML = '';
+            
+            const chartWidth = chart.offsetWidth;
+            const chartHeight = chart.offsetHeight;
+            const candleCount = Math.min(20, Math.floor(chartWidth / 15));
+            const candleWidth = 8;
+            const spacing = 5;
+            
+            let prevClose = 50; // Starting price
+            
+            for (let i = 0; i < candleCount; i++) {
+                const open = prevClose;
+                const high = open + Math.random() * 20;
+                const low = open - Math.random() * 20;
+                const close = low + Math.random() * (high - low);
+                
+                const isUp = close > open;
+                const candleHeight = Math.abs(close - open);
+                const maxHeight = Math.abs(high - low);
+                
+                // Position elements
+                const x = i * (candleWidth + spacing);
+                const candleTop = isUp ? 
+                    chartHeight - (close - low) / maxHeight * chartHeight * 0.8 - candleHeight :
+                    chartHeight - (open - low) / maxHeight * chartHeight * 0.8 - candleHeight;
+                
+                const wickTop = chartHeight - (high - low) / maxHeight * chartHeight * 0.8 - (high - low) / maxHeight * chartHeight * 0.8;
+                const wickHeight = (high - low) / maxHeight * chartHeight * 0.8;
+                
+                // Create candle wick
+                const wick = document.createElement('div');
+                wick.className = 'candle-wick';
+                wick.style.height = wickHeight + 'px';
+                wick.style.top = wickTop + 'px';
+                wick.style.left = x + 3 + 'px';
+                chart.appendChild(wick);
+                
+                // Create candle body
+                const candle = document.createElement('div');
+                candle.className = 'candle ' + (isUp ? 'up' : 'down');
+                candle.style.width = candleWidth + 'px';
+                candle.style.height = candleHeight + 'px';
+                candle.style.top = candleTop + 'px';
+                candle.style.left = x + 'px';
+                chart.appendChild(candle);
+                
+                prevClose = close;
+            }
         }
         
-        // Show referral dashboard
-        function showReferralDashboard() {
-            if(!currentUser) {
-                showNotification('Please login first', 'error');
+        // Update user dashboard
+        function updateUserDashboard() {
+            if (currentUser) {
+                document.getElementById('profile').style.display = 'grid';
+                document.getElementById('profile-icon').textContent = currentUser.name.charAt(0).toUpperCase();
+                document.getElementById('profile-id').textContent = currentUser.id;
+                document.getElementById('profile-name').textContent = currentUser.name;
+                document.getElementById('profile-email').textContent = currentUser.email;
+                document.getElementById('profile-phone').textContent = currentUser.phone;
+                document.getElementById('profile-sponsor').textContent = currentUser.sponsorId;
+                document.getElementById('join-date').textContent = new Date(currentUser.joinDate).toLocaleDateString();
+                
+                document.querySelectorAll('.balance-card .amount')[0].textContent = `$${currentUser.balance.toFixed(2)}`;
+                document.querySelectorAll('.balance-card .amount')[1].textContent = `$${currentUser.referralEarnings.toFixed(2)}`;
+                document.querySelectorAll('.balance-card .amount')[2].textContent = `$${currentUser.tradingProfit.toFixed(2)}`;
+                
+                document.getElementById('referral-link').textContent = `https://tradworld7.github.io/mony/?ref=${currentUser.id}`;
+                document.getElementById('total-referrals').textContent = currentUser.referrals.length;
+                document.getElementById('active-referrals').textContent = currentUser.referrals.length;
+                document.getElementById('referral-earnings').textContent = `$${currentUser.referralEarnings.toFixed(2)}`;
+                
+                document.getElementById('today-profit').textContent = `$${(currentUser.tradingProfit * 0.1).toFixed(2)}`;
+                document.getElementById('weekly-profit').textContent = `$${(currentUser.tradingProfit * 0.5).toFixed(2)}`;
+                document.getElementById('total-profit').textContent = `$${currentUser.tradingProfit.toFixed(2)}`;
+                
+                generateCandleChart();
+            }
+        }
+        
+        // Package Purchase Function
+        document.querySelectorAll('.buy-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (!currentUser) {
+                    alert('Please login to purchase packages');
+                    openModal('login-modal');
+                    return;
+                }
+                
+                const packageName = this.parentElement.querySelector('h3').textContent;
+                const packagePrice = parseFloat(this.parentElement.querySelector('.price').textContent.replace('$', ''));
+                
+                if (currentUser.balance < packagePrice) {
+                    alert('You don\'t have enough balance to purchase this package');
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to purchase the ${packageName} package for $${packagePrice}?`)) {
+                    currentUser.balance -= packagePrice;
+                    currentUser.tradingProfit += packagePrice * 2;
+                    
+                    saveData();
+                    updateUserDashboard();
+                    alert('Package purchased successfully!');
+                }
+            });
+        });
+
+        // Withdrawal Day Check
+        function checkWithdrawalDay() {
+            const today = new Date();
+            if (today.getDay() === 0) { // Sunday
+                const withdrawBtn = document.querySelector('.withdraw-btn');
+                if (withdrawBtn) {
+                    withdrawBtn.disabled = false;
+                    withdrawBtn.textContent = 'Withdraw Funds';
+                }
+            }
+        }
+
+        // Sign Up Form
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
                 return;
             }
             
-            document.getElementById('authForms').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('referralDashboard').style.display = 'block';
+            const email = document.getElementById('email').value;
+            if (users.some(u => u.email === email)) {
+                alert('This email is already registered');
+                return;
+            }
             
-            updateReferralDashboard();
-        }
+            const newUser = {
+                id: 'TW' + Math.floor(1000 + Math.random() * 9000),
+                name: document.getElementById('full-name').value,
+                email: email,
+                phone: document.getElementById('phone').value,
+                password: password,
+                sponsorId: document.getElementById('sponsor-id').value || 'T1381',
+                balance: 0,
+                referralEarnings: 0,
+                tradingProfit: 0,
+                joinDate: new Date().toISOString(),
+                referrals: []
+            };
+            
+            const sponsor = users.find(u => u.id === newUser.sponsorId);
+            if (sponsor) {
+                sponsor.referrals.push(newUser.id);
+                sponsor.referralEarnings += 10;
+            }
+            
+            users.push(newUser);
+            saveData();
+            
+            currentUser = newUser;
+            updateUserDashboard();
+            closeModal();
+            
+            alert(`Account created successfully! Your user ID is ${newUser.id}. This is also your referral ID.`);
+        });
         
-        // Update referral dashboard data
-        function updateReferralDashboard() {
-            if(!currentUser) return;
+        // Login Form
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            const adminData = JSON.parse(localStorage.getItem('adminData'));
-            const userReferrals = adminData.referrals ? adminData.referrals.filter(r => r.referrerId === currentUser.id) : [];
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
             
-            document.getElementById('totalReferrals').textContent = userReferrals.length;
-            document.getElementById('activeReferrals').textContent = userReferrals.filter(r => r.status === 'active').length;
+            if (email === 'admin@tradworld.com' && password === 'admin123') {
+                // For admin panel (not shown in this demo)
+                return;
+            }
             
-            const totalCommission = userReferrals.reduce((sum, r) => sum + r.commission, 0);
-            document.getElementById('totalCommission').textContent = `₹${totalCommission.toFixed(2)}`;
+            const user = users.find(u => u.email === email && u.password === password);
+            if (user) {
+                currentUser = user;
+                updateUserDashboard();
+                closeModal();
+            } else {
+                alert('Invalid email or password');
+            }
+        });
+        
+        // USDT Transfer Form
+        document.getElementById('transfer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Update referral table
-            const tableBody = document.getElementById('referralTableBody');
-            tableBody.innerHTML = '';
+            if (!currentUser) {
+                alert('Please login to transfer funds');
+                openModal('login-modal');
+                return;
+            }
             
-            userReferrals.forEach(ref => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${ref.referredName}</td>
-                    <td>${ref.joinDate}</td>
-                    <td>₹${ref.invested.toFixed(2)}</td>
-                    <td>₹${ref.commission.toFixed(2)}</td>
-                    <td><span class="badge ${ref.status === 'active' ? 'bg-success' : 'bg-secondary'}">${ref.status.charAt(0).toUpperCase() + ref.status.slice(1)}</span></td>
-                `;
-                tableBody.appendChild(row);
+            const recipientId = document.getElementById('recipient-id').value;
+            const amount = parseFloat(document.getElementById('transfer-amount').value);
+            
+            if (amount <= 0) {
+                alert('Amount must be greater than 0');
+                return;
+            }
+            
+            if (currentUser.balance < amount) {
+                alert('Insufficient balance');
+                return;
+            }
+            
+            const recipient = users.find(u => u.id === recipientId);
+            if (!recipient) {
+                alert('Recipient not found');
+                return;
+            }
+            
+            if (confirm(`Transfer $${amount.toFixed(2)} to ${recipientId}?`)) {
+                currentUser.balance -= amount;
+                recipient.balance += amount;
+                
+                saveData();
+                updateUserDashboard();
+                alert('Transfer successful!');
+                this.reset();
+            }
+        });
+
+        // Withdrawal Form
+        document.querySelector('.withdraw-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('Please login to withdraw funds');
+                openModal('login-modal');
+                return;
+            }
+            
+            const amount = parseFloat(document.getElementById('amount').value);
+            const walletAddress = document.getElementById('wallet').value;
+            
+            if (currentUser.balance < amount) {
+                alert('You don\'t have enough balance for this withdrawal');
+                return;
+            }
+            
+            if (amount < 10) {
+                alert('Minimum withdrawal amount is $10');
+                return;
+            }
+            
+            const withdrawal = {
+                id: 'WD' + Math.floor(1000 + Math.random() * 9000),
+                userId: currentUser.id,
+                amount: amount,
+                walletAddress: walletAddress,
+                date: new Date().toISOString(),
+                status: 'pending'
+            };
+            
+            withdrawals.push(withdrawal);
+            saveData();
+            
+            alert('Withdrawal request submitted successfully! It will be processed on Sunday.');
+            this.reset();
+        });
+
+        // Copy Referral Link
+        document.querySelector('.copy-btn')?.addEventListener('click', function() {
+            const referralLink = document.getElementById('referral-link').textContent;
+            navigator.clipboard.writeText(referralLink);
+            alert('Referral link copied to clipboard!');
+        });
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+            checkWithdrawalDay();
+            
+            // Set up modal close buttons
+            document.querySelectorAll('.close').forEach(btn => {
+                btn.addEventListener('click', closeModal);
             });
             
-            // Update referral link with user's ID
-            document.getElementById('referralLink').value = `https://tradworld7.github.io/mony/?ref=${currentUser.id}`;
-            document.getElementById('referralLinkDashboard').value = `https://tradworld7.github.io/mony/?ref=${currentUser.id}`;
-        }
-        
-        // Update balance display
-        function updateBalance() {
-            if(currentUser) {
-                document.getElementById('userBalance').textContent = `₹${currentUser.balance.toFixed(2)}`;
-            }
-        }
-        
-        // Copy referral link
-        function copyReferralLink() {
-            const link = document.getElementById('referralLink');
-            link.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard!', 'success');
-        }
-        
-        // Logout function
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            document.getElementById('authForms').style.display = 'block';
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('referralDashboard').style.display = 'none';
-            showNotification('Logged out successfully', 'success');
-        }
-        
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `alert alert-${type} notification`;
-            notification.style.display = 'block';
+            // Set up sign up button
+            document.querySelector('.signup-btn').addEventListener('click', function() {
+                openModal('signup-modal');
+            });
             
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
+            // Set up login button
+            document.querySelector('.login-btn').addEventListener('click', function() {
+                openModal('login-modal');
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    closeModal();
+                }
+            });
+            
+            // Check for referral parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const refParam = urlParams.get('ref');
+            if (refParam) {
+                document.getElementById('sponsor-id').value = refParam;
+            }
+            
+            // Generate initial candle chart
+            generateCandleChart();
+            
+            // Regenerate chart when window resizes
+            window.addEventListener('resize', function() {
+                generateCandleChart();
+            });
+        });
     </script>
 </body>
 </html>
