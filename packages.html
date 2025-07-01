@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packages - Professional Referral System</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --gray-color: #95a5a6;
+            --white-color: #ffffff;
+            --black-color: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .packages {
+            padding: 60px 0;
+        }
+
+        .packages h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .packages p {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .package-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .package-card {
+            background-color: var(--white-color);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .package-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .package-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .package-card .price {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .package-card .features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .package-card .features li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .package-card .features li:before {
+            content: "✓";
+            color: var(--success-color);
+            position: absolute;
+            left: 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--white-color);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        footer {
+            background-color: var(--dark-color);
+            color: var(--white-color);
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .package-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header .container {
+                flex-direction: column;
+            }
+
+            nav ul {
+                margin-top: 15px;
+            }
+
+            nav ul li {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">ReferralSystem</div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="packages.html">Packages</a></li>
+                    <li><a href="referrals.html">Referrals</a></li>
+                    <li id="auth-links">
+                        <a href="login.html" id="login-link">Login</a>
+                        <a href="signup.html" id="signup-link">Sign Up</a>
+                        <a href="dashboard.html" id="dashboard-link" style="display:none;">Dashboard</a>
+                        <a href="#" id="logout-link" style="display:none;">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="packages">
+            <div class="container">
+                <h2>Investment Packages</h2>
+                <p>Choose a package to start earning through our referral system</p>
+                
+                <div class="package-grid">
+                    <div class="package-card">
+                        <h3>Starter</h3>
+                        <div class="price">$10</div>
+                        <ul class="features">
+                            <li>10% direct referral bonus</li>
+                            <li>2% from top 5 uplines</li>
+                            <li>Eligible for matrix bonuses</li>
+                        </ul>
+                        <button class="btn package-btn" data-amount="10">Select Package</button>
+                    </div>
+                    
+                    <div class="package-card">
+                        <h3>Basic</h3>
+                        <div class="price">$30</div>
+                        <ul class="features">
+                            <li>10% direct referral bonus</li>
+                            <li>2% from top 5 uplines</li>
+                            <li>Eligible for matrix bonuses</li>
+                        </ul>
+                        <button class="btn package-btn" data-amount="30">Select Package</button>
+                    </div>
+                    
+                    <div class="package-card">
+                        <h3>Advanced</h3>
+                        <div class="price">$100</div>
+                        <ul class="features">
+                            <li>10% direct referral bonus</li>
+                            <li>2% from top 5 uplines</li>
+                            <li>Eligible for matrix bonuses</li>
+                        </ul>
+                        <button class="btn package-btn" data-amount="100">Select Package</button>
+                    </div>
+                    
+                    <div class="package-card">
+                        <h3>Premium</h3>
+                        <div class="price">$200</div>
+                        <ul class="features">
+                            <li>10% direct referral bonus</li>
+                            <li>2% from top 5 uplines</li>
+                            <li>Eligible for matrix bonuses</li>
+                        </ul>
+                        <button class="btn package-btn" data-amount="200">Select Package</button>
+                    </div>
+                </div>
+                
+                <div id="payment-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h3>Complete Your Investment</h3>
+                        <p id="package-selected">You have selected the $10 package</p>
+                        <form id="payment-form">
+                            <div class="form-group">
+                                <label for="payment-method">Payment Method</label>
+                                <select id="payment-method" required>
+                                    <option value="">Select payment method</option>
+                                    <option value="btc">Bitcoin</option>
+                                    <option value="eth">Ethereum</option>
+                                    <option value="usdt">USDT</option>
+                                    <option value="bank">Bank Transfer</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-id">Transaction ID/Proof</label>
+                                <input type="text" id="transaction-id" required>
+                            </div>
+                            <button type="submit" class="btn">Submit Payment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Professional Referral System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzHmIimieea8H9KzYFDSqD0lGOCZjxHYw",
+            authDomain: "myapp-ee226.firebaseapp.com",
+            projectId: "myapp-ee226",
+            storageBucket: "myapp-ee226.appspot.com",
+            messagingSenderId: "272405753135",
+            appId: "1:272405753135:web:598ec27c28bcf6b04105da",
+            measurementId: "G-D5KYTMJ5WK",
+            databaseURL: "https://myapp-ee226-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Authentication state observer
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in
+                    document.getElementById('login-link').style.display = 'none';
+                    document.getElementById('signup-link').style.display = 'none';
+                    document.getElementById('dashboard-link').style.display = 'inline-block';
+                    document.getElementById('logout-link').style.display = 'inline-block';
+                } else {
+                    // User is signed out
+                    document.getElementById('login-link').style.display = 'inline-block';
+                    document.getElementById('signup-link').style.display = 'inline-block';
+                    document.getElementById('dashboard-link').style.display = 'none';
+                    document.getElementById('logout-link').style.display = 'none';
+                }
+            });
+
+            // Logout handler
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    auth.signOut()
+                        .then(() => {
+                            window.location.href = 'index.html';
+                        })
+                        .catch((error) => {
+                            alert(error.message);
+                        });
+                });
+            }
+
+            // Package selection
+            const packageButtons = document.querySelectorAll('.package-btn');
+            const modal = document.getElementById('payment-modal');
+            const closeBtn = document.querySelector('.close');
+            const paymentForm = document.getElementById('payment-form');
+
+            packageButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const amount = this.getAttribute('data-amount');
+                    document.getElementById('package-selected').textContent = `You have selected the $${amount} package`;
+                    
+                    // Store selected package in session
+                    sessionStorage.setItem('selectedPackage', amount);
+                    
+                    // Show payment modal
+                    modal.style.display = 'block';
+                });
+            });
+
+            // Close modal when clicking X
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Handle payment form submission
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Please login to purchase a package');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                const amount = sessionStorage.getItem('selectedPackage');
+                const paymentMethod = document.getElementById('payment-method').value;
+                const transactionId = document.getElementById('transaction-id').value;
+                
+                // Save package purchase
+                database.ref('users/' + user.uid + '/package').set({
+                    amount: amount,
+                    purchaseDate: new Date().toISOString(),
+                    status: 'pending'
+                });
+                
+                // Save payment details
+                const paymentRef = database.ref('payments').push();
+                paymentRef.set({
+                    userId: user.uid,
+                    amount: amount,
+                    method: paymentMethod,
+                    transactionId: transactionId,
+                    date: new Date().toISOString(),
+                    status: 'pending'
+                });
+                
+                // Hide modal and show success message
+                modal.style.display = 'none';
+                alert('Package purchase submitted! Your payment is being verified.');
+                
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            });
+        });
+
+        function processReferralBonus(purchaserId, amount) {
+            // Get purchaser data
+            database.ref('users/' + purchaserId).once('value')
+                .then(snapshot => {
+                    const purchaser = snapshot.val();
+                    if (!purchaser || !purchaser.referredBy) return;
+                    
+                    // 1. Give 10% to direct referrer
+                    const directReferralBonus = amount * 0.1;
+                    updateUserBalance(purchaser.referredBy, directReferralBonus, `Direct referral bonus from ${purchaser.name}`);
+                    
+                    // 2. Give 2% to top 5 uplines
+                    const uplineBonus = amount * 0.02;
+                    findUplines(purchaser.referredBy, 5)
+                        .then(uplines => {
+                            uplines.forEach(upline => {
+                                updateUserBalance(upline.uid, uplineBonus, `Upline bonus from ${purchaser.name}`);
+                            });
+                        });
+                    
+                    // 3. Give 10% to admin
+                    const adminBonus = amount * 0.1;
+                    updateAdminBalance(adminBonus, `Admin commission from ${purchaser.name}'s purchase`);
+                    
+                    // 4. Distribute 30% to top 10 uplines (or admin if not enough)
+                    const matrixBonus = amount * 0.3;
+                    distributeMatrixBonus(purchaser.referredBy, matrixBonus);
+                });
+        }
+
+        function findUplines(startId, count) {
+            return new Promise((resolve) => {
+                const uplines = [];
+                let currentId = startId;
+                
+                const findNextUpline = () => {
+                    if (uplines.length >= count || !currentId) {
+                        resolve(uplines);
+                        return;
+                    }
+                    
+                    database.ref('users/' + currentId).once('value')
+                        .then(snapshot => {
+                            const user = snapshot.val();
+                            if (user && user.referredBy) {
+                                uplines.push({
+                                    uid: user.referredBy,
+                                    name: user.name
+                                });
+                                currentId = user.referredBy;
+                                findNextUpline();
+                            } else {
+                                resolve(uplines);
+                            }
+                        });
+                };
+                
+                findNextUpline();
+            });
+        }
+
+        function distributeMatrixBonus(startId, totalAmount) {
+            findUplines(startId, 10)
+                .then(uplines => {
+                    if (uplines.length === 0) {
+                        // No uplines, give all to admin
+                        updateAdminBalance(totalAmount, 'Matrix bonus (no uplines)');
+                    } else {
+                        // Distribute equally among uplines
+                        const individualBonus = totalAmount / uplines.length;
+                        uplines.forEach(upline => {
+                            updateUserBalance(upline.uid, individualBonus, 'Matrix bonus');
+                        });
+                    }
+                });
+        }
+
+        function updateUserBalance(userId, amount, description) {
+            // Get current balance
+            database.ref('users/' + userId + '/balance').transaction(currentBalance => {
+                return (currentBalance || 0) + amount;
+            });
+            
+            // Record transaction
+            const transactionRef = database.ref('transactions').push();
+            transactionRef.set({
+                userId: userId,
+                amount: amount,
+                description: description,
+                date: new Date().toISOString(),
+                type: 'credit'
+            });
+            
+            // Update referral earnings if applicable
+            if (description.includes('referral') || description.includes('bonus')) {
+                database.ref('users/' + userId + '/referralEarnings').transaction(current => {
+                    return (current || 0) + amount;
+                });
+            }
+        }
+
+        function updateAdminBalance(amount, description) {
+            // Find admin user(s)
+            database.ref('users').orderByChild('isAdmin').equalTo(true).once('value')
+                .then(snapshot => {
+                    const admins = snapshot.val() || {};
+                    const adminCount = Object.keys(admins).length;
+                    
+                    if (adminCount > 0) {
+                        // Distribute equally among admins
+                        const individualAmount = amount / adminCount;
+                        
+                        for (const adminId in admins) {
+                            updateUserBalance(adminId, individualAmount, description);
+                        }
+                    }
+                });
+        }
+    </script>
+</body>
+</html>
