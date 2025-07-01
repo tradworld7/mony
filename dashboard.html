@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Professional Referral System</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --gray-color: #95a5a6;
+            --white-color: #ffffff;
+            --black-color: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .dashboard {
+            padding: 60px 0;
+        }
+
+        .dashboard h2 {
+            margin-bottom: 40px;
+            font-size: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stats-card {
+            background-color: var(--white-color);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stats-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .stats-card .amount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .referral-link {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .recent-activity {
+            background-color: var(--white-color);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .recent-activity h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        footer {
+            background-color: var(--dark-color);
+            color: var(--white-color);
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header .container {
+                flex-direction: column;
+            }
+
+            nav ul {
+                margin-top: 15px;
+            }
+
+            nav ul li {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">ReferralSystem</div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="packages.html">Packages</a></li>
+                    <li><a href="referrals.html">Referrals</a></li>
+                    <li id="auth-links">
+                        <a href="login.html" id="login-link" style="display:none;">Login</a>
+                        <a href="signup.html" id="signup-link" style="display:none;">Sign Up</a>
+                        <a href="dashboard.html" id="dashboard-link">Dashboard</a>
+                        <a href="#" id="logout-link">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="dashboard">
+            <div class="container">
+                <h2>User Dashboard</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="stats-card">
+                        <h3>Account Balance</h3>
+                        <div class="amount" id="user-balance">$0.00</div>
+                        <a href="withdraw.html" class="btn">Withdraw</a>
+                    </div>
+                    
+                    <div class="stats-card">
+                        <h3>Referral Earnings</h3>
+                        <div class="amount" id="referral-earnings">$0.00</div>
+                        <a href="referrals.html" class="btn">View Referrals</a>
+                    </div>
+                    
+                    <div class="stats-card">
+                        <h3>Total Withdrawn</h3>
+                        <div class="amount" id="total-withdrawn">$0.00</div>
+                    </div>
+                    
+                    <div class="stats-card">
+                        <h3>Your Referral Link</h3>
+                        <div class="referral-link" id="user-referral-link">Loading...</div>
+                        <button class="btn" id="copy-referral">Copy Link</button>
+                    </div>
+                </div>
+                
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <table id="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Activity will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Professional Referral System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzHmIimieea8H9KzYFDSqD0lGOCZjxHYw",
+            authDomain: "myapp-ee226.firebaseapp.com",
+            projectId: "myapp-ee226",
+            storageBucket: "myapp-ee226.appspot.com",
+            messagingSenderId: "272405753135",
+            appId: "1:272405753135:web:598ec27c28bcf6b04105da",
+            measurementId: "G-D5KYTMJ5WK",
+            databaseURL: "https://myapp-ee226-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Authentication state observer
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadUserData(user.uid);
+                }
+            });
+
+            // Logout handler
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    auth.signOut()
+                        .then(() => {
+                            window.location.href = 'index.html';
+                        })
+                        .catch((error) => {
+                            alert(error.message);
+                        });
+                });
+            }
+
+            // Copy referral link
+            const copyBtn = document.getElementById('copy-referral');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function() {
+                    const referralLink = document.getElementById('user-referral-link').textContent;
+                    navigator.clipboard.writeText(referralLink)
+                        .then(() => {
+                            alert('Referral link copied to clipboard!');
+                        })
+                        .catch(err => {
+                            console.error('Failed to copy: ', err);
+                        });
+                });
+            }
+        });
+
+        function loadUserData(userId) {
+            // Load user data
+            database.ref('users/' + userId).once('value')
+                .then(snapshot => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        // Display user data
+                        document.getElementById('user-balance').textContent = `$${(userData.balance || 0).toFixed(2)}`;
+                        document.getElementById('referral-earnings').textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
+                        
+                        // Generate and display referral link
+                        const referralLink = `${window.location.origin}/signup.html?ref=${userData.referralId}`;
+                        document.getElementById('user-referral-link').textContent = referralLink;
+                        
+                        // Load total withdrawn
+                        loadTotalWithdrawn(userId);
+                        
+                        // Load recent activity
+                        loadRecentActivity(userId);
+                    }
+                });
+        }
+
+        function loadTotalWithdrawn(userId) {
+            database.ref('withdrawals').orderByChild('userId').equalTo(userId).once('value')
+                .then(snapshot => {
+                    const withdrawals = snapshot.val() || {};
+                    let total = 0;
+                    
+                    for (const withdrawalId in withdrawals) {
+                        if (withdrawals[withdrawalId].status === 'completed') {
+                            total += parseFloat(withdrawals[withdrawalId].amount);
+                        }
+                    }
+                    
+                    document.getElementById('total-withdrawn').textContent = `$${total.toFixed(2)}`;
+                });
+        }
+
+        function loadRecentActivity(userId) {
+            database.ref('transactions').orderByChild('userId').equalTo(userId).limitToLast(10).once('value')
+                .then(snapshot => {
+                    const transactions = snapshot.val() || {};
+                    const activityTable = document.getElementById('activity-table').getElementsByTagName('tbody')[0];
+                    activityTable.innerHTML = '';
+                    
+                    // Convert to array and sort by date
+                    const transactionsArray = Object.keys(transactions).map(key => {
+                        return { id: key, ...transactions[key] };
+                    });
+                    
+                    transactionsArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Populate table
+                    transactionsArray.forEach(trans => {
+                        const row = activityTable.insertRow();
+                        
+                        row.innerHTML = `
+                            <td>${new Date(trans.date).toLocaleDateString()}</td>
+                            <td>${trans.description}</td>
+                            <td>$${trans.amount.toFixed(2)}</td>
+                            <td>${trans.type}</td>
+                        `;
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
