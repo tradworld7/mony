@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Same head content as other pages -->
+    <style>
+        .referral-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .referral-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .referral-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Standard header -->
+    
+    <main class="main-content">
+        <div class="referral-container">
+            <h1 class="page-title">Referral Program</h1>
+            
+            <div class="referral-card">
+                <h2 class="section-title">Your Referral Link</h2>
+                <div class="referral-link">
+                    <input type="text" id="referralLinkInput" class="form-control" readonly>
+                    <button class="btn btn-primary" id="copyReferralLink">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                
+                <div class="social-share" style="margin-top: 1.5rem;">
+                    <button class="btn" style="background-color: #25D366; color: white;">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button class="btn" style="background-color: #0088cc; color: white;">
+                        <i class="fab fa-telegram"></i> Telegram
+                    </button>
+                    <button class="btn" style="background-color: #1DA1F2; color: white;">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                </div>
+            </div>
+            
+            <div class="referral-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalReferrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeReferrals">0</div>
+                    <div class="stat-label">Active Referrals</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="referralEarnings">$0.00</div>
+                    <div class="stat-label">Total Earnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="availableEarnings">$0.00</div>
+                    <div class="stat-label">Available for Withdrawal</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Load referral data
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Set referral link
+                document.getElementById('referralLinkInput').value = 
+                    window.location.origin + window.location.pathname.replace('referral.html', '') + 
+                    '?ref=' + user.uid;
+                
+                // Load referral stats
+                db.collection('users').doc(user.uid).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            document.getElementById('totalReferrals').textContent = 
+                                data.totalReferrals || 0;
+                            document.getElementById('activeReferrals').textContent = 
+                                data.activeReferrals || 0;
+                            document.getElementById('referralEarnings').textContent = 
+                                '$' + (data.totalReferralEarnings || 0).toFixed(2);
+                            document.getElementById('availableEarnings').textContent = 
+                                '$' + (data.availableReferralProfit || 0).toFixed(2);
+                        }
+                    });
+                
+                // Copy referral link
+                document.getElementById('copyReferralLink').addEventListener('click', () => {
+                    const input = document.getElementById('referralLinkInput');
+                    input.select();
+                    document.execCommand('copy');
+                    showToast('Referral link copied!', 'success');
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
