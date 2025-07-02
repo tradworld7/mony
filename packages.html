@@ -1,619 +1,105 @@
-:root {
-    --primary-color: #2563eb;
-    --secondary-color: #1e40af;
-    --accent-color: #3b82f6;
-    --dark-color: #1e293b;
-    --light-color: #f8fafc;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --gray-color: #64748b;
-    --light-gray: #e2e8f0;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-body {
-    background-color: #f1f5f9;
-    color: var(--dark-color);
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* Header Styles */
-header {
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.logo-icon {
-    color: var(--primary-color);
-    font-size: 1.8rem;
-}
-
-.logo-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.menu-toggle {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--dark-color);
-    cursor: pointer;
-    display: none;
-}
-
-/* Sidebar Styles */
-.sidebar {
-    width: 280px;
-    background-color: white;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    padding-top: 80px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 999;
-}
-
-.sidebar.open {
-    transform: translateX(0);
-}
-
-.sidebar-menu {
-    list-style: none;
-    padding: 1rem 0;
-}
-
-.sidebar-menu li {
-    margin-bottom: 0.5rem;
-}
-
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    padding: 0.8rem 1.5rem;
-    color: var(--gray-color);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.sidebar-menu a:hover {
-    background-color: var(--light-gray);
-    color: var(--primary-color);
-}
-
-.sidebar-menu i {
-    margin-right: 1rem;
-    font-size: 1.2rem;
-}
-
-.sidebar-menu .active {
-    background-color: var(--light-gray);
-    color: var(--primary-color);
-    border-left: 4px solid var(--primary-color);
-}
-
-/* Main Content Styles */
-.main-content {
-    margin-left: 280px;
-    padding: 6rem 2rem 2rem;
-    transition: margin-left 0.3s ease;
-}
-
-.main-content.full-width {
-    margin-left: 0;
-}
-
-.main-content.auth-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin-left: 0;
-    padding: 2rem;
-}
-
-.page-title {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    color: var(--dark-color);
-}
-
-.section-title {
-    font-size: 1.5rem;
-    margin: 2rem 0 1.5rem;
-    color: var(--dark-color);
-}
-
-/* Dashboard Cards */
-.dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.card-title {
-    font-size: 1rem;
-    color: var(--gray-color);
-    font-weight: 500;
-}
-
-.card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
-
-.card-icon.balance {
-    background-color: var(--primary-color);
-}
-
-.card-icon.trading {
-    background-color: var(--success-color);
-}
-
-.card-icon.referral {
-    background-color: var(--warning-color);
-}
-
-.card-icon.team {
-    background-color: var(--danger-color);
-}
-
-.card-value {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.card-footer {
-    font-size: 0.9rem;
-    color: var(--gray-color);
-}
-
-/* Buttons */
-.btn {
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: var(--secondary-color);
-}
-
-.btn-success {
-    background-color: var(--success-color);
-    color: white;
-}
-
-.btn-success:hover {
-    background-color: #0d9b6c;
-}
-
-.btn-outline {
-    background-color: transparent;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-}
-
-.btn-outline:hover {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.btn-block {
-    display: block;
-    width: 100%;
-}
-
-.text-center {
-    text-align: center;
-}
-
-/* Forms */
-.form-container {
-    max-width: 600px;
-    width: 100%;
-    margin: 0 auto;
-    background-color: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--light-gray);
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.form-text {
-    font-size: 0.8rem;
-    color: var(--gray-color);
-    margin-top: 0.5rem;
-}
-
-/* Tables */
-.table-responsive {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.table th, .table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--light-gray);
-}
-
-.table th {
-    background-color: #f8fafc;
-    font-weight: 600;
-    color: var(--dark-color);
-}
-
-.table tr:last-child td {
-    border-bottom: none;
-}
-
-.badge {
-    display: inline-block;
-    padding: 0.3rem 0.6rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.badge-success {
-    background-color: #d1fae5;
-    color: var(--success-color);
-}
-
-.badge-warning {
-    background-color: #fef3c7;
-    color: var(--warning-color);
-}
-
-.badge-danger {
-    background-color: #fee2e2;
-    color: var(--danger-color);
-}
-
-/* Trading Section */
-.trading-section {
-    background-color: white;
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.trading-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.trading-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-}
-
-.trading-table .profit {
-    color: var(--success-color);
-    font-weight: 500;
-}
-
-.trading-table .loss {
-    color: var(--danger-color);
-    font-weight: 500;
-}
-
-/* Packages Section */
-.packages-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.package-card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.package-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-.package-name {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-}
-
-.package-price {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.package-return {
-    font-size: 1.2rem;
-    color: var(--success-color);
-    margin-bottom: 1.5rem;
-}
-
-.package-features {
-    list-style: none;
-    margin-bottom: 2rem;
-    text-align: left;
-}
-
-.package-features li {
-    padding: 0.5rem 0;
-    border-bottom: 1px dashed var(--light-gray);
-}
-
-.package-features li:last-child {
-    border-bottom: none;
-}
-
-/* Modal Styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1100;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.modal.open {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-content {
-    background-color: white;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 2rem;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--gray-color);
-}
-
-.modal-title {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    color: var(--dark-color);
-}
-
-/* Toast Notifications */
-.toast-container {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1200;
-}
-
-.toast {
-    padding: 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateX(150%);
-    transition: transform 0.3s ease;
-}
-
-.toast.show {
-    transform: translateX(0);
-}
-
-.toast-success {
-    background-color: #d1fae5;
-    color: var(--success-color);
-    border-left: 4px solid var(--success-color);
-}
-
-.toast-error {
-    background-color: #fee2e2;
-    color: var(--danger-color);
-    border-left: 4px solid var(--danger-color);
-}
-
-.toast-warning {
-    background-color: #fef3c7;
-    color: var(--warning-color);
-    border-left: 4px solid var(--warning-color);
-}
-
-.toast-info {
-    background-color: #dbeafe;
-    color: var(--primary-color);
-    border-left: 4px solid var(--primary-color);
-}
-
-.toast-icon {
-    margin-right: 0.8rem;
-    font-size: 1.2rem;
-}
-
-.toast-close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-}
-
-/* Responsive Styles */
-@media (max-width: 992px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-
-    .main-content {
-        margin-left: 0;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-    
-    .auth-buttons {
-        display: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .dashboard-cards {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .main-content {
-        padding: 6rem 1rem 1rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .dashboard-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .packages-grid {
-        grid-template-columns: 1fr;
-    }
-
-    header {
-        padding: 1rem;
-    }
-
-    .logo-text {
-        font-size: 1.2rem;
-    }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Packages | Trade World</title>
+    <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+    <!-- Header and Sidebar same as before -->
+
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">Investment Packages</h1>
+        
+        <div class="packages-grid">
+            <!-- Package 1 -->
+            <div class="package-card">
+                <h3 class="package-name">Starter Package</h3>
+                <div class="package-price">$10</div>
+                <div class="package-return">Returns $20</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle"></i> 2% to upper levels</li>
+                </ul>
+                <button class="btn btn-primary" data-package="10" id="package10">Buy Now</button>
+            </div>
+            
+            <!-- Other packages same structure -->
+        </div>
+
+        <!-- Package Purchase Modal -->
+        <div class="modal" id="packageModal">
+            <div class="modal-content">
+                <button class="modal-close" id="closePackageModal">&times;</button>
+                <h2 class="modal-title">Confirm Package Purchase</h2>
+                
+                <div class="form-group">
+                    <p>You are about to purchase the <span id="packageName">Starter</span> package for $<span id="packagePrice">10</span></p>
+                    <p>Your current balance: $<span id="modalBalance">0.00</span></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Enter your password to confirm</label>
+                    <input type="password" class="form-control" id="confirmPassword">
+                </div>
+                
+                <button class="btn btn-primary" id="confirmPurchase">Confirm Purchase</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Same scripts as before plus package handling -->
+    <script>
+        // Package purchase handling
+        document.querySelectorAll('[data-package]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                const packageAmount = this.getAttribute('data-package');
+                const packageName = this.closest('.package-card').querySelector('.package-name').textContent;
+                
+                // Show confirmation modal
+                document.getElementById('packageName').textContent = packageName;
+                document.getElementById('packagePrice').textContent = packageAmount;
+                document.getElementById('modalBalance').textContent = userData.balance || '0.00';
+                document.getElementById('packageModal').classList.add('open');
+                
+                // Store package amount in modal
+                document.getElementById('confirmPurchase').setAttribute('data-package', packageAmount);
+            });
+        });
+
+        // Confirm purchase
+        document.getElementById('confirmPurchase').addEventListener('click', function() {
+            const packageAmount = parseFloat(this.getAttribute('data-package'));
+            const password = document.getElementById('confirmPassword').value;
+            
+            if (!password) {
+                showToast('Please enter your password', 'error');
+                return;
+            }
+            
+            // Reauthenticate user
+            const credential = firebase.auth.EmailAuthProvider.credential(
+                currentUser.email, 
+                password
+            );
+            
+            currentUser.reauthenticateWithCredential(credential)
+                .then(() => {
+                    // Proceed with package purchase
+                    purchasePackage(packageAmount);
+                    document.getElementById('packageModal').classList.remove('open');
+                })
+                .catch(error => {
+                    showToast('Authentication failed: ' + error.message, 'error');
+                });
+        });
+    </script>
+</body>
+</html>
