@@ -3,506 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade World - Financial Trading Platform</title>
+    <title>Trade World - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* All your existing CSS */
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --accent-color: #3b82f6;
-            --dark-color: #1e293b;
-            --light-color: #f8fafc;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --gray-color: #64748b;
-            --light-gray: #e2e8f0;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f1f5f9;
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-
-        /* Header Styles */
-        header {
-            background-color: white;
-            box-shadow: var(--box-shadow);
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo-icon {
-            color: var(--primary-color);
-            font-size: 1.5rem;
-        }
-
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--dark-color);
-            cursor: pointer;
-            display: none;
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            padding: 90px 20px 20px;
-            min-height: 100vh;
-        }
-
-        .page-title {
-            font-size: 1.75rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
-        }
-
-        /* Dashboard Cards */
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 1.5rem;
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1rem;
-            color: var(--gray-color);
-            font-weight: 500;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        .card-icon.balance {
-            background-color: var(--primary-color);
-        }
-
-        .card-icon.trading {
-            background-color: var(--success-color);
-        }
-
-        .card-icon.referral {
-            background-color: var(--warning-color);
-        }
-
-        .card-icon.team {
-            background-color: var(--danger-color);
-        }
-
-        .card-value {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-footer {
-            font-size: 0.875rem;
-            color: var(--gray-color);
-        }
-
-        /* Investment Packages */
-        .packages-section {
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
-        }
-
-        .packages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .package-card {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 1.5rem;
-            text-align: center;
-            transition: var(--transition);
-            border: 2px solid transparent;
-        }
-
-        .package-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-color);
-        }
-
-        .package-card.recommended {
-            border-color: var(--primary-color);
-            position: relative;
-        }
-
-        .recommended-badge {
-            position: absolute;
-            top: -10px;
-            right: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .package-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .package-price {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .package-features {
-            list-style: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .package-features li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .package-features li:last-child {
-            border-bottom: none;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-
-        /* Trading Section */
-        .trading-section {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .trading-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .trading-table th, .trading-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .trading-table th {
-            font-weight: 600;
-            color: var(--gray-color);
-        }
-
-        .profit {
-            color: var(--success-color);
-            font-weight: 600;
-        }
-
-        .loss {
-            color: var(--danger-color);
-            font-weight: 600;
-        }
-
-        /* Responsive Styles */
-        @media (max-width: 992px) {
-            .menu-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 40px;
-                height: 40px;
-                font-size: 1.5rem;
-                color: var(--primary-color);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .packages-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
     <header>
         <div class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="logo-text">Trade World</div>
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="signup.html" class="btn btn-primary">Sign Up</a>
         </div>
         <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-ellipsis-v"></i>
+            <i class="fas fa-bars"></i>
         </button>
     </header>
 
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
+
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" id="mainContent">
         <h1 class="page-title">Dashboard</h1>
         
-        <!-- Dashboard Cards -->
         <div class="dashboard-cards">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">My Balance</h3>
+                    <span class="card-title">My Balance</span>
                     <div class="card-icon balance">
                         <i class="fas fa-wallet"></i>
                     </div>
                 </div>
-                <div class="card-value" id="balance-value">$0.00</div>
-                <div class="card-footer">Available for withdrawal and investment</div>
+                <div class="card-value" id="userBalance">$0.00</div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" id="depositBtn">Deposit</button>
+                    <button class="btn btn-outline" id="withdrawBtn">Withdraw</button>
+                </div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Trading Profit</h3>
+                    <span class="card-title">Trading Profit</span>
                     <div class="card-icon trading">
                         <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
-                <div class="card-value" id="trading-profit-value">$0.00</div>
-                <div class="card-footer">Total profit from trading activities</div>
+                <div class="card-value" id="tradingProfit">$0.00</div>
+                <div class="card-footer">Total profit from your investments</div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Direct Referrals</h3>
+                    <span class="card-title">Direct Referrals</span>
                     <div class="card-icon referral">
                         <i class="fas fa-user-plus"></i>
                     </div>
                 </div>
-                <div class="card-value" id="direct-referrals-value">0</div>
-                <div class="card-footer">Total direct referrals (Level 1)</div>
+                <div class="card-value" id="directReferrals">0</div>
+                <div class="card-value" id="referralProfit" style="font-size: 1.2rem;">Earnings: $0.00</div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Team Earnings</h3>
+                    <span class="card-title">Total Team Earnings</span>
                     <div class="card-icon team">
                         <i class="fas fa-users"></i>
                     </div>
                 </div>
-                <div class="card-value" id="team-earnings-value">$0.00</div>
-                <div class="card-footer">Total earnings from your team</div>
+                <div class="card-value" id="teamEarnings">$0.00</div>
+                <div class="card-footer">From all 5 levels</div>
             </div>
         </div>
         
-        <!-- Deposit Button -->
-        <div class="form-group" style="margin-bottom: 2rem;">
-            <button class="btn btn-primary btn-block" id="deposit-btn">Deposit Funds</button>
-        </div>
+        <!-- Investment Packages Section -->
+        <h2 class="section-title">Investment Packages</h2>
         
-        <!-- Investment Packages -->
-        <div class="packages-section">
-            <h2 class="section-title">Investment Packages</h2>
-            <div class="packages-grid">
-                <div class="package-card">
-                    <h3 class="package-name">Starter Package</h3>
-                    <div class="package-price">$10</div>
-                    <ul class="package-features">
-                        <li>Returns: $20</li>
-                        <li>Duration: 7 days</li>
-                        <li>Daily profit: 14.28%</li>
-                    </ul>
-                    <button class="btn btn-primary btn-block buy-package" data-amount="10">Buy Now</button>
-                </div>
-                
-                <div class="package-card recommended">
-                    <div class="recommended-badge">Recommended</div>
-                    <h3 class="package-name">Standard Package</h3>
-                    <div class="package-price">$30</div>
-                    <ul class="package-features">
-                        <li>Returns: $60</li>
-                        <li>Duration: 14 days</li>
-                        <li>Daily profit: 14.28%</li>
-                    </ul>
-                    <button class="btn btn-primary btn-block buy-package" data-amount="30">Buy Now</button>
-                </div>
-                
-                <div class="package-card">
-                    <h3 class="package-name">Premium Package</h3>
-                    <div class="package-price">$100</div>
-                    <ul class="package-features">
-                        <li>Returns: $200</li>
-                        <li>Duration: 21 days</li>
-                        <li>Daily profit: 14.28%</li>
-                    </ul>
-                    <button class="btn btn-primary btn-block buy-package" data-amount="100">Buy Now</button>
-                </div>
+        <div class="packages-grid">
+            <div class="package-card">
+                <h3 class="package-name">Starter Package</h3>
+                <div class="package-price">$10</div>
+                <div class="package-return">Returns $20</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% to each upper level (2-5)</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 70% distributed to active users</li>
+                </ul>
+                <button class="btn btn-primary" data-package="10">Buy Now</button>
+            </div>
+            
+            <div class="package-card">
+                <h3 class="package-name">Standard Package</h3>
+                <div class="package-price">$30</div>
+                <div class="package-return">Returns $60</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% to each upper level (2-5)</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 70% distributed to active users</li>
+                </ul>
+                <button class="btn btn-primary" data-package="30">Buy Now</button>
+            </div>
+            
+            <div class="package-card">
+                <h3 class="package-name">Premium Package</h3>
+                <div class="package-price">$100</div>
+                <div class="package-return">Returns $200</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% to each upper level (2-5)</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 70% distributed to active users</li>
+                </ul>
+                <button class="btn btn-primary" data-package="100">Buy Now</button>
             </div>
         </div>
         
-        <!-- Trading Activity -->
+        <!-- Trading Simulation Section -->
         <div class="trading-section">
-            <h2 class="section-title">Live Trading Activity</h2>
-            <table class="trading-table">
-                <thead>
-                    <tr>
-                        <th>Asset</th>
-                        <th>Investment</th>
-                        <th>Current Value</th>
-                        <th>Profit/Loss</th>
-                        <th>% Change</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><i class="fab fa-bitcoin"></i> Bitcoin</td>
-                        <td>$5,000</td>
-                        <td>$5,750</td>
-                        <td class="profit">+$750</td>
-                        <td class="profit">+15%</td>
-                    </tr>
-                    <tr>
-                        <td><i class="fab fa-ethereum"></i> Ethereum</td>
-                        <td>$3,000</td>
-                        <td>$3,450</td>
-                        <td class="profit">+$450</td>
-                        <td class="profit">+15%</td>
-                    </tr>
-                    <tr>
-                        <td><i class="fas fa-coins"></i> USDT</td>
-                        <td>$10,000</td>
-                        <td>$10,500</td>
-                        <td class="profit">+$500</td>
-                        <td class="profit">+5%</td>
-                    </tr>
-                    <tr>
-                        <td><i class="fab fa-solana"></i> Solana</td>
-                        <td>$2,000</td>
-                        <td>$2,300</td>
-                        <td class="profit">+$300</td>
-                        <td class="profit">+15%</td>
-                    </tr>
-                    <tr>
-                        <td><i class="fab fa-xrp"></i> XRP</td>
-                        <td>$1,500</td>
-                        <td>$1,350</td>
-                        <td class="loss">-$150</td>
-                        <td class="loss">-10%</td>
-                    </tr>
-                    <tr>
-                        <td><i class="fab fa-ada"></i> Cardano</td>
-                        <td>$1,000</td>
-                        <td>$1,100</td>
-                        <td class="profit">+$100</td>
-                        <td class="profit">+10%</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="trading-header">
+                <h2 class="trading-title">Live Trading Activity</h2>
+                <span>Updated: <span id="lastUpdated">Just now</span></span>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table trading-table">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Investment</th>
+                            <th>Current Value</th>
+                            <th>Profit/Loss</th>
+                            <th>24h Change</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradingData">
+                        <!-- Trading data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
-    <script>
-        // Mobile menu functionality
-        const menuToggle = document.getElementById('menuToggle');
-        
-        menuToggle.addEventListener('click', () => {
-            // Redirect to the sidebar menu page
-            window.location.href = 'sidebar-menu.html';
-        });
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeDepositModal">&times;</button>
+            <h2 class="modal-title">Deposit Funds</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Amount (USD)</label>
+                <input type="number" class="form-control" id="depositAmount" min="10" max="500" placeholder="Enter amount between $10 and $500">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">USDT BEP20 Address</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" class="form-control" id="depositAddress" value="0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886" readonly>
+                    <button class="btn btn-primary" id="copyDepositAddress">Copy</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Transaction Hash</label>
+                <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash after payment">
+                <small class="form-text">Please make sure to send the exact amount you entered above</small>
+            </div>
+            
+            <div class="form-group">
+                <div class="card" style="padding: 1rem; margin-top: 0.5rem;">
+                    <h4 style="margin-bottom: 0.5rem;">Deposit Instructions:</h4>
+                    <ol style="padding-left: 1.2rem;">
+                        <li>Enter the amount you want to deposit (minimum $10, maximum $500)</li>
+                        <li>Send the exact amount in USDT (BEP20) to the address above</li>
+                        <li>After transaction is complete, paste the transaction hash in the field above</li>
+                        <li>Click "Submit Deposit" to verify your transaction</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="submitDeposit">Submit Deposit</button>
+        </div>
+    </div>
 
-        // Other JavaScript functionality can be added here
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/database.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize the dashboard page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check auth state
+            checkAuthState();
+            
+            // Generate trading data
+            generateTradingData();
+            
+            // Set up event listeners
+            setupDashboardEventListeners();
+            
+            // Load user data if logged in
+            if (currentUser) {
+                loadUserData(currentUser.uid);
+            }
+        });
+        
+        function setupDashboardEventListeners() {
+            // Deposit modal
+            document.getElementById('depositBtn').addEventListener('click', () => {
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                document.getElementById('depositModal').classList.add('open');
+            });
+            
+            document.getElementById('closeDepositModal').addEventListener('click', () => {
+                document.getElementById('depositModal').classList.remove('open');
+            });
+            
+            // Withdraw button
+            document.getElementById('withdrawBtn').addEventListener('click', () => {
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                window.location.href = 'withdrawal.html';
+            });
+            
+            // Copy deposit address
+            document.getElementById('copyDepositAddress').addEventListener('click', () => {
+                document.getElementById('depositAddress').select();
+                document.execCommand('copy');
+                showToast('Address copied to clipboard!', 'success');
+            });
+            
+            // Submit deposit
+            document.getElementById('submitDeposit').addEventListener('click', submitDepositRequest);
+            
+            // Package purchase buttons
+            document.querySelectorAll('[data-package]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!currentUser) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    const packageAmount = btn.getAttribute('data-package');
+                    purchasePackage(packageAmount);
+                });
+            });
+            
+            // Logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+        }
     </script>
 </body>
 </html>
