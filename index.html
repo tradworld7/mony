@@ -3,20 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Referral System</title>
+    <title>Trade World - Financial Trading Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* All your existing CSS */
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2980b9;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --gray-color: #95a5a6;
-            --white-color: #ffffff;
-            --black-color: #000000;
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-color: #64748b;
+            --light-gray: #e2e8f0;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
         }
 
         * {
@@ -26,269 +31,478 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f1f5f9;
             color: var(--dark-color);
-            background-color: var(--light-color);
+            line-height: 1.6;
         }
 
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
+        /* Header Styles */
         header {
-            background-color: var(--white-color);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: sticky;
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            position: fixed;
             top: 0;
-            z-index: 100;
-        }
-
-        header .container {
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        nav ul {
             display: flex;
-            list-style: none;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        nav ul li {
-            margin-left: 20px;
-        }
-
-        nav ul li a {
-            text-decoration: none;
-            color: var(--dark-color);
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        nav ul li a:hover {
+        .logo-icon {
             color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 90px 20px 20px;
+            min-height: 100vh;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--gray-color);
+            font-weight: 500;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-icon.balance {
+            background-color: var(--primary-color);
+        }
+
+        .card-icon.trading {
+            background-color: var(--success-color);
+        }
+
+        .card-icon.referral {
+            background-color: var(--warning-color);
+        }
+
+        .card-icon.team {
+            background-color: var(--danger-color);
+        }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-footer {
+            font-size: 0.875rem;
+            color: var(--gray-color);
+        }
+
+        /* Investment Packages */
+        .packages-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .package-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .package-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .package-card.recommended {
+            border-color: var(--primary-color);
+            position: relative;
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .package-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .package-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .package-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .package-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .package-features li:last-child {
+            border-bottom: none;
         }
 
         .btn {
             display: inline-block;
-            background-color: var(--primary-color);
-            color: var(--white-color);
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.3s;
-            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-align: center;
             cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            text-decoration: none;
         }
 
-        .btn:hover {
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
             background-color: var(--secondary-color);
         }
 
-        .hero {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: var(--white-color);
-            padding: 80px 0;
-            text-align: center;
+        .btn-block {
+            display: block;
+            width: 100%;
         }
 
-        .hero h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+        /* Trading Section */
+        .trading-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+        .trading-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .features {
-            padding: 60px 0;
+        .trading-table th, .trading-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
         }
 
-        .features h2 {
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 2rem;
+        .trading-table th {
+            font-weight: 600;
+            color: var(--gray-color);
         }
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+        .profit {
+            color: var(--success-color);
+            font-weight: 600;
         }
 
-        .feature {
-            background-color: var(--white-color);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
+        .loss {
+            color: var(--danger-color);
+            font-weight: 600;
         }
 
-        .feature h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-
-        footer {
-            background-color: var(--dark-color);
-            color: var(--white-color);
-            padding: 20px 0;
-            text-align: center;
-            margin-top: 60px;
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+                color: var(--primary-color);
+            }
         }
 
         @media (max-width: 768px) {
-            header .container {
-                flex-direction: column;
+            .dashboard-cards {
+                grid-template-columns: 1fr;
             }
 
-            nav ul {
-                margin-top: 15px;
-            }
-
-            nav ul li {
-                margin-left: 10px;
-                margin-right: 10px;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
+            .packages-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <header>
-        <div class="container">
-            <div class="logo">ReferralSystem</div>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="packages.html">Packages</a></li>
-                    <li><a href="referrals.html">Referrals</a></li>
-                    <li id="auth-links">
-                        <a href="login.html" id="login-link">Login</a>
-                        <a href="signup.html" id="signup-link">Sign Up</a>
-                        <a href="dashboard.html" id="dashboard-link" style="display:none;">Dashboard</a>
-                        <a href="#" id="logout-link" style="display:none;">Logout</a>
-                    </li>
-                </ul>
-            </nav>
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="logo-text">Trade World</div>
         </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>Earn With Our Referral System</h1>
-                <p>Join now and start earning through our multi-level commission structure</p>
-                <a href="signup.html" class="btn">Get Started</a>
-            </div>
-        </section>
-
-        <section class="features">
-            <div class="container">
-                <h2>How It Works</h2>
-                <div class="feature-grid">
-                    <div class="feature">
-                        <h3>1. Sign Up</h3>
-                        <p>Create your account with or without a referral link</p>
-                    </div>
-                    <div class="feature">
-                        <h3>2. Choose Package</h3>
-                        <p>Select from $10, $30, $100, or $200 packages</p>
-                    </div>
-                    <div class="feature">
-                        <h3>3. Refer Friends</h3>
-                        <p>Share your referral link and earn commissions</p>
-                    </div>
-                    <div class="feature">
-                        <h3>4. Earn Money</h3>
-                        <p>Get paid through our multi-level commission system</p>
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Dashboard</h1>
+        
+        <!-- Dashboard Cards -->
+        <div class="dashboard-cards">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">My Balance</h3>
+                    <div class="card-icon balance">
+                        <i class="fas fa-wallet"></i>
                     </div>
                 </div>
+                <div class="card-value" id="balance-value">$0.00</div>
+                <div class="card-footer">Available for withdrawal and investment</div>
             </div>
-        </section>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Trading Profit</h3>
+                    <div class="card-icon trading">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="trading-profit-value">$0.00</div>
+                <div class="card-footer">Total profit from trading activities</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Direct Referrals</h3>
+                    <div class="card-icon referral">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="direct-referrals-value">0</div>
+                <div class="card-footer">Total direct referrals (Level 1)</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Team Earnings</h3>
+                    <div class="card-icon team">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="team-earnings-value">$0.00</div>
+                <div class="card-footer">Total earnings from your team</div>
+            </div>
+        </div>
+        
+        <!-- Deposit Button -->
+        <div class="form-group" style="margin-bottom: 2rem;">
+            <button class="btn btn-primary btn-block" id="deposit-btn">Deposit Funds</button>
+        </div>
+        
+        <!-- Investment Packages -->
+        <div class="packages-section">
+            <h2 class="section-title">Investment Packages</h2>
+            <div class="packages-grid">
+                <div class="package-card">
+                    <h3 class="package-name">Starter Package</h3>
+                    <div class="package-price">$10</div>
+                    <ul class="package-features">
+                        <li>Returns: $20</li>
+                        <li>Duration: 7 days</li>
+                        <li>Daily profit: 14.28%</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block buy-package" data-amount="10">Buy Now</button>
+                </div>
+                
+                <div class="package-card recommended">
+                    <div class="recommended-badge">Recommended</div>
+                    <h3 class="package-name">Standard Package</h3>
+                    <div class="package-price">$30</div>
+                    <ul class="package-features">
+                        <li>Returns: $60</li>
+                        <li>Duration: 14 days</li>
+                        <li>Daily profit: 14.28%</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block buy-package" data-amount="30">Buy Now</button>
+                </div>
+                
+                <div class="package-card">
+                    <h3 class="package-name">Premium Package</h3>
+                    <div class="package-price">$100</div>
+                    <ul class="package-features">
+                        <li>Returns: $200</li>
+                        <li>Duration: 21 days</li>
+                        <li>Daily profit: 14.28%</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block buy-package" data-amount="100">Buy Now</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trading Activity -->
+        <div class="trading-section">
+            <h2 class="section-title">Live Trading Activity</h2>
+            <table class="trading-table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Investment</th>
+                        <th>Current Value</th>
+                        <th>Profit/Loss</th>
+                        <th>% Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="fab fa-bitcoin"></i> Bitcoin</td>
+                        <td>$5,000</td>
+                        <td>$5,750</td>
+                        <td class="profit">+$750</td>
+                        <td class="profit">+15%</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fab fa-ethereum"></i> Ethereum</td>
+                        <td>$3,000</td>
+                        <td>$3,450</td>
+                        <td class="profit">+$450</td>
+                        <td class="profit">+15%</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-coins"></i> USDT</td>
+                        <td>$10,000</td>
+                        <td>$10,500</td>
+                        <td class="profit">+$500</td>
+                        <td class="profit">+5%</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fab fa-solana"></i> Solana</td>
+                        <td>$2,000</td>
+                        <td>$2,300</td>
+                        <td class="profit">+$300</td>
+                        <td class="profit">+15%</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fab fa-xrp"></i> XRP</td>
+                        <td>$1,500</td>
+                        <td>$1,350</td>
+                        <td class="loss">-$150</td>
+                        <td class="loss">-10%</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fab fa-ada"></i> Cardano</td>
+                        <td>$1,000</td>
+                        <td>$1,100</td>
+                        <td class="profit">+$100</td>
+                        <td class="profit">+10%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2023 Professional Referral System. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCzHmIimieea8H9KzYFDSqD0lGOCZjxHYw",
-            authDomain: "myapp-ee226.firebaseapp.com",
-            projectId: "myapp-ee226",
-            storageBucket: "myapp-ee226.appspot.com",
-            messagingSenderId: "272405753135",
-            appId: "1:272405753135:web:598ec27c28bcf6b04105da",
-            measurementId: "G-D5KYTMJ5WK",
-            databaseURL: "https://myapp-ee226-default-rtdb.asia-southeast1.firebasedatabase.app/"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-
-        // Authentication state observer
-        document.addEventListener('DOMContentLoaded', function() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    // User is signed in
-                    document.getElementById('login-link').style.display = 'none';
-                    document.getElementById('signup-link').style.display = 'none';
-                    document.getElementById('dashboard-link').style.display = 'inline-block';
-                    document.getElementById('logout-link').style.display = 'inline-block';
-                } else {
-                    // User is signed out
-                    document.getElementById('login-link').style.display = 'inline-block';
-                    document.getElementById('signup-link').style.display = 'inline-block';
-                    document.getElementById('dashboard-link').style.display = 'none';
-                    document.getElementById('logout-link').style.display = 'none';
-                }
-            });
-
-            // Logout handler
-            const logoutLink = document.getElementById('logout-link');
-            if (logoutLink) {
-                logoutLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    auth.signOut()
-                        .then(() => {
-                            window.location.href = 'index.html';
-                        })
-                        .catch((error) => {
-                            alert(error.message);
-                        });
-                });
-            }
+        // Mobile menu functionality
+        const menuToggle = document.getElementById('menuToggle');
+        
+        menuToggle.addEventListener('click', () => {
+            // Redirect to the sidebar menu page
+            window.location.href = 'sidebar-menu.html';
         });
+
+        // Other JavaScript functionality can be added here
     </script>
 </body>
 </html>
