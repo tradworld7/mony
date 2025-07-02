@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade World - Team Structure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="team-structure.html" class="active"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">Team Structure</h1>
+        
+        <div class="dashboard-cards">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Level 1 (Direct)</span>
+                    <div class="card-icon" style="background-color: var(--primary-color);">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="level1Count">0</div>
+                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level1Earnings">$0.00</span></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Level 2</span>
+                    <div class="card-icon" style="background-color: var(--success-color);">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="level2Count">0</div>
+                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level2Earnings">$0.00</span></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Level 3</span>
+                    <div class="card-icon" style="background-color: var(--warning-color);">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="level3Count">0</div>
+                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level3Earnings">$0.00</span></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Level 4</span>
+                    <div class="card-icon" style="background-color: var(--danger-color);">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="level4Count">0</div>
+                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level4Earnings">$0.00</span></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Level 5</span>
+                    <div class="card-icon" style="background-color: var(--gray-color);">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="level5Count">0</div>
+                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level5Earnings">$0.00</span></div>
+            </div>
+        </div>
+        
+        <h2 class="page-title" style="margin-top: 2rem;">Team Members</h2>
+        
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Join Date</th>
+                        <th>Total Investment</th>
+                        <th>Your Earnings</th>
+                    </tr>
+                </thead>
+                <tbody id="teamMembersList">
+                    <!-- Team members will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/database.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize the team structure page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check auth state
+            checkAuthState();
+            
+            // Load user data if logged in
+            if (currentUser) {
+                loadUserData(currentUser.uid);
+            } else {
+                window.location.href = 'login.html';
+            }
+            
+            // Set up logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+        });
+    </script>
+</body>
+</html>

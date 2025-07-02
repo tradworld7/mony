@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade World - Referral Program</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="referral.html" class="active"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">Referral Program</h1>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">Your Referral Link</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" class="form-control" id="referralLink" readonly>
+                    <button class="btn btn-primary" id="copyReferralLink">Copy</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Share Via</label>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn" style="background-color: #25D366; color: white;"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                    <button class="btn" style="background-color: #0088cc; color: white;"><i class="fab fa-telegram"></i> Telegram</button>
+                    <button class="btn" style="background-color: #1DA1F2; color: white;"><i class="fab fa-twitter"></i> Twitter</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <h3 style="margin-top: 1.5rem; margin-bottom: 1rem;">Referral Commission Structure</h3>
+                <ul style="list-style-type: none;">
+                    <li><strong>Level 1 (Direct Referrals):</strong> 10% commission</li>
+                    <li><strong>Level 2:</strong> 2% commission</li>
+                    <li><strong>Level 3:</strong> 2% commission</li>
+                    <li><strong>Level 4:</strong> 2% commission</li>
+                    <li><strong>Level 5:</strong> 2% commission</li>
+                </ul>
+            </div>
+        </div>
+        
+        <h2 class="page-title" style="margin-top: 2rem;">Your Referrals</h2>
+        
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Join Date</th>
+                        <th>Status</th>
+                        <th>Total Investment</th>
+                        <th>Your Earnings</th>
+                    </tr>
+                </thead>
+                <tbody id="referralList">
+                    <!-- Referral list will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/database.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize the referral page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check auth state
+            checkAuthState();
+            
+            // Load user data if logged in
+            if (currentUser) {
+                loadUserData(currentUser.uid);
+                updateReferralLink();
+            } else {
+                window.location.href = 'login.html';
+            }
+            
+            // Set up copy referral link
+            document.getElementById('copyReferralLink').addEventListener('click', copyReferralLinkToClipboard);
+            
+            // Set up logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+            
+            function updateReferralLink() {
+                document.getElementById('referralLink').value = `https://tradworld7.github.io/mony/?ref=${currentUser.uid}`;
+            }
+            
+            function copyReferralLinkToClipboard() {
+                document.getElementById('referralLink').select();
+                document.execCommand('copy');
+                showToast('Referral link copied to clipboard!', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
