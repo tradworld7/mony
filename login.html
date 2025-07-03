@@ -29,21 +29,28 @@
         <div class="form-container">
             <h1 class="page-title">Login to Your Account</h1>
             
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password">
-            </div>
-            
-            <button class="btn btn-primary btn-block" id="loginBtn">Login</button>
-            
-            <div class="form-group text-center" style="margin-top: 1.5rem;">
-                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
-            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                    <span id="loginText">Login</span>
+                    <span id="loginSpinner" class="spinner" style="display:none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div class="form-group text-center" style="margin-top: 1.5rem;">
+                    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+                </div>
+            </form>
         </div>
     </main>
 
@@ -54,15 +61,88 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // Firebase configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Show toast notification
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${isError ? 'error' : 'success'}`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Login function
+        function loginUser(email, password) {
+            document.getElementById('loginText').style.display = 'none';
+            document.getElementById('loginSpinner').style.display = 'inline-block';
+            document.getElementById('loginBtn').disabled = true;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Successful login
+                    window.location.href = 'dashboard.html'; // Redirect to dashboard
+                })
+                .catch((error) => {
+                    // Handle errors
+                    document.getElementById('loginText').style.display = 'inline-block';
+                    document.getElementById('loginSpinner').style.display = 'none';
+                    document.getElementById('loginBtn').disabled = false;
+                    
+                    let errorMessage = "Login failed. Please try again.";
+                    switch(error.code) {
+                        case 'auth/user-not-found':
+                            errorMessage = "No user found with this email.";
+                            break;
+                        case 'auth/wrong-password':
+                            errorMessage = "Incorrect password.";
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage = "Invalid email format.";
+                            break;
+                    }
+                    showToast(errorMessage, true);
+                });
+        }
+
+        // Form submission handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                loginUser(email, password);
+            });
+
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = 'dashboard.html';
+                }
+            });
+        });
+    </script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/database.js"></script>
     <script src="assets/js/main.js"></script>
-    <script>
-        // Initialize the login page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up login button
-            document.getElementById('loginBtn').addEventListener('click', loginUser);
-        });
-    </script>
 </body>
 </html>
