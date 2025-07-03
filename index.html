@@ -21,6 +21,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Additional CSS for sidebar visibility */
+        @media (min-width: 768px) {
+            .sidebar {
+                display: block !important;
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -45,7 +56,7 @@
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
             <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
@@ -67,7 +78,6 @@
                 <div class="card-value" id="userBalance">$0.00</div>
                 <div class="card-footer">
                     <button class="btn btn-primary" id="depositBtn">Deposit</button>
-                    <button class="btn btn-outline" id="withdrawBtn">Withdraw</button>
                 </div>
             </div>
             
@@ -102,6 +112,9 @@
                 </div>
                 <div class="card-value" id="teamEarnings">$0.00</div>
                 <div class="card-footer">From all 5 levels</div>
+                <div class="card-footer">
+                    <button class="btn btn-outline" id="transferFundsBtn">Transfer Funds</button>
+                </div>
             </div>
         </div>
         
@@ -149,10 +162,10 @@
             </div>
         </div>
         
-        <!-- Trading Simulation Section -->
+        <!-- Transaction History Section -->
         <div class="trading-section">
             <div class="trading-header">
-                <h2 class="trading-title">Live Trading Activity</h2>
+                <h2 class="trading-title">Transaction History</h2>
                 <span>Updated: <span id="lastUpdated">Just now</span></span>
             </div>
             
@@ -160,15 +173,18 @@
                 <table class="table trading-table">
                     <thead>
                         <tr>
-                            <th>Asset</th>
-                            <th>Investment</th>
-                            <th>Current Value</th>
-                            <th>Profit/Loss</th>
-                            <th>24h Change</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
-                    <tbody id="tradingData">
-                        <!-- Trading data will be populated by JavaScript -->
+                    <tbody id="transactionHistory">
+                        <!-- Transaction data will be populated by JavaScript -->
+                        <tr>
+                            <td colspan="5" class="text-center">No transactions yet</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -216,6 +232,31 @@
         </div>
     </div>
 
+    <!-- Transfer Funds Modal -->
+    <div class="modal" id="transferModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeTransferModal">&times;</button>
+            <h2 class="modal-title">Transfer Funds</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Recipient User ID</label>
+                <input type="text" class="form-control" id="recipientId" placeholder="Enter recipient's user ID">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Amount (USD)</label>
+                <input type="number" class="form-control" id="transferAmount" min="1" placeholder="Enter amount to transfer">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Your Current Balance</label>
+                <input type="text" class="form-control" id="currentBalance" value="$0.00" readonly>
+            </div>
+            
+            <button class="btn btn-primary" id="submitTransfer">Transfer Funds</button>
+        </div>
+    </div>
+
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -232,8 +273,8 @@
             // Check auth state
             checkAuthState();
             
-            // Generate trading data
-            generateTradingData();
+            // Load transaction history
+            loadTransactionHistory();
             
             // Set up event listeners
             setupDashboardEventListeners();
@@ -258,14 +299,22 @@
                 document.getElementById('depositModal').classList.remove('open');
             });
             
-            // Withdraw button
-            document.getElementById('withdrawBtn').addEventListener('click', () => {
+            // Transfer funds modal
+            document.getElementById('transferFundsBtn').addEventListener('click', () => {
                 if (!currentUser) {
                     window.location.href = 'login.html';
                     return;
                 }
-                window.location.href = 'withdrawal.html';
+                document.getElementById('currentBalance').value = document.getElementById('userBalance').textContent;
+                document.getElementById('transferModal').classList.add('open');
             });
+            
+            document.getElementById('closeTransferModal').addEventListener('click', () => {
+                document.getElementById('transferModal').classList.remove('open');
+            });
+            
+            // Submit transfer
+            document.getElementById('submitTransfer').addEventListener('click', transferFunds);
             
             // Copy deposit address
             document.getElementById('copyDepositAddress').addEventListener('click', () => {
@@ -284,7 +333,15 @@
                         window.location.href = 'login.html';
                         return;
                     }
-                    const packageAmount = btn.getAttribute('data-package');
+                    
+                    const userBalance = parseFloat(document.getElementById('userBalance').textContent.replace('$', ''));
+                    const packageAmount = parseFloat(btn.getAttribute('data-package'));
+                    
+                    if (userBalance < packageAmount) {
+                        showToast('Insufficient balance to purchase this package', 'error');
+                        return;
+                    }
+                    
                     purchasePackage(packageAmount);
                 });
             });
@@ -294,6 +351,101 @@
                 e.preventDefault();
                 logoutUser();
             });
+            
+            // Menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+        }
+        
+        function loadTransactionHistory() {
+            if (!currentUser) return;
+            
+            // In a real app, you would fetch this from Firebase
+            const transactions = [
+                // Sample data - replace with actual data from database
+                /* {
+                    date: '2023-07-03 14:30',
+                    type: 'Deposit',
+                    amount: '$50.00',
+                    status: 'Completed',
+                    details: 'USDT Deposit'
+                } */
+            ];
+            
+            const tbody = document.getElementById('transactionHistory');
+            tbody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
+                return;
+            }
+            
+            transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tx.date}</td>
+                    <td>${tx.type}</td>
+                    <td>${tx.amount}</td>
+                    <td>${tx.status}</td>
+                    <td>${tx.details}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function transferFunds() {
+            const recipientId = document.getElementById('recipientId').value.trim();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const balance = parseFloat(document.getElementById('userBalance').textContent.replace('$', ''));
+            
+            if (!recipientId) {
+                showToast('Please enter recipient ID', 'error');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            if (amount > balance) {
+                showToast('Insufficient balance', 'error');
+                return;
+            }
+            
+            // In a real app, you would:
+            // 1. Verify recipient exists
+            // 2. Update both users' balances in database
+            // 3. Record the transaction
+            
+            showToast(`Successfully transferred $${amount} to user ${recipientId}`, 'success');
+            document.getElementById('transferModal').classList.remove('open');
+            
+            // Reset form
+            document.getElementById('recipientId').value = '';
+            document.getElementById('transferAmount').value = '';
+            
+            // Refresh data
+            if (currentUser) {
+                loadUserData(currentUser.uid);
+                loadTransactionHistory();
+            }
+        }
+        
+        function purchasePackage(amount) {
+            // In a real app, you would:
+            // 1. Deduct amount from user balance
+            // 2. Create package purchase record
+            // 3. Update referral earnings if applicable
+            
+            showToast(`Successfully purchased $${amount} package`, 'success');
+            
+            // Refresh data
+            if (currentUser) {
+                loadUserData(currentUser.uid);
+                loadTransactionHistory();
+            }
         }
     </script>
 </body>
