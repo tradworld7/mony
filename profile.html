@@ -7,6 +7,79 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Additional profile page styles */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-right: 1.5rem;
+        }
+        
+        .profile-info {
+            flex-grow: 1;
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .profile-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #27ae60;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .password-input-container {
+            position: relative;
+        }
+        
+        .edit-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -14,6 +87,9 @@
         <div class="logo">
             <i class="fas fa-chart-line logo-icon"></i>
             <span class="logo-text">Trade World</span>
+        </div>
+        <div class="header-balance">
+            <span class="balance-amount">$<span id="headerBalance">0.00</span></span>
         </div>
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
@@ -36,12 +112,21 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">My Profile</h1>
+        <div class="profile-header">
+            <div class="profile-avatar" id="userAvatar">TW</div>
+            <div class="profile-info">
+                <h1 class="profile-name" id="profileName">Loading...</h1>
+                <span class="profile-status">Active Account</span>
+            </div>
+        </div>
         
         <div class="form-container">
             <div class="form-group">
                 <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="fullName" readonly>
+                <div class="password-input-container">
+                    <input type="text" class="form-control" id="fullName" readonly>
+                    <button class="edit-btn" id="editNameBtn"><i class="fas fa-edit"></i></button>
+                </div>
             </div>
             
             <div class="form-group">
@@ -51,7 +136,10 @@
             
             <div class="form-group">
                 <label class="form-label">Mobile Number</label>
-                <input type="tel" class="form-control" id="mobileNumber" readonly>
+                <div class="password-input-container">
+                    <input type="tel" class="form-control" id="mobileNumber" readonly>
+                    <button class="edit-btn" id="editMobileBtn"><i class="fas fa-edit"></i></button>
+                </div>
             </div>
             
             <div class="form-group">
@@ -64,27 +152,70 @@
                 <input type="text" class="form-control" id="accountCreated" readonly>
             </div>
             
-            <h3 class="page-title" style="margin-top: 2rem; margin-bottom: 1rem;">Change Password</h3>
+            <div class="form-group">
+                <label class="form-label">Referral Link</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="referralLink" readonly>
+                    <button class="btn btn-outline" id="copyReferralBtn">Copy</button>
+                </div>
+            </div>
+            
+            <h3 class="section-title">Change Password</h3>
             
             <div class="form-group">
                 <label class="form-label">Current Password</label>
-                <input type="password" class="form-control" id="currentPassword">
+                <div class="password-input-container">
+                    <input type="password" class="form-control" id="currentPassword">
+                    <i class="fas fa-eye password-toggle" id="toggleCurrentPassword"></i>
+                </div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">New Password</label>
-                <input type="password" class="form-control" id="newPassword">
+                <div class="password-input-container">
+                    <input type="password" class="form-control" id="newPassword">
+                    <i class="fas fa-eye password-toggle" id="toggleNewPassword"></i>
+                </div>
                 <small class="form-text">Password must be at least 8 characters long</small>
+                <div class="password-strength" id="passwordStrength" style="margin-top: 0.5rem;"></div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Confirm New Password</label>
-                <input type="password" class="form-control" id="confirmPassword">
+                <div class="password-input-container">
+                    <input type="password" class="form-control" id="confirmPassword">
+                    <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
+                </div>
             </div>
             
-            <button class="btn btn-primary" id="changePasswordBtn">Change Password</button>
+            <button class="btn btn-primary" id="changePasswordBtn">
+                <span id="changePassText">Change Password</span>
+                <span id="changePassSpinner" class="spinner" style="display:none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </span>
+            </button>
         </div>
     </main>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeEditModal">&times;</button>
+            <h2 class="modal-title" id="editModalTitle">Edit Profile</h2>
+            
+            <div class="form-group">
+                <label class="form-label" id="editFieldLabel">Full Name</label>
+                <input type="text" class="form-control" id="editFieldInput">
+            </div>
+            
+            <button class="btn btn-primary" id="saveEditBtn">
+                <span id="saveEditText">Save Changes</span>
+                <span id="saveEditSpinner" class="spinner" style="display:none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </span>
+            </button>
+        </div>
+    </div>
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
@@ -93,21 +224,240 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
-        // Initialize the profile page
+        // Firebase configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+        let userData = {};
+        let editingField = '';
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Check password strength
+        function checkPasswordStrength(password) {
+            const strengthBar = document.getElementById('passwordStrength');
+            let strength = 0;
+            
+            if (password.length >= 8) strength += 1;
+            if (password.match(/[a-z]/)) strength += 1;
+            if (password.match(/[A-Z]/)) strength += 1;
+            if (password.match(/[0-9]/)) strength += 1;
+            if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+            
+            strengthBar.innerHTML = '';
+            const colors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#27ae60'];
+            const texts = ['Very Weak', 'Weak', 'Moderate', 'Strong', 'Very Strong'];
+            
+            for (let i = 0; i < 5; i++) {
+                const barSegment = document.createElement('div');
+                barSegment.style.display = 'inline-block';
+                barSegment.style.width = '20%';
+                barSegment.style.height = '5px';
+                barSegment.style.marginRight = '2px';
+                barSegment.style.backgroundColor = i < strength ? colors[strength-1] : '#ecf0f1';
+                strengthBar.appendChild(barSegment);
+            }
+            
+            const textElement = document.createElement('span');
+            textElement.style.marginLeft = '10px';
+            textElement.style.color = colors[strength-1];
+            textElement.style.fontWeight = 'bold';
+            textElement.textContent = texts[strength-1] || '';
+            strengthBar.appendChild(textElement);
+            
+            return strength;
+        }
+
+        // Load user data
+        function loadUserData(userId) {
+            database.ref('users/' + userId).on('value', (snapshot) => {
+                userData = snapshot.val() || {};
+                
+                // Update profile information
+                document.getElementById('fullName').value = userData.fullName || '';
+                document.getElementById('userEmail').value = currentUser.email || '';
+                document.getElementById('mobileNumber').value = userData.mobileNumber || '';
+                document.getElementById('userId').value = userId;
+                document.getElementById('profileName').textContent = userData.fullName || 'User';
+                document.getElementById('headerBalance').textContent = userData.balance?.toFixed(2) || '0.00';
+                
+                // Set account creation date
+                if (currentUser.metadata && currentUser.metadata.creationTime) {
+                    const createdDate = new Date(currentUser.metadata.creationTime);
+                    document.getElementById('accountCreated').value = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
+                }
+                
+                // Set referral link
+                document.getElementById('referralLink').value = window.location.origin + '/signup.html?ref=' + userId;
+                
+                // Set avatar initials
+                if (userData.fullName) {
+                    const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                }
+            });
+        }
+
+        // Change password function
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validate inputs
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Please fill in all password fields', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showToast('Password must be at least 8 characters', 'error');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('changePassText').style.display = 'none';
+            document.getElementById('changePassSpinner').style.display = 'inline-block';
+            document.getElementById('changePasswordBtn').disabled = true;
+            
+            // Reauthenticate then change password
+            const credential = firebase.auth.EmailAuthProvider.credential(
+                currentUser.email, 
+                currentPassword
+            );
+            
+            currentUser.reauthenticateWithCredential(credential)
+                .then(() => {
+                    return currentUser.updatePassword(newPassword);
+                })
+                .then(() => {
+                    showToast('Password changed successfully!', 'success');
+                    // Clear password fields
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                })
+                .catch(error => {
+                    let errorMessage = 'Password change failed.';
+                    switch(error.code) {
+                        case 'auth/wrong-password':
+                            errorMessage = 'Current password is incorrect';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage = 'New password is too weak';
+                            break;
+                    }
+                    showToast(errorMessage, 'error');
+                })
+                .finally(() => {
+                    // Reset button state
+                    document.getElementById('changePassText').style.display = 'inline-block';
+                    document.getElementById('changePassSpinner').style.display = 'none';
+                    document.getElementById('changePasswordBtn').disabled = false;
+                });
+        }
+
+        // Update profile field
+        function updateProfileField(field, value) {
+            document.getElementById('saveEditText').style.display = 'none';
+            document.getElementById('saveEditSpinner').style.display = 'inline-block';
+            document.getElementById('saveEditBtn').disabled = true;
+            
+            database.ref('users/' + currentUser.uid).update({
+                [field]: value
+            })
+            .then(() => {
+                showToast('Profile updated successfully!', 'success');
+                document.getElementById('editModal').classList.remove('open');
+            })
+            .catch(error => {
+                showToast('Error updating profile: ' + error.message, 'error');
+            })
+            .finally(() => {
+                document.getElementById('saveEditText').style.display = 'inline-block';
+                document.getElementById('saveEditSpinner').style.display = 'none';
+                document.getElementById('saveEditBtn').disabled = false;
+            });
+        }
+
+        // Logout function
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch(error => {
+                showToast('Logout failed: ' + error.message, 'error');
+            });
+        }
+
+        // Check auth state
+        function checkAuthState() {
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadUserData(user.uid);
+                }
+            });
+        }
+
+        // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Check auth state
+            // Initialize auth state
             checkAuthState();
             
-            // Load user data if logged in
-            if (currentUser) {
-                loadUserData(currentUser.uid);
-            } else {
-                window.location.href = 'login.html';
-            }
+            // Set up password toggle buttons
+            document.getElementById('toggleCurrentPassword').addEventListener('click', function() {
+                const input = document.getElementById('currentPassword');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('fa-eye-slash');
+            });
+            
+            document.getElementById('toggleNewPassword').addEventListener('click', function() {
+                const input = document.getElementById('newPassword');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('fa-eye-slash');
+            });
+            
+            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+                const input = document.getElementById('confirmPassword');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('fa-eye-slash');
+            });
+            
+            // Password strength checker
+            document.getElementById('newPassword').addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+            });
             
             // Set up change password button
             document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
@@ -116,6 +466,48 @@
             document.getElementById('logoutLink').addEventListener('click', (e) => {
                 e.preventDefault();
                 logoutUser();
+            });
+            
+            // Set up edit buttons
+            document.getElementById('editNameBtn').addEventListener('click', function() {
+                editingField = 'fullName';
+                document.getElementById('editModalTitle').textContent = 'Edit Full Name';
+                document.getElementById('editFieldLabel').textContent = 'Full Name';
+                document.getElementById('editFieldInput').value = userData.fullName || '';
+                document.getElementById('editModal').classList.add('open');
+                document.getElementById('editFieldInput').focus();
+            });
+            
+            document.getElementById('editMobileBtn').addEventListener('click', function() {
+                editingField = 'mobileNumber';
+                document.getElementById('editModalTitle').textContent = 'Edit Mobile Number';
+                document.getElementById('editFieldLabel').textContent = 'Mobile Number';
+                document.getElementById('editFieldInput').value = userData.mobileNumber || '';
+                document.getElementById('editModal').classList.add('open');
+                document.getElementById('editFieldInput').focus();
+            });
+            
+            // Set up save edit button
+            document.getElementById('saveEditBtn').addEventListener('click', function() {
+                const newValue = document.getElementById('editFieldInput').value.trim();
+                if (!newValue) {
+                    showToast('Please enter a value', 'error');
+                    return;
+                }
+                updateProfileField(editingField, newValue);
+            });
+            
+            // Close modal
+            document.getElementById('closeEditModal').addEventListener('click', function() {
+                document.getElementById('editModal').classList.remove('open');
+            });
+            
+            // Copy referral link
+            document.getElementById('copyReferralBtn').addEventListener('click', function() {
+                const referralInput = document.getElementById('referralLink');
+                referralInput.select();
+                document.execCommand('copy');
+                showToast('Referral link copied to clipboard!');
             });
         });
     </script>
