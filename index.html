@@ -1,34 +1,532 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-  // Firebase Config (apna config use karein)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        /* Additional CSS for sidebar visibility */
-        @media (min-width: 768px) {
-            .sidebar {
-                display: block !important;
+        /* Base Styles */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--white-color);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 70px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            gap: 0.8rem;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 70px;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--dark-color);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--gray-color);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card-icon.balance {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+
+        .card-icon.trading {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+
+        .card-icon.referral {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning-color);
+        }
+
+        .card-icon.team {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger-color);
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Packages Grid */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .package-card {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .package-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .package-name {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .package-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .package-return {
+            font-size: 1rem;
+            color: var(--gray-color);
+            margin-bottom: 1rem;
+        }
+
+        .package-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .package-features li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Transaction History Section */
+        .trading-section {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .trading-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .trading-title {
+            font-size: 1.3rem;
+            color: var(--dark-color);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--gray-color);
+        }
+
+        .table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-color);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-text {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--gray-color);
+        }
+
+        /* Toast Styles */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
             .main-content {
-                margin-left: 250px;
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-buttons {
+                display: none;
             }
         }
     </style>
@@ -59,6 +557,8 @@
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li><a href="signup.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </aside>
@@ -128,9 +628,9 @@
                 <div class="package-return">Returns $20</div>
                 <ul class="package-features">
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Kickstart Your Trading Journey</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access(2-5) </li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% to each upper level (2-5)</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 70% distributed to active users</li>
                 </ul>
                 <button class="btn btn-primary" data-package="10">Buy Now</button>
             </div>
@@ -141,9 +641,9 @@
                 <div class="package-return">Returns $60</div>
                 <ul class="package-features">
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Upgrade Your Trading Game</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools (2-5)</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Higher Profit Potential</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% to each upper level (2-5)</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 70% distributed to active users</li>
                 </ul>
                 <button class="btn btn-primary" data-package="30">Buy Now</button>
             </div>
@@ -154,9 +654,9 @@
                 <div class="package-return">Returns $200</div>
                 <ul class="package-features">
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i>  High-Yield Opportunities (2-5)</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Best for Serious Investors</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% to each upper level (2-5)</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 70% distributed to active users</li>
                 </ul>
                 <button class="btn btn-primary" data-package="100">Buy Now</button>
             </div>
@@ -181,7 +681,6 @@
                         </tr>
                     </thead>
                     <tbody id="transactionHistory">
-                        <!-- Transaction data will be populated by JavaScript -->
                         <tr>
                             <td colspan="5" class="text-center">No transactions yet</td>
                         </tr>
@@ -264,10 +763,27 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
+        // Firebase Config (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Firebase services
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
+        // Global variables
+        let currentUser = null;
+        
         // Initialize the dashboard page
         document.addEventListener('DOMContentLoaded', function() {
             // Check auth state
@@ -285,6 +801,95 @@
             }
         });
         
+        // Check user authentication state
+        function checkAuthState() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in
+                    currentUser = user;
+                    updateUIForLoggedInUser();
+                } else {
+                    // User is signed out
+                    currentUser = null;
+                    updateUIForLoggedOutUser();
+                }
+            });
+        }
+        
+        // Update UI for logged in user
+        function updateUIForLoggedInUser() {
+            document.querySelectorAll('.auth-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('logoutLink').style.display = 'block';
+        }
+        
+        // Update UI for logged out user
+        function updateUIForLoggedOutUser() {
+            document.querySelectorAll('.auth-buttons').forEach(el => el.style.display = 'flex');
+            document.getElementById('logoutLink').style.display = 'none';
+        }
+        
+        // Load user data from database
+        function loadUserData(userId) {
+            database.ref('users/' + userId).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    // Update dashboard cards
+                    document.getElementById('userBalance').textContent = `$${userData.balance || '0.00'}`;
+                    document.getElementById('tradingProfit').textContent = `$${userData.tradingProfit || '0.00'}`;
+                    document.getElementById('directReferrals').textContent = userData.directReferrals || '0';
+                    document.getElementById('referralProfit').textContent = `Earnings: $${userData.referralEarnings || '0.00'}`;
+                    document.getElementById('teamEarnings').textContent = `$${userData.teamEarnings || '0.00'}`;
+                }
+            }).catch((error) => {
+                showToast('Error loading user data', 'error');
+                console.error('Error loading user data:', error);
+            });
+        }
+        
+        // Load transaction history
+        function loadTransactionHistory() {
+            if (!currentUser) return;
+            
+            database.ref('transactions/' + currentUser.uid).once('value').then((snapshot) => {
+                const transactions = snapshot.val();
+                const tbody = document.getElementById('transactionHistory');
+                tbody.innerHTML = '';
+                
+                if (!transactions || Object.keys(transactions).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
+                    return;
+                }
+                
+                // Convert transactions object to array and sort by date
+                const transactionsArray = Object.values(transactions).sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                transactionsArray.forEach(tx => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDate(tx.date)}</td>
+                        <td>${tx.type}</td>
+                        <td>$${tx.amount.toFixed(2)}</td>
+                        <td>${tx.status}</td>
+                        <td>${tx.details || '-'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Update last updated time
+                document.getElementById('lastUpdated').textContent = 'Just now';
+            }).catch((error) => {
+                showToast('Error loading transaction history', 'error');
+                console.error('Error loading transaction history:', error);
+            });
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+        
+        // Set up event listeners
         function setupDashboardEventListeners() {
             // Deposit modal
             document.getElementById('depositBtn').addEventListener('click', () => {
@@ -318,7 +923,8 @@
             
             // Copy deposit address
             document.getElementById('copyDepositAddress').addEventListener('click', () => {
-                document.getElementById('depositAddress').select();
+                const addressInput = document.getElementById('depositAddress');
+                addressInput.select();
                 document.execCommand('copy');
                 showToast('Address copied to clipboard!', 'success');
             });
@@ -358,42 +964,7 @@
             });
         }
         
-        function loadTransactionHistory() {
-            if (!currentUser) return;
-            
-            // In a real app, you would fetch this from Firebase
-            const transactions = [
-                // Sample data - replace with actual data from database
-                /* {
-                    date: '2023-07-03 14:30',
-                    type: 'Deposit',
-                    amount: '$50.00',
-                    status: 'Completed',
-                    details: 'USDT Deposit'
-                } */
-            ];
-            
-            const tbody = document.getElementById('transactionHistory');
-            tbody.innerHTML = '';
-            
-            if (transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
-                return;
-            }
-            
-            transactions.forEach(tx => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${tx.date}</td>
-                    <td>${tx.type}</td>
-                    <td>${tx.amount}</td>
-                    <td>${tx.status}</td>
-                    <td>${tx.details}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-        
+        // Transfer funds between users
         function transferFunds() {
             const recipientId = document.getElementById('recipientId').value.trim();
             const amount = parseFloat(document.getElementById('transferAmount').value);
@@ -414,38 +985,284 @@
                 return;
             }
             
-            // In a real app, you would:
-            // 1. Verify recipient exists
-            // 2. Update both users' balances in database
-            // 3. Record the transaction
-            
-            showToast(`Successfully transferred $${amount} to user ${recipientId}`, 'success');
-            document.getElementById('transferModal').classList.remove('open');
-            
-            // Reset form
-            document.getElementById('recipientId').value = '';
-            document.getElementById('transferAmount').value = '';
-            
-            // Refresh data
-            if (currentUser) {
-                loadUserData(currentUser.uid);
-                loadTransactionHistory();
-            }
+            // Check if recipient exists
+            database.ref('users/' + recipientId).once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    showToast('Recipient user not found', 'error');
+                    return;
+                }
+                
+                // Get current user data
+                database.ref('users/' + currentUser.uid).once('value').then((userSnapshot) => {
+                    const userData = userSnapshot.val();
+                    
+                    // Update sender's balance
+                    const senderUpdates = {
+                        balance: userData.balance - amount
+                    };
+                    
+                    // Update recipient's balance
+                    const recipientUpdates = {
+                        balance: (snapshot.val().balance || 0) + amount
+                    };
+                    
+                    // Create transaction records
+                    const transactionId = Date.now();
+                    const transactionData = {
+                        date: new Date().toISOString(),
+                        type: 'Transfer',
+                        amount: amount,
+                        status: 'Completed',
+                        details: `Transfer to user ${recipientId}`,
+                        senderId: currentUser.uid,
+                        recipientId: recipientId
+                    };
+                    
+                    // Perform all updates as a transaction
+                    const updates = {};
+                    updates['users/' + currentUser.uid] = senderUpdates;
+                    updates['users/' + recipientId] = recipientUpdates;
+                    updates['transactions/' + currentUser.uid + '/' + transactionId] = transactionData;
+                    updates['transactions/' + recipientId + '/' + transactionId] = {
+                        ...transactionData,
+                        details: `Transfer from user ${currentUser.uid}`
+                    };
+                    
+                    database.ref().update(updates).then(() => {
+                        showToast(`Successfully transferred $${amount.toFixed(2)} to user ${recipientId}`, 'success');
+                        document.getElementById('transferModal').classList.remove('open');
+                        
+                        // Reset form
+                        document.getElementById('recipientId').value = '';
+                        document.getElementById('transferAmount').value = '';
+                        
+                        // Refresh data
+                        loadUserData(currentUser.uid);
+                        loadTransactionHistory();
+                    }).catch((error) => {
+                        showToast('Error processing transfer', 'error');
+                        console.error('Transfer error:', error);
+                    });
+                });
+            }).catch((error) => {
+                showToast('Error verifying recipient', 'error');
+                console.error('Recipient verification error:', error);
+            });
         }
         
-        function purchasePackage(amount) {
-            // In a real app, you would:
-            // 1. Deduct amount from user balance
-            // 2. Create package purchase record
-            // 3. Update referral earnings if applicable
+        // Submit deposit request
+        function submitDepositRequest() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const txHash = document.getElementById('transactionHash').value.trim();
             
-            showToast(`Successfully purchased $${amount} package`, 'success');
-            
-            // Refresh data
-            if (currentUser) {
-                loadUserData(currentUser.uid);
-                loadTransactionHistory();
+            if (isNaN(amount) || amount < 10 || amount > 500) {
+                showToast('Please enter a valid amount between $10 and $500', 'error');
+                return;
             }
+            
+            if (!txHash) {
+                showToast('Please enter your transaction hash', 'error');
+                return;
+            }
+            
+            // Create deposit record
+            const depositId = Date.now();
+            const depositData = {
+                date: new Date().toISOString(),
+                type: 'Deposit',
+                amount: amount,
+                status: 'Pending',
+                details: 'USDT Deposit',
+                txHash: txHash
+            };
+            
+            database.ref('deposits/' + currentUser.uid + '/' + depositId).set(depositData)
+                .then(() => {
+                    showToast('Deposit request submitted successfully', 'success');
+                    document.getElementById('depositModal').classList.remove('open');
+                    
+                    // Reset form
+                    document.getElementById('depositAmount').value = '';
+                    document.getElementById('transactionHash').value = '';
+                    
+                    // Refresh transaction history
+                    loadTransactionHistory();
+                })
+                .catch((error) => {
+                    showToast('Error submitting deposit request', 'error');
+                    console.error('Deposit error:', error);
+                });
+        }
+        
+        // Purchase investment package
+        function purchasePackage(amount) {
+            // Get current user data
+            database.ref('users/' + currentUser.uid).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                
+                if (userData.balance < amount) {
+                    showToast('Insufficient balance', 'error');
+                    return;
+                }
+                
+                // Update user balance
+                const updates = {
+                    balance: userData.balance - amount
+                };
+                
+                // Create package purchase record
+                const purchaseId = Date.now();
+                const purchaseData = {
+                    date: new Date().toISOString(),
+                    type: 'Investment',
+                    amount: amount,
+                    status: 'Active',
+                    details: `Purchased $${amount} package`,
+                    packageValue: amount * 2 // Assuming 100% return
+                };
+                
+                // Perform updates
+                database.ref().update({
+                    ['users/' + currentUser.uid]: updates,
+                    ['investments/' + currentUser.uid + '/' + purchaseId]: purchaseData,
+                    ['transactions/' + currentUser.uid + '/' + purchaseId]: purchaseData
+                }).then(() => {
+                    showToast(`Successfully purchased $${amount} package`, 'success');
+                    
+                    // Refresh data
+                    loadUserData(currentUser.uid);
+                    loadTransactionHistory();
+                    
+                    // Process referrals if needed
+                    if (userData.referredBy) {
+                        processReferralEarnings(userData.referredBy, amount);
+                    }
+                }).catch((error) => {
+                    showToast('Error purchasing package', 'error');
+                    console.error('Package purchase error:', error);
+                });
+            });
+        }
+        
+        // Process referral earnings
+        function processReferralEarnings(referrerId, amount) {
+            // Calculate referral earnings (10% of package amount)
+            const referralEarning = amount * 0.1;
+            
+            // Get referrer data
+            database.ref('users/' + referrerId).once('value').then((snapshot) => {
+                const referrerData = snapshot.val();
+                
+                // Update referrer's balance and earnings
+                const updates = {
+                    balance: (referrerData.balance || 0) + referralEarning,
+                    referralEarnings: (referrerData.referralEarnings || 0) + referralEarning,
+                    directReferrals: (referrerData.directReferrals || 0) + 1
+                };
+                
+                // Create transaction record for referrer
+                const transactionId = Date.now();
+                const transactionData = {
+                    date: new Date().toISOString(),
+                    type: 'Referral',
+                    amount: referralEarning,
+                    status: 'Completed',
+                    details: `Referral earnings from user ${currentUser.uid}`
+                };
+                
+                // Perform updates
+                database.ref().update({
+                    ['users/' + referrerId]: updates,
+                    ['transactions/' + referrerId + '/' + transactionId]: transactionData
+                }).then(() => {
+                    console.log('Referral earnings processed successfully');
+                    
+                    // Process team earnings for uplines (levels 2-5)
+                    if (referrerData.referredBy) {
+                        processTeamEarnings(referrerData.referredBy, amount, 2);
+                    }
+                }).catch((error) => {
+                    console.error('Referral processing error:', error);
+                });
+            });
+        }
+        
+        // Process team earnings for uplines
+        function processTeamEarnings(uplineId, amount, level) {
+            if (level > 5) return;
+            
+            // Calculate team earnings (2% of package amount per level)
+            const teamEarning = amount * 0.02;
+            
+            // Get upline data
+            database.ref('users/' + uplineId).once('value').then((snapshot) => {
+                const uplineData = snapshot.val();
+                
+                // Update upline's balance and team earnings
+                const updates = {
+                    balance: (uplineData.balance || 0) + teamEarning,
+                    teamEarnings: (uplineData.teamEarnings || 0) + teamEarning
+                };
+                
+                // Create transaction record for upline
+                const transactionId = Date.now();
+                const transactionData = {
+                    date: new Date().toISOString(),
+                    type: 'Team',
+                    amount: teamEarning,
+                    status: 'Completed',
+                    details: `Level ${level} team earnings`
+                };
+                
+                // Perform updates
+                database.ref().update({
+                    ['users/' + uplineId]: updates,
+                    ['transactions/' + uplineId + '/' + transactionId]: transactionData
+                }).then(() => {
+                    console.log(`Level ${level} team earnings processed successfully`);
+                    
+                    // Process next upline level if exists
+                    if (uplineData.referredBy && level < 5) {
+                        processTeamEarnings(uplineData.referredBy, amount, level + 1);
+                    }
+                }).catch((error) => {
+                    console.error('Team earnings processing error:', error);
+                });
+            });
+        }
+        
+        // Logout user
+        function logoutUser() {
+            auth.signOut().then(() => {
+                showToast('Successfully logged out', 'success');
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                showToast('Error logging out', 'error');
+                console.error('Logout error:', error);
+            });
+        }
+        
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
         }
     </script>
 </body>
