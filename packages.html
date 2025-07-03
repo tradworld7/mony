@@ -4,10 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Investment Packages | Trade World</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="./assets/css/style.css">
+    <style>
+        /* Additional styles for packages page */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .package-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .package-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .package-name {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .package-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+        
+        .package-return {
+            font-size: 1.2rem;
+            color: #27ae60;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .package-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .package-features li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .package-features i {
+            color: #27ae60;
+            margin-right: 0.5rem;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.open {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .modal-title {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        /* Spinner for loading */
+        .spinner {
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+    </style>
 </head>
 <body>
-    <!-- Header and Sidebar same as before -->
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-outline" id="loginBtnHeader">Login</a>
+            <a href="signup.html" class="btn btn-primary" id="signupBtnHeader">Sign Up</a>
+            <a href="dashboard.html" class="btn btn-outline" id="dashboardBtnHeader" style="display:none;">Dashboard</a>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
 
     <main class="main-content" id="mainContent">
         <h1 class="page-title">Investment Packages</h1>
@@ -23,10 +147,34 @@
                     <li><i class="fas fa-check-circle"></i> 10% to your sponsor</li>
                     <li><i class="fas fa-check-circle"></i> 2% to upper levels</li>
                 </ul>
-                <button class="btn btn-primary" data-package="10" id="package10">Buy Now</button>
+                <button class="btn btn-primary" data-package="10" data-package-name="Starter Package">Buy Now</button>
             </div>
             
-            <!-- Other packages same structure -->
+            <!-- Package 2 -->
+            <div class="package-card">
+                <h3 class="package-name">Standard Package</h3>
+                <div class="package-price">$30</div>
+                <div class="package-return">Returns $60</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle"></i> 2% to upper levels</li>
+                </ul>
+                <button class="btn btn-primary" data-package="30" data-package-name="Standard Package">Buy Now</button>
+            </div>
+            
+            <!-- Package 3 -->
+            <div class="package-card">
+                <h3 class="package-name">Premium Package</h3>
+                <div class="package-price">$100</div>
+                <div class="package-return">Returns $200</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle"></i> 10% to your sponsor</li>
+                    <li><i class="fas fa-check-circle"></i> 2% to upper levels</li>
+                </ul>
+                <button class="btn btn-primary" data-package="100" data-package-name="Premium Package">Buy Now</button>
+            </div>
         </div>
 
         <!-- Package Purchase Modal -->
@@ -36,69 +184,204 @@
                 <h2 class="modal-title">Confirm Package Purchase</h2>
                 
                 <div class="form-group">
-                    <p>You are about to purchase the <span id="packageName">Starter</span> package for $<span id="packagePrice">10</span></p>
-                    <p>Your current balance: $<span id="modalBalance">0.00</span></p>
+                    <p>You are about to purchase the <strong><span id="packageName">Starter</span></strong> package for <strong>$<span id="packagePrice">10</span></strong></p>
+                    <p>Your current balance: <strong>$<span id="modalBalance">0.00</span></strong></p>
+                    <p id="balanceWarning" class="error-text" style="display:none;color:#e74c3c;font-weight:bold;">Insufficient balance for this package!</p>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Enter your password to confirm</label>
-                    <input type="password" class="form-control" id="confirmPassword">
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Your account password">
                 </div>
                 
-                <button class="btn btn-primary" id="confirmPurchase">Confirm Purchase</button>
+                <button class="btn btn-primary" id="confirmPurchase">
+                    <span id="confirmText">Confirm Purchase</span>
+                    <span id="confirmSpinner" class="spinner" style="display:none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
             </div>
         </div>
+
+        <!-- Toast Notifications Container -->
+        <div class="toast-container" id="toastContainer"></div>
     </main>
 
-    <!-- Same scripts as before plus package handling -->
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Package purchase handling
-        document.querySelectorAll('[data-package]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (!currentUser) {
-                    window.location.href = 'login.html';
+        // Firebase configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+        let userData = { balance: 0 };
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Update UI based on auth state
+        function updateUI(user) {
+            currentUser = user;
+            if (user) {
+                document.getElementById('loginBtnHeader').style.display = 'none';
+                document.getElementById('signupBtnHeader').style.display = 'none';
+                document.getElementById('dashboardBtnHeader').style.display = 'inline-block';
+                
+                // Load user data
+                database.ref('users/' + user.uid).once('value').then(snapshot => {
+                    userData = snapshot.val() || { balance: 0 };
+                    // Update balance display throughout the page
+                    document.querySelectorAll('.balance-display').forEach(el => {
+                        el.textContent = userData.balance.toFixed(2);
+                    });
+                });
+            } else {
+                document.getElementById('loginBtnHeader').style.display = 'inline-block';
+                document.getElementById('signupBtnHeader').style.display = 'inline-block';
+                document.getElementById('dashboardBtnHeader').style.display = 'none';
+            }
+        }
+
+        // Purchase package function
+        function purchasePackage(packageAmount) {
+            if (userData.balance < packageAmount) {
+                showToast('Insufficient balance for this package', 'error');
+                return;
+            }
+
+            document.getElementById('confirmText').style.display = 'none';
+            document.getElementById('confirmSpinner').style.display = 'inline-block';
+            document.getElementById('confirmPurchase').disabled = true;
+
+            // Simulate purchase processing (replace with actual database update)
+            setTimeout(() => {
+                // Update user balance
+                const newBalance = userData.balance - packageAmount;
+                
+                // Update in database
+                database.ref('users/' + currentUser.uid).update({
+                    balance: newBalance
+                }).then(() => {
+                    // Update local data
+                    userData.balance = newBalance;
+                    
+                    // Show success message
+                    showToast('Package purchased successfully!', 'success');
+                    
+                    // Close modal
+                    document.getElementById('packageModal').classList.remove('open');
+                    
+                    // Reset modal
+                    document.getElementById('confirmText').style.display = 'inline-block';
+                    document.getElementById('confirmSpinner').style.display = 'none';
+                    document.getElementById('confirmPurchase').disabled = false;
+                    document.getElementById('confirmPassword').value = '';
+                    
+                    // Update balance display
+                    document.getElementById('modalBalance').textContent = newBalance.toFixed(2);
+                    
+                    // Here you would also add the package to user's investments
+                    // database.ref('investments/' + currentUser.uid).push({...});
+                }).catch(error => {
+                    showToast('Error processing purchase: ' + error.message, 'error');
+                    document.getElementById('confirmText').style.display = 'inline-block';
+                    document.getElementById('confirmSpinner').style.display = 'none';
+                    document.getElementById('confirmPurchase').disabled = false;
+                });
+            }, 1500);
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auth state listener
+            auth.onAuthStateChanged(updateUI);
+
+            // Package purchase handling
+            document.querySelectorAll('[data-package]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!currentUser) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
+                    const packageAmount = parseFloat(this.getAttribute('data-package'));
+                    const packageName = this.getAttribute('data-package-name');
+                    
+                    // Show confirmation modal
+                    document.getElementById('packageName').textContent = packageName;
+                    document.getElementById('packagePrice').textContent = packageAmount;
+                    document.getElementById('modalBalance').textContent = userData.balance.toFixed(2);
+                    
+                    // Show warning if insufficient balance
+                    const balanceWarning = document.getElementById('balanceWarning');
+                    if (userData.balance < packageAmount) {
+                        balanceWarning.style.display = 'block';
+                    } else {
+                        balanceWarning.style.display = 'none';
+                    }
+                    
+                    document.getElementById('packageModal').classList.add('open');
+                    
+                    // Store package amount in modal
+                    document.getElementById('confirmPurchase').setAttribute('data-package', packageAmount);
+                });
+            });
+
+            // Confirm purchase
+            document.getElementById('confirmPurchase').addEventListener('click', function() {
+                const packageAmount = parseFloat(this.getAttribute('data-package'));
+                const password = document.getElementById('confirmPassword').value;
+                
+                if (!password) {
+                    showToast('Please enter your password', 'error');
                     return;
                 }
                 
-                const packageAmount = this.getAttribute('data-package');
-                const packageName = this.closest('.package-card').querySelector('.package-name').textContent;
+                // Reauthenticate user
+                const credential = firebase.auth.EmailAuthProvider.credential(
+                    currentUser.email, 
+                    password
+                );
                 
-                // Show confirmation modal
-                document.getElementById('packageName').textContent = packageName;
-                document.getElementById('packagePrice').textContent = packageAmount;
-                document.getElementById('modalBalance').textContent = userData.balance || '0.00';
-                document.getElementById('packageModal').classList.add('open');
-                
-                // Store package amount in modal
-                document.getElementById('confirmPurchase').setAttribute('data-package', packageAmount);
+                currentUser.reauthenticateWithCredential(credential)
+                    .then(() => {
+                        // Proceed with package purchase
+                        purchasePackage(packageAmount);
+                    })
+                    .catch(error => {
+                        showToast('Authentication failed: ' + error.message, 'error');
+                    });
             });
-        });
 
-        // Confirm purchase
-        document.getElementById('confirmPurchase').addEventListener('click', function() {
-            const packageAmount = parseFloat(this.getAttribute('data-package'));
-            const password = document.getElementById('confirmPassword').value;
-            
-            if (!password) {
-                showToast('Please enter your password', 'error');
-                return;
-            }
-            
-            // Reauthenticate user
-            const credential = firebase.auth.EmailAuthProvider.credential(
-                currentUser.email, 
-                password
-            );
-            
-            currentUser.reauthenticateWithCredential(credential)
-                .then(() => {
-                    // Proceed with package purchase
-                    purchasePackage(packageAmount);
-                    document.getElementById('packageModal').classList.remove('open');
-                })
-                .catch(error => {
-                    showToast('Authentication failed: ' + error.message, 'error');
-                });
+            // Close modal
+            document.getElementById('closePackageModal').addEventListener('click', function() {
+                document.getElementById('packageModal').classList.remove('open');
+                document.getElementById('confirmPassword').value = '';
+            });
         });
     </script>
 </body>
