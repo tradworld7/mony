@@ -6,7 +6,174 @@
     <title>Trade World - Sign Up</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Basic styling for the form - you can move this to your CSS file */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .logo-icon {
+            margin-right: 0.5rem;
+            color: #4a6bff;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline {
+            border: 1px solid #4a6bff;
+            color: #4a6bff;
+            background: transparent;
+        }
+        
+        .btn-primary {
+            background-color: #4a6bff;
+            color: white;
+            border: none;
+        }
+        
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 70px);
+            padding: 2rem;
+        }
+        
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4a6bff;
+        }
+        
+        .form-text {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .toast {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            color: white;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .toast.success {
+            background-color: #28a745;
+        }
+        
+        .toast.error {
+            background-color: #dc3545;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-buttons {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -29,39 +196,41 @@
         <div class="form-container">
             <h1 class="page-title">Create New Account</h1>
             
-            <div class="form-group">
-                <label class="form-label">Sponsor ID</label>
-                <input type="text" class="form-control" id="sponsorId" value="TW1381">
-                <small class="form-text">This will be auto-filled if you came through a referral link</small>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="signupName" placeholder="Enter your full name">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Mobile Number</label>
-                <input type="tel" class="form-control" id="signupMobile" placeholder="Enter your mobile number">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="signupPassword" placeholder="Create a password">
-                <small class="form-text">Password must be at least 8 characters long</small>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm your password">
-            </div>
-            
-            <button class="btn btn-primary btn-block" id="signupBtn">Create Account</button>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label class="form-label">Sponsor ID</label>
+                    <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
+                    <small class="form-text">This will be auto-filled if you came through a referral link</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="signupName" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" class="form-control" id="signupMobile" placeholder="Enter your mobile number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="signupPassword" placeholder="Create a password" required minlength="8">
+                    <small class="form-text">Password must be at least 8 characters long</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="signupBtn">Create Account</button>
+            </form>
             
             <div class="form-group text-center" style="margin-top: 1.5rem;">
                 <p>Already have an account? <a href="login.html">Login</a></p>
@@ -76,17 +245,155 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
+    
     <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Check if user came from a referral link
+        function checkReferralLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralId = urlParams.get('ref');
+            
+            if (referralId) {
+                document.getElementById('sponsorId').value = referralId;
+            }
+        }
+
+        // Validate form
+        function validateForm(name, email, mobile, password, confirmPassword) {
+            if (!name || !email || !mobile || !password || !confirmPassword) {
+                showToast('Please fill all fields', 'error');
+                return false;
+            }
+            
+            if (password.length < 8) {
+                showToast('Password must be at least 8 characters', 'error');
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return false;
+            }
+            
+            // Simple email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('Please enter a valid email address', 'error');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Sign up user
+        function signupUser(e) {
+            e.preventDefault();
+            
+            // Get all input values
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const mobile = document.getElementById('signupMobile').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const sponsorId = document.getElementById('sponsorId').value.trim();
+            
+            // Validate form
+            if (!validateForm(name, email, mobile, password, confirmPassword)) {
+                return;
+            }
+            
+            // Disable button to prevent multiple clicks
+            const signupBtn = document.getElementById('signupBtn');
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating Account...';
+            
+            // Create user with Firebase Auth
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // User created successfully
+                    const user = userCredential.user;
+                    
+                    // Save additional user data to Realtime Database
+                    return database.ref('users/' + user.uid).set({
+                        name: name,
+                        email: email,
+                        mobile: mobile,
+                        sponsorId: sponsorId,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        accountStatus: 'active'
+                    });
+                })
+                .then(() => {
+                    // Show success message
+                    showToast('Account created successfully! Redirecting...');
+                    
+                    // Redirect to dashboard or login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html'; // or 'login.html'
+                    }, 2000);
+                })
+                .catch((error) => {
+                    // Handle errors
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = 'Create Account';
+                    
+                    let errorMessage = error.message;
+                    
+                    // More user-friendly error messages
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorMessage = 'This email is already registered. Please use another email or login.';
+                    } else if (error.code === 'auth/weak-password') {
+                        errorMessage = 'Password is too weak. Please choose a stronger password.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        errorMessage = 'Please enter a valid email address.';
+                    }
+                    
+                    showToast(errorMessage, 'error');
+                });
+        }
+
         // Initialize the signup page
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user came from a referral link
             checkReferralLink();
             
-            // Set up signup button
-            document.getElementById('signupBtn').addEventListener('click', signupUser);
+            // Set up form submission
+            document.getElementById('signupForm').addEventListener('submit', signupUser);
+            
+            // Mobile menu toggle (if needed)
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                const authButtons = document.querySelector('.auth-buttons');
+                authButtons.style.display = authButtons.style.display === 'flex' ? 'none' : 'flex';
+            });
         });
     </script>
 </body>
