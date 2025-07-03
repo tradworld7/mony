@@ -1,245 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-  // Firebase Config (apna config use karein)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - My Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        /* Additional profile page styles */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #3498db;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            margin-right: 1.5rem;
-        }
-        
-        .profile-info {
-            flex-grow: 1;
-        }
-        
-        .profile-name {
-            font-size: 1.5rem;
-            margin: 0;
-            color: #2c3e50;
-        }
-        
-        .profile-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background-color: #27ae60;
-            color: white;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-        }
-        
-        .form-container {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .password-toggle {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #7f8c8d;
-        }
-        
-        .password-input-container {
-            position: relative;
-        }
-        
-        .edit-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #3498db;
-            cursor: pointer;
-        }
+        /* [Previous CSS styles remain exactly the same] */
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <i class="fas fa-chart-line logo-icon"></i>
-            <span class="logo-text">Trade World</span>
-        </div>
-        <div class="header-balance">
-            <span class="balance-amount">$<span id="headerBalance">0.00</span></span>
-        </div>
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    </header>
-
-    <!-- Sidebar Menu -->
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="profile.html" class="active"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
-            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
-            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <div class="profile-header">
-            <div class="profile-avatar" id="userAvatar">TW</div>
-            <div class="profile-info">
-                <h1 class="profile-name" id="profileName">Loading...</h1>
-                <span class="profile-status">Active Account</span>
-            </div>
-        </div>
-        
-        <div class="form-container">
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <div class="password-input-container">
-                    <input type="text" class="form-control" id="fullName" readonly>
-                    <button class="edit-btn" id="editNameBtn"><i class="fas fa-edit"></i></button>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="userEmail" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Mobile Number</label>
-                <div class="password-input-container">
-                    <input type="tel" class="form-control" id="mobileNumber" readonly>
-                    <button class="edit-btn" id="editMobileBtn"><i class="fas fa-edit"></i></button>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">User ID</label>
-                <input type="text" class="form-control" id="userId" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Account Created</label>
-                <input type="text" class="form-control" id="accountCreated" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Referral Link</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="referralLink" readonly>
-                    <button class="btn btn-outline" id="copyReferralBtn">Copy</button>
-                </div>
-            </div>
-            
-            <h3 class="section-title">Change Password</h3>
-            
-            <div class="form-group">
-                <label class="form-label">Current Password</label>
-                <div class="password-input-container">
-                    <input type="password" class="form-control" id="currentPassword">
-                    <i class="fas fa-eye password-toggle" id="toggleCurrentPassword"></i>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">New Password</label>
-                <div class="password-input-container">
-                    <input type="password" class="form-control" id="newPassword">
-                    <i class="fas fa-eye password-toggle" id="toggleNewPassword"></i>
-                </div>
-                <small class="form-text">Password must be at least 8 characters long</small>
-                <div class="password-strength" id="passwordStrength" style="margin-top: 0.5rem;"></div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Confirm New Password</label>
-                <div class="password-input-container">
-                    <input type="password" class="form-control" id="confirmPassword">
-                    <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" id="changePasswordBtn">
-                <span id="changePassText">Change Password</span>
-                <span id="changePassSpinner" class="spinner" style="display:none;">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </span>
-            </button>
-        </div>
-    </main>
-
-    <!-- Edit Profile Modal -->
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeEditModal">&times;</button>
-            <h2 class="modal-title" id="editModalTitle">Edit Profile</h2>
-            
-            <div class="form-group">
-                <label class="form-label" id="editFieldLabel">Full Name</label>
-                <input type="text" class="form-control" id="editFieldInput">
-            </div>
-            
-            <button class="btn btn-primary" id="saveEditBtn">
-                <span id="saveEditText">Save Changes</span>
-                <span id="saveEditSpinner" class="spinner" style="display:none;">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- [Previous HTML structure remains exactly the same until the script section] -->
 
     <!-- Firebase and App Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Firebase configuration (replace with your actual config)
+        // Firebase configuration (REPLACE WITH YOUR ACTUAL CONFIG)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -259,57 +38,25 @@
         let userData = {};
         let editingField = '';
 
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            document.getElementById('toastContainer').appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
+        // [Keep all your helper functions like showToast, checkPasswordStrength]
 
-        // Check password strength
-        function checkPasswordStrength(password) {
-            const strengthBar = document.getElementById('passwordStrength');
-            let strength = 0;
-            
-            if (password.length >= 8) strength += 1;
-            if (password.match(/[a-z]/)) strength += 1;
-            if (password.match(/[A-Z]/)) strength += 1;
-            if (password.match(/[0-9]/)) strength += 1;
-            if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
-            
-            strengthBar.innerHTML = '';
-            const colors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#27ae60'];
-            const texts = ['Very Weak', 'Weak', 'Moderate', 'Strong', 'Very Strong'];
-            
-            for (let i = 0; i < 5; i++) {
-                const barSegment = document.createElement('div');
-                barSegment.style.display = 'inline-block';
-                barSegment.style.width = '20%';
-                barSegment.style.height = '5px';
-                barSegment.style.marginRight = '2px';
-                barSegment.style.backgroundColor = i < strength ? colors[strength-1] : '#ecf0f1';
-                strengthBar.appendChild(barSegment);
-            }
-            
-            const textElement = document.createElement('span');
-            textElement.style.marginLeft = '10px';
-            textElement.style.color = colors[strength-1];
-            textElement.style.fontWeight = 'bold';
-            textElement.textContent = texts[strength-1] || '';
-            strengthBar.appendChild(textElement);
-            
-            return strength;
-        }
-
-        // Load user data
+        // MODIFIED loadUserData function
         function loadUserData(userId) {
             database.ref('users/' + userId).on('value', (snapshot) => {
-                userData = snapshot.val() || {};
+                if (!snapshot.exists()) {
+                    // Create user data if it doesn't exist
+                    const newUserData = {
+                        fullName: currentUser.displayName || "New User",
+                        email: currentUser.email,
+                        mobileNumber: "",
+                        balance: 0,
+                        joinDate: new Date().toISOString()
+                    };
+                    database.ref('users/' + userId).set(newUserData);
+                    userData = newUserData;
+                } else {
+                    userData = snapshot.val();
+                }
                 
                 // Update profile information
                 document.getElementById('fullName').value = userData.fullName || '';
@@ -317,32 +64,40 @@
                 document.getElementById('mobileNumber').value = userData.mobileNumber || '';
                 document.getElementById('userId').value = userId;
                 document.getElementById('profileName').textContent = userData.fullName || 'User';
-                document.getElementById('headerBalance').textContent = userData.balance?.toFixed(2) || '0.00';
+                
+                // Format balance display
+                const balance = userData.balance || 0;
+                document.getElementById('headerBalance').textContent = balance.toFixed(2);
                 
                 // Set account creation date
-                if (currentUser.metadata && currentUser.metadata.creationTime) {
+                if (userData.joinDate) {
+                    const createdDate = new Date(userData.joinDate);
+                    document.getElementById('accountCreated').value = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
+                } else if (currentUser.metadata?.creationTime) {
                     const createdDate = new Date(currentUser.metadata.creationTime);
                     document.getElementById('accountCreated').value = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
                 }
                 
-                // Set referral link
-                document.getElementById('referralLink').value = window.location.origin + '/signup.html?ref=' + userId;
+                // Set referral link - FIXED THIS PART
+                const baseUrl = "https://tradworld7.github.io/mony";
+                document.getElementById('referralLink').value = `${baseUrl}/signup.html?ref=${userId}`;
                 
                 // Set avatar initials
                 if (userData.fullName) {
                     const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
                     document.getElementById('userAvatar').textContent = initials.substring(0, 2);
                 }
+            }, (error) => {
+                showToast('Error loading user data: ' + error.message, 'error');
             });
         }
 
-        // Change password function
+        // MODIFIED changePassword function
         function changePassword() {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
-            // Validate inputs
             if (!currentPassword || !newPassword || !confirmPassword) {
                 showToast('Please fill in all password fields', 'error');
                 return;
@@ -363,12 +118,13 @@
             document.getElementById('changePassSpinner').style.display = 'inline-block';
             document.getElementById('changePasswordBtn').disabled = true;
             
-            // Reauthenticate then change password
+            // Create credentials with the user's email
             const credential = firebase.auth.EmailAuthProvider.credential(
                 currentUser.email, 
                 currentPassword
             );
             
+            // Reauthenticate and update password
             currentUser.reauthenticateWithCredential(credential)
                 .then(() => {
                     return currentUser.updatePassword(newPassword);
@@ -381,14 +137,12 @@
                     document.getElementById('confirmPassword').value = '';
                 })
                 .catch(error => {
+                    console.error('Password change error:', error);
                     let errorMessage = 'Password change failed.';
-                    switch(error.code) {
-                        case 'auth/wrong-password':
-                            errorMessage = 'Current password is incorrect';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage = 'New password is too weak';
-                            break;
+                    if (error.code === 'auth/wrong-password') {
+                        errorMessage = 'Current password is incorrect';
+                    } else if (error.code === 'auth/weak-password') {
+                        errorMessage = 'New password is too weak';
                     }
                     showToast(errorMessage, 'error');
                 })
@@ -400,40 +154,52 @@
                 });
         }
 
-        // Update profile field
+        // MODIFIED updateProfileField function
         function updateProfileField(field, value) {
+            if (!field || !value) {
+                showToast('Invalid field or value', 'error');
+                return;
+            }
+            
             document.getElementById('saveEditText').style.display = 'none';
             document.getElementById('saveEditSpinner').style.display = 'inline-block';
             document.getElementById('saveEditBtn').disabled = true;
             
-            database.ref('users/' + currentUser.uid).update({
-                [field]: value
-            })
-            .then(() => {
-                showToast('Profile updated successfully!', 'success');
-                document.getElementById('editModal').classList.remove('open');
-            })
-            .catch(error => {
-                showToast('Error updating profile: ' + error.message, 'error');
-            })
-            .finally(() => {
-                document.getElementById('saveEditText').style.display = 'inline-block';
-                document.getElementById('saveEditSpinner').style.display = 'none';
-                document.getElementById('saveEditBtn').disabled = false;
-            });
+            const updates = {};
+            updates[field] = value;
+            
+            database.ref('users/' + currentUser.uid).update(updates)
+                .then(() => {
+                    showToast('Profile updated successfully!', 'success');
+                    document.getElementById('editModal').classList.remove('open');
+                    
+                    // Update the displayed value immediately
+                    if (field === 'fullName') {
+                        document.getElementById('fullName').value = value;
+                        document.getElementById('profileName').textContent = value;
+                        // Update avatar initials
+                        const initials = value.split(' ').map(n => n[0]).join('').toUpperCase();
+                        document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                    } else if (field === 'mobileNumber') {
+                        document.getElementById('mobileNumber').value = value;
+                    }
+                })
+                .catch(error => {
+                    console.error('Update error:', error);
+                    showToast('Error updating profile: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    document.getElementById('saveEditText').style.display = 'inline-block';
+                    document.getElementById('saveEditSpinner').style.display = 'none';
+                    document.getElementById('saveEditBtn').disabled = false;
+                });
         }
 
-        // Logout function
-        function logoutUser() {
-            auth.signOut().then(() => {
-                window.location.href = 'login.html';
-            }).catch(error => {
-                showToast('Logout failed: ' + error.message, 'error');
-            });
-        }
+        // [Keep all other functions the same]
 
-        // Check auth state
-        function checkAuthState() {
+        // MODIFIED DOM Content Loaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize auth state
             auth.onAuthStateChanged(user => {
                 currentUser = user;
                 if (!user) {
@@ -442,86 +208,14 @@
                     loadUserData(user.uid);
                 }
             });
-        }
-
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize auth state
-            checkAuthState();
             
-            // Set up password toggle buttons
-            document.getElementById('toggleCurrentPassword').addEventListener('click', function() {
-                const input = document.getElementById('currentPassword');
-                input.type = input.type === 'password' ? 'text' : 'password';
-                this.classList.toggle('fa-eye-slash');
-            });
+            // [Keep all your event listeners the same]
             
-            document.getElementById('toggleNewPassword').addEventListener('click', function() {
-                const input = document.getElementById('newPassword');
-                input.type = input.type === 'password' ? 'text' : 'password';
-                this.classList.toggle('fa-eye-slash');
-            });
-            
-            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-                const input = document.getElementById('confirmPassword');
-                input.type = input.type === 'password' ? 'text' : 'password';
-                this.classList.toggle('fa-eye-slash');
-            });
-            
-            // Password strength checker
-            document.getElementById('newPassword').addEventListener('input', function() {
-                checkPasswordStrength(this.value);
-            });
-            
-            // Set up change password button
-            document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
-            
-            // Set up logout
-            document.getElementById('logoutLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                logoutUser();
-            });
-            
-            // Set up edit buttons
-            document.getElementById('editNameBtn').addEventListener('click', function() {
-                editingField = 'fullName';
-                document.getElementById('editModalTitle').textContent = 'Edit Full Name';
-                document.getElementById('editFieldLabel').textContent = 'Full Name';
-                document.getElementById('editFieldInput').value = userData.fullName || '';
-                document.getElementById('editModal').classList.add('open');
-                document.getElementById('editFieldInput').focus();
-            });
-            
-            document.getElementById('editMobileBtn').addEventListener('click', function() {
-                editingField = 'mobileNumber';
-                document.getElementById('editModalTitle').textContent = 'Edit Mobile Number';
-                document.getElementById('editFieldLabel').textContent = 'Mobile Number';
-                document.getElementById('editFieldInput').value = userData.mobileNumber || '';
-                document.getElementById('editModal').classList.add('open');
-                document.getElementById('editFieldInput').focus();
-            });
-            
-            // Set up save edit button
-            document.getElementById('saveEditBtn').addEventListener('click', function() {
-                const newValue = document.getElementById('editFieldInput').value.trim();
-                if (!newValue) {
-                    showToast('Please enter a value', 'error');
-                    return;
+            // Add this to ensure modal closes when clicking outside
+            document.getElementById('editModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('open');
                 }
-                updateProfileField(editingField, newValue);
-            });
-            
-            // Close modal
-            document.getElementById('closeEditModal').addEventListener('click', function() {
-                document.getElementById('editModal').classList.remove('open');
-            });
-            
-            // Copy referral link
-            document.getElementById('copyReferralBtn').addEventListener('click', function() {
-                const referralInput = document.getElementById('referralLink');
-                referralInput.select();
-                document.execCommand('copy');
-                showToast('Referral link copied to clipboard!');
             });
         });
     </script>
