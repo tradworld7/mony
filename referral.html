@@ -1,26 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-  // Firebase Config (apna config use karein)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - Referral Program</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--white-color);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 70px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            gap: 0.8rem;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 70px;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        /* Form Styles */
+        .form-container {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--gray-color);
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Toast Notifications Container */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: var(--sidebar-width);
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -96,7 +362,9 @@
                     </tr>
                 </thead>
                 <tbody id="referralList">
-                    <!-- Referral list will be populated by JavaScript -->
+                    <tr>
+                        <td colspan="5" class="text-center">Loading referrals...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -109,25 +377,152 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
-        // Initialize the referral page
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
+        // Check authentication state
+        function checkAuthState() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    updateReferralLink();
+                    loadReferrals();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        // Update referral link
+        function updateReferralLink() {
+            const baseUrl = window.location.origin;
+            document.getElementById('referralLink').value = `${baseUrl}/signup.html?ref=${currentUser.uid}`;
+        }
+
+        // Copy referral link to clipboard
+        function copyReferralLinkToClipboard() {
+            const referralInput = document.getElementById('referralLink');
+            referralInput.select();
+            document.execCommand('copy');
+            showToast('Referral link copied to clipboard!', 'success');
+        }
+
+        // Load user's referrals
+        function loadReferrals() {
+            const referralListRef = database.ref(`users/${currentUser.uid}/referrals`);
+            
+            referralListRef.on('value', (snapshot) => {
+                const referrals = snapshot.val();
+                const tbody = document.getElementById('referralList');
+                tbody.innerHTML = '';
+                
+                if (!referrals || Object.keys(referrals).length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">You don't have any referrals yet</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Get all referral user data
+                const referralPromises = Object.keys(referrals).map(userId => {
+                    return database.ref(`users/${userId}`).once('value').then(userSnapshot => {
+                        return {
+                            id: userId,
+                            referralData: referrals[userId],
+                            userData: userSnapshot.val()
+                        };
+                    });
+                });
+                
+                Promise.all(referralPromises).then(results => {
+                    results.forEach(result => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${result.userData?.fullName || 'Unknown'}</td>
+                            <td>${new Date(result.referralData.joinDate).toLocaleDateString()}</td>
+                            <td>${result.referralData.status || 'Active'}</td>
+                            <td>$${(result.userData?.balance || 0).toFixed(2)}</td>
+                            <td>$${(result.referralData.earnings || 0).toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                });
+            }, (error) => {
+                console.error('Error loading referrals:', error);
+                showToast('Error loading referral data', 'error');
+            });
+        }
+
+        // Logout user
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                showToast('Error logging out', 'error');
+            });
+        }
+
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             // Check auth state
             checkAuthState();
             
-            // Load user data if logged in
-            if (currentUser) {
-                loadUserData(currentUser.uid);
-                updateReferralLink();
-            } else {
-                window.location.href = 'login.html';
-            }
-            
-            // Set up copy referral link
+            // Set up copy referral link button
             document.getElementById('copyReferralLink').addEventListener('click', copyReferralLinkToClipboard);
+            
+            // Set up social share buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                if (btn.innerHTML.includes('fa-whatsapp')) {
+                    btn.addEventListener('click', () => shareViaWhatsApp());
+                } else if (btn.innerHTML.includes('fa-telegram')) {
+                    btn.addEventListener('click', () => shareViaTelegram());
+                } else if (btn.innerHTML.includes('fa-twitter')) {
+                    btn.addEventListener('click', () => shareViaTwitter());
+                }
+            });
             
             // Set up logout
             document.getElementById('logoutLink').addEventListener('click', (e) => {
@@ -135,16 +530,30 @@
                 logoutUser();
             });
             
-            function updateReferralLink() {
-                document.getElementById('referralLink').value = `https://tradworld7.github.io/mony/?ref=${currentUser.uid}`;
-            }
-            
-            function copyReferralLinkToClipboard() {
-                document.getElementById('referralLink').select();
-                document.execCommand('copy');
-                showToast('Referral link copied to clipboard!', 'success');
-            }
+            // Set up menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
         });
+
+        // Social sharing functions
+        function shareViaWhatsApp() {
+            const referralLink = document.getElementById('referralLink').value;
+            const message = `Join Trade World using my referral link: ${referralLink}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function shareViaTelegram() {
+            const referralLink = document.getElementById('referralLink').value;
+            const message = `Join Trade World using my referral link: ${referralLink}`;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function shareViaTwitter() {
+            const referralLink = document.getElementById('referralLink').value;
+            const message = `Join Trade World using my referral link: ${referralLink}`;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
+        }
     </script>
 </body>
 </html>
