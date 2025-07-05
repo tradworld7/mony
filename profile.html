@@ -7,25 +7,435 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* [Previous CSS styles remain exactly the same] */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .header-balance {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .profile-container {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .profile-sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-email {
+            color: var(--gray-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .referral-box {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .referral-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .referral-input {
+            display: flex;
+            margin-top: 1rem;
+        }
+
+        .referral-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .referral-input button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 1rem;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .profile-main {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-control:disabled {
+            background-color: #f5f5f5;
+        }
+
+        .edit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Toast Styles */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 3000;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 1rem;
+            cursor: pointer;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .profile-container {
+                flex-direction: column;
+            }
+            
+            .profile-sidebar {
+                width: 100%;
+            }
+        }
     </style>
 </head>
-<script>
-  // Firebase Config (apna config use karein)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
 <body>
-    <!-- [Previous HTML structure remains exactly the same until the script section] -->
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="header-balance">
+            Balance: $<span id="headerBalance">0.00</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="profile-container">
+            <!-- Profile Sidebar -->
+            <div class="profile-sidebar">
+                <div class="profile-avatar" id="userAvatar">TW</div>
+                <h2 class="profile-name" id="profileName">User Name</h2>
+                <p class="profile-email" id="profileEmail">user@example.com</p>
+                
+                <div class="referral-box">
+                    <h3 class="referral-title">Your Referral Link</h3>
+                    <div class="referral-input">
+                        <input type="text" id="referralLink" readonly>
+                        <button id="copyReferralBtn"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Main Content -->
+            <div class="profile-main">
+                <h2 class="section-title">Profile Information</h2>
+                
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" class="form-control" disabled>
+                    <button class="edit-btn" data-field="fullName">Edit</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userEmail">Email Address</label>
+                    <input type="email" id="userEmail" class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mobileNumber">Mobile Number</label>
+                    <input type="tel" id="mobileNumber" class="form-control" disabled>
+                    <button class="edit-btn" data-field="mobileNumber">Edit</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userId">User ID</label>
+                    <input type="text" id="userId" class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label for="accountCreated">Account Created</label>
+                    <input type="text" id="accountCreated" class="form-control" disabled>
+                </div>
+                
+                <h2 class="section-title" style="margin-top: 2rem;">Change Password</h2>
+                
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" class="form-control">
+                </div>
+                
+                <button id="changePasswordBtn" class="btn btn-primary">
+                    <span id="changePassText">Change Password</span>
+                    <span id="changePassSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Edit Field</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label id="modalFieldLabel">Field Name</label>
+                <input type="text" id="modalFieldInput" class="form-control">
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelEditBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveEditBtn">
+                    <span id="saveEditText">Save Changes</span>
+                    <span id="saveEditSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Firebase and App Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -34,12 +444,14 @@
     <script>
         // Firebase configuration (REPLACE WITH YOUR ACTUAL CONFIG)
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
         };
 
         // Initialize Firebase
@@ -52,9 +464,30 @@
         let userData = {};
         let editingField = '';
 
-        // [Keep all your helper functions like showToast, checkPasswordStrength]
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
 
-        // MODIFIED loadUserData function
+        // Load user data from Firebase
         function loadUserData(userId) {
             database.ref('users/' + userId).on('value', (snapshot) => {
                 if (!snapshot.exists()) {
@@ -78,6 +511,7 @@
                 document.getElementById('mobileNumber').value = userData.mobileNumber || '';
                 document.getElementById('userId').value = userId;
                 document.getElementById('profileName').textContent = userData.fullName || 'User';
+                document.getElementById('profileEmail').textContent = currentUser.email || '';
                 
                 // Format balance display
                 const balance = userData.balance || 0;
@@ -92,8 +526,8 @@
                     document.getElementById('accountCreated').value = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
                 }
                 
-                // Set referral link - FIXED THIS PART
-                const baseUrl = "https://tradworld7.github.io/mony";
+                // Set referral link
+                const baseUrl = window.location.origin;
                 document.getElementById('referralLink').value = `${baseUrl}/signup.html?ref=${userId}`;
                 
                 // Set avatar initials
@@ -106,7 +540,7 @@
             });
         }
 
-        // MODIFIED changePassword function
+        // Change password function
         function changePassword() {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
@@ -168,7 +602,7 @@
                 });
         }
 
-        // MODIFIED updateProfileField function
+        // Update profile field
         function updateProfileField(field, value) {
             if (!field || !value) {
                 showToast('Invalid field or value', 'error');
@@ -209,9 +643,7 @@
                 });
         }
 
-        // [Keep all other functions the same]
-
-        // MODIFIED DOM Content Loaded event listener
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize auth state
             auth.onAuthStateChanged(user => {
@@ -223,9 +655,54 @@
                 }
             });
             
-            // [Keep all your event listeners the same]
+            // Edit buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const field = this.getAttribute('data-field');
+                    const currentValue = document.getElementById(field).value;
+                    
+                    editingField = field;
+                    document.getElementById('modalTitle').textContent = `Edit ${field === 'fullName' ? 'Full Name' : 'Mobile Number'}`;
+                    document.getElementById('modalFieldLabel').textContent = field === 'fullName' ? 'Full Name' : 'Mobile Number';
+                    document.getElementById('modalFieldInput').value = currentValue;
+                    document.getElementById('modalFieldInput').focus();
+                    
+                    document.getElementById('editModal').classList.add('open');
+                });
+            });
             
-            // Add this to ensure modal closes when clicking outside
+            // Save edit button
+            document.getElementById('saveEditBtn').addEventListener('click', function() {
+                const newValue = document.getElementById('modalFieldInput').value.trim();
+                if (newValue) {
+                    updateProfileField(editingField, newValue);
+                } else {
+                    showToast('Please enter a valid value', 'error');
+                }
+            });
+            
+            // Cancel edit button
+            document.getElementById('cancelEditBtn').addEventListener('click', function() {
+                document.getElementById('editModal').classList.remove('open');
+            });
+            
+            // Modal close button
+            document.getElementById('modalClose').addEventListener('click', function() {
+                document.getElementById('editModal').classList.remove('open');
+            });
+            
+            // Change password button
+            document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+            
+            // Copy referral link button
+            document.getElementById('copyReferralBtn').addEventListener('click', function() {
+                const referralInput = document.getElementById('referralLink');
+                referralInput.select();
+                document.execCommand('copy');
+                showToast('Referral link copied to clipboard!', 'success');
+            });
+            
+            // Close modal when clicking outside
             document.getElementById('editModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.classList.remove('open');
