@@ -7,11 +7,304 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* [Previous CSS styles remain exactly the same] */
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #34495e;
+            color: white;
+            position: fixed;
+            top: 60px;
+            left: -250px;
+            height: calc(100vh - 60px);
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            gap: 10px;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: #2c3e50;
+        }
+
+        .sidebar-menu li a.active {
+            background-color: #3498db;
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 60px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .main-content.shifted {
+            margin-left: 250px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .table tr:hover {
+            background-color: #f5f7fa;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .level-1 { background-color: #3498db; }
+        .level-2 { background-color: #2ecc71; }
+        .level-3 { background-color: #f39c12; }
+        .level-4 { background-color: #e74c3c; }
+        .level-5 { background-color: #7f8c8d; }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        .toast {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background-color: #27ae60;
+        }
+
+        .toast.error {
+            background-color: #e74c3c;
+        }
+
+        .toast.warning {
+            background-color: #f39c12;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .sidebar.active + .main-content {
+                margin-left: 250px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- [Header and Sidebar HTML remain exactly the same] -->
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="team-structure.html" class="active"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
@@ -166,7 +459,7 @@
             });
         }
 
-        // Load Team Structure - UPDATED FUNCTION
+        // Load Team Structure - FIXED FUNCTION
         async function loadTeamStructure(userId) {
             try {
                 // Initialize level stats
@@ -194,9 +487,12 @@
                     return;
                 }
                 
+                // Array to hold all promises for user data fetching
+                const userPromises = [];
+                
                 // Process each level in the referral tree
                 for (const level in referralTree) {
-                    if (referralTree.hasOwnProperty(level)) {
+                    if (referralTree.hasOwnProperty(level) && level >= 1 && level <= 5) {
                         const levelUsers = referralTree[level];
                         
                         // Update level count
@@ -205,54 +501,15 @@
                         // Process each user in this level
                         for (const referralId in levelUsers) {
                             if (levelUsers.hasOwnProperty(referralId)) {
-                                // Get user details
-                                const userSnapshot = await database.ref(`users/${referralId}`).once('value');
-                                const userData = userSnapshot.val();
-                                
-                                if (!userData) continue;
-                                
-                                // Calculate total investment
-                                let totalInvestment = 0;
-                                if (userData.investments) {
-                                    Object.values(userData.investments).forEach(investment => {
-                                        totalInvestment += parseFloat(investment.amount) || 0;
-                                    });
-                                }
-                                
-                                // Calculate earnings for this level
-                                const commissionPercentage = 6 - parseInt(level); // 5% for level 1, 4% for level 2, etc.
-                                const earnings = totalInvestment * (commissionPercentage / 100);
-                                levelStats[level].earnings += earnings;
-                                
-                                // Format join date
-                                const joinDate = new Date(userData.joinDate || Date.now());
-                                const formattedDate = joinDate.toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                });
-                                
-                                // Get referrer name
-                                let referrerName = "Direct";
-                                if (userData.referredBy && userData.referredBy !== userId) {
-                                    const referrerSnapshot = await database.ref(`users/${userData.referredBy}`).once('value');
-                                    const referrerData = referrerSnapshot.val();
-                                    referrerName = referrerData?.name || referrerData?.email || "Unknown";
-                                }
-                                
-                                // Add row to table
-                                addTeamMemberRow(
-                                    userData.name || userData.email || "Unknown",
-                                    level,
-                                    formattedDate,
-                                    totalInvestment,
-                                    earnings,
-                                    referrerName
-                                );
+                                const userPromise = processTeamMember(referralId, level, levelStats);
+                                userPromises.push(userPromise);
                             }
                         }
                     }
                 }
+                
+                // Wait for all user data to be processed
+                await Promise.all(userPromises);
                 
                 // Update level stats display
                 updateLevelStats(levelStats);
@@ -265,6 +522,59 @@
                         <td colspan="6" style="text-align: center; color: red;">Error loading team data. Please try again.</td>
                     </tr>
                 `;
+            }
+        }
+
+        // Process each team member's data
+        async function processTeamMember(userId, level, levelStats) {
+            try {
+                // Get user details
+                const userSnapshot = await database.ref(`users/${userId}`).once('value');
+                const userData = userSnapshot.val();
+                
+                if (!userData) return;
+                
+                // Calculate total investment
+                let totalInvestment = 0;
+                if (userData.investments) {
+                    Object.values(userData.investments).forEach(investment => {
+                        totalInvestment += parseFloat(investment.amount) || 0;
+                    });
+                }
+                
+                // Calculate earnings for this level
+                const commissionPercentage = 6 - parseInt(level); // 5% for level 1, 4% for level 2, etc.
+                const earnings = totalInvestment * (commissionPercentage / 100);
+                levelStats[level].earnings += earnings;
+                
+                // Format join date
+                const joinDate = new Date(userData.joinDate || Date.now());
+                const formattedDate = joinDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                // Get referrer name
+                let referrerName = "Direct";
+                if (userData.referredBy && userData.referredBy !== currentUser.uid) {
+                    const referrerSnapshot = await database.ref(`users/${userData.referredBy}`).once('value');
+                    const referrerData = referrerSnapshot.val();
+                    referrerName = referrerData?.name || referrerData?.email || "Unknown";
+                }
+                
+                // Add row to table
+                addTeamMemberRow(
+                    userData.name || userData.email || "Unknown",
+                    level,
+                    formattedDate,
+                    totalInvestment,
+                    earnings,
+                    referrerName
+                );
+                
+            } catch (error) {
+                console.error(`Error processing user ${userId}:`, error);
             }
         }
 
@@ -294,7 +604,6 @@
             }
         }
 
-        // [Rest of the JavaScript functions remain the same]
         // Logout User
         function logoutUser() {
             firebase.auth().signOut().then(() => {
