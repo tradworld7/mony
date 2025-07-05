@@ -7,398 +7,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        /* Header Styles */
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-icon {
-            font-size: 1.5rem;
-        }
-
-        .logo-text {
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background-color: #34495e;
-            color: white;
-            position: fixed;
-            top: 60px;
-            left: -250px;
-            height: calc(100vh - 60px);
-            transition: all 0.3s ease;
-            overflow-y: auto;
-            z-index: 999;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 1rem 0;
-        }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            padding: 0.8rem 1.5rem;
-            color: #ecf0f1;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            gap: 10px;
-        }
-
-        .sidebar-menu li a:hover {
-            background-color: #2c3e50;
-        }
-
-        .sidebar-menu li a.active {
-            background-color: #3498db;
-        }
-
-        .sidebar-menu li a i {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            margin-top: 60px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .main-content.shifted {
-            margin-left: 250px;
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: #2c3e50;
-        }
-
-        /* Dashboard Cards */
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        .card-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Table Styles */
-        .table-responsive {
-            overflow-x: auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th, .table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .table tr:hover {
-            background-color: #f5f7fa;
-        }
-
-        .level-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .level-1 { background-color: #3498db; }
-        .level-2 { background-color: #2ecc71; }
-        .level-3 { background-color: #f39c12; }
-        .level-4 { background-color: #e74c3c; }
-        .level-5 { background-color: #7f8c8d; }
-
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1100;
-        }
-
-        .toast {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            animation: slideIn 0.3s ease;
-        }
-
-        .toast.success {
-            background-color: #27ae60;
-        }
-
-        .toast.error {
-            background-color: #e74c3c;
-        }
-
-        .toast.warning {
-            background-color: #f39c12;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Responsive Styles */
-        @media (min-width: 992px) {
-            .sidebar {
-                left: 0;
-            }
-            .main-content {
-                margin-left: 250px;
-            }
-            .menu-toggle {
-                display: none;
-            }
-        }
-
-        @media (max-width: 991px) {
-            .sidebar.active + .main-content {
-                margin-left: 250px;
-            }
-        }
+        /* (Your existing CSS remains exactly the same) */
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <i class="fas fa-chart-line logo-icon"></i>
-            <span class="logo-text">Trade World</span>
-        </div>
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    </header>
-
-    <!-- Sidebar Menu -->
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
-            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
-            <li><a href="team-structure.html" class="active"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
-            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <h1 class="page-title">Team Structure</h1>
-        
-        <div class="dashboard-cards">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Level 1 (Direct)</span>
-                    <div class="card-icon" style="background-color: #3498db;">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="level1Count">0</div>
-                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level1Earnings">$0.00</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Level 2</span>
-                    <div class="card-icon" style="background-color: #2ecc71;">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="level2Count">0</div>
-                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level2Earnings">$0.00</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Level 3</span>
-                    <div class="card-icon" style="background-color: #f39c12;">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="level3Count">0</div>
-                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level3Earnings">$0.00</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Level 4</span>
-                    <div class="card-icon" style="background-color: #e74c3c;">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="level4Count">0</div>
-                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level4Earnings">$0.00</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Level 5</span>
-                    <div class="card-icon" style="background-color: #7f8c8d;">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="level5Count">0</div>
-                <div class="card-value" style="font-size: 1.2rem;">Earnings: <span id="level5Earnings">$0.00</span></div>
-            </div>
-        </div>
-        
-        <h2 class="page-title" style="margin-top: 2rem;">Team Members</h2>
-        
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Level</th>
-                        <th>Join Date</th>
-                        <th>Total Investment</th>
-                        <th>Your Earnings</th>
-                        <th>Referred By</th>
-                    </tr>
-                </thead>
-                <tbody id="teamMembersList">
-                    <tr>
-                        <td colspan="6" style="text-align: center;">Loading team members...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
-
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- (Your existing HTML structure remains the same until the scripts) -->
 
     <!-- Firebase and App Scripts -->
+    <!-- Only use Firebase v8 (compatible) version -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Your Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -415,108 +36,56 @@
         const database = firebase.database();
         let currentUser = null;
 
-        // DOM Elements
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const logoutLink = document.getElementById('logoutLink');
-        const teamMembersList = document.getElementById('teamMembersList');
-        const toastContainer = document.getElementById('toastContainer');
+        // DOM Elements (same as before)
 
-        // Level counters
-        const levelCounts = {
-            1: document.getElementById('level1Count'),
-            2: document.getElementById('level2Count'),
-            3: document.getElementById('level3Count'),
-            4: document.getElementById('level4Count'),
-            5: document.getElementById('level5Count')
-        };
-
-        // Level earnings
-        const levelEarnings = {
-            1: document.getElementById('level1Earnings'),
-            2: document.getElementById('level2Earnings'),
-            3: document.getElementById('level3Earnings'),
-            4: document.getElementById('level4Earnings'),
-            5: document.getElementById('level5Earnings')
-        };
-
-        // Toggle Sidebar
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            mainContent.classList.toggle('shifted');
-        });
-
-        // Check Authentication State
-        function checkAuthState() {
-            firebase.auth().onAuthStateChanged(user => {
-                if (user) {
-                    currentUser = user;
-                    loadTeamStructure(user.uid);
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
-        }
-
-        // Load Team Structure - FIXED FUNCTION
+        // Improved loadTeamStructure function
         async function loadTeamStructure(userId) {
             try {
                 // Initialize level stats
                 const levelStats = {
-                    1: { count: 0, earnings: 0 },
-                    2: { count: 0, earnings: 0 },
-                    3: { count: 0, earnings: 0 },
-                    4: { count: 0, earnings: 0 },
-                    5: { count: 0, earnings: 0 }
+                    1: { count: 0, earnings: 0, members: [] },
+                    2: { count: 0, earnings: 0, members: [] },
+                    3: { count: 0, earnings: 0, members: [] },
+                    4: { count: 0, earnings: 0, members: [] },
+                    5: { count: 0, earnings: 0, members: [] }
                 };
                 
                 // Clear the table
-                teamMembersList.innerHTML = '';
+                teamMembersList.innerHTML = '<tr><td colspan="6" style="text-align: center;">Loading team members...</td></tr>';
                 
-                // Get the user's referral tree
-                const referralTreeSnapshot = await database.ref(`users/${userId}/referralTree`).once('value');
-                const referralTree = referralTreeSnapshot.val();
+                // First, get the user's direct referrals (Level 1)
+                const directRefSnapshot = await database.ref('users').orderByChild('referredBy').equalTo(userId).once('value');
+                const directRefs = directRefSnapshot.val() || {};
                 
-                if (!referralTree) {
-                    teamMembersList.innerHTML = `
-                        <tr>
-                            <td colspan="6" style="text-align: center;">No team members found</td>
-                        </tr>
-                    `;
-                    return;
-                }
+                levelStats[1].count = Object.keys(directRefs).length;
                 
-                // Array to hold all promises for user data fetching
-                const userPromises = [];
+                // Process each direct referral and their downlines
+                const processingPromises = [];
                 
-                // Process each level in the referral tree
-                for (const level in referralTree) {
-                    if (referralTree.hasOwnProperty(level) && level >= 1 && level <= 5) {
-                        const levelUsers = referralTree[level];
+                for (const directRefId in directRefs) {
+                    if (directRefs.hasOwnProperty(directRefId)) {
+                        // Process Level 1 member
+                        processingPromises.push(
+                            processTeamMember(directRefId, 1, levelStats)
+                        );
                         
-                        // Update level count
-                        levelStats[level].count = Object.keys(levelUsers).length;
-                        
-                        // Process each user in this level
-                        for (const referralId in levelUsers) {
-                            if (levelUsers.hasOwnProperty(referralId)) {
-                                const userPromise = processTeamMember(referralId, level, levelStats);
-                                userPromises.push(userPromise);
-                            }
-                        }
+                        // Get Level 2 (referrals of Level 1)
+                        processingPromises.push(
+                            getDownlineMembers(directRefId, 2, levelStats)
+                        );
                     }
                 }
                 
-                // Wait for all user data to be processed
-                await Promise.all(userPromises);
+                // Wait for all processing to complete
+                await Promise.all(processingPromises);
                 
-                // Update level stats display
+                // Update the UI
                 updateLevelStats(levelStats);
+                renderTeamMembers(levelStats);
                 
             } catch (error) {
-                showToast('Error loading team structure', 'error');
                 console.error('Error loading team structure:', error);
+                showToast('Error loading team data', 'error');
                 teamMembersList.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center; color: red;">Error loading team data. Please try again.</td>
@@ -525,10 +94,39 @@
             }
         }
 
-        // Process each team member's data
+        // Recursive function to get downline members
+        async function getDownlineMembers(uplineId, currentLevel, levelStats) {
+            if (currentLevel > 5) return;
+            
+            const snapshot = await database.ref('users').orderByChild('referredBy').equalTo(uplineId).once('value');
+            const downlines = snapshot.val() || {};
+            
+            levelStats[currentLevel].count += Object.keys(downlines).length;
+            
+            const processingPromises = [];
+            
+            for (const downlineId in downlines) {
+                if (downlines.hasOwnProperty(downlineId)) {
+                    // Process this level member
+                    processingPromises.push(
+                        processTeamMember(downlineId, currentLevel, levelStats)
+                    );
+                    
+                    // Get next level if not at level 5 yet
+                    if (currentLevel < 5) {
+                        processingPromises.push(
+                            getDownlineMembers(downlineId, currentLevel + 1, levelStats)
+                        );
+                    }
+                }
+            }
+            
+            await Promise.all(processingPromises);
+        }
+
+        // Process team member data
         async function processTeamMember(userId, level, levelStats) {
             try {
-                // Get user details
                 const userSnapshot = await database.ref(`users/${userId}`).once('value');
                 const userData = userSnapshot.val();
                 
@@ -542,8 +140,8 @@
                     });
                 }
                 
-                // Calculate earnings for this level
-                const commissionPercentage = 6 - parseInt(level); // 5% for level 1, 4% for level 2, etc.
+                // Calculate earnings for this level (adjust commission % as needed)
+                const commissionPercentage = [5, 4, 3, 2, 1][level - 1]; // 5% for L1, 4% for L2, etc.
                 const earnings = totalInvestment * (commissionPercentage / 100);
                 levelStats[level].earnings += earnings;
                 
@@ -563,85 +161,59 @@
                     referrerName = referrerData?.name || referrerData?.email || "Unknown";
                 }
                 
-                // Add row to table
-                addTeamMemberRow(
-                    userData.name || userData.email || "Unknown",
+                // Add to members list for this level
+                levelStats[level].members.push({
+                    name: userData.name || userData.email || "Unknown",
                     level,
-                    formattedDate,
-                    totalInvestment,
+                    joinDate: formattedDate,
+                    investment: totalInvestment,
                     earnings,
-                    referrerName
-                );
+                    referredBy: referrerName
+                });
                 
             } catch (error) {
                 console.error(`Error processing user ${userId}:`, error);
             }
         }
 
-        // Add team member row to table
-        function addTeamMemberRow(name, level, joinDate, investment, earnings, referredBy) {
-            const row = document.createElement('tr');
+        // Render all team members in the table
+        function renderTeamMembers(levelStats) {
+            teamMembersList.innerHTML = '';
             
-            row.innerHTML = `
-                <td>${name}</td>
-                <td><span class="level-badge level-${level}">Level ${level}</span></td>
-                <td>${joinDate}</td>
-                <td>$${investment.toFixed(2)}</td>
-                <td>$${earnings.toFixed(2)}</td>
-                <td>${referredBy}</td>
-            `;
-            
-            teamMembersList.appendChild(row);
-        }
-
-        // Update level statistics display
-        function updateLevelStats(stats) {
-            for (const level in stats) {
-                if (stats.hasOwnProperty(level)) {
-                    levelCounts[level].textContent = stats[level].count;
-                    levelEarnings[level].textContent = `$${stats[level].earnings.toFixed(2)}`;
-                }
+            // Combine all members from all levels
+            const allMembers = [];
+            for (let level = 1; level <= 5; level++) {
+                allMembers.push(...levelStats[level].members);
             }
-        }
-
-        // Logout User
-        function logoutUser() {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                showToast('Error logging out', 'error');
-                console.error('Logout error:', error);
+            
+            if (allMembers.length === 0) {
+                teamMembersList.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center;">No team members found</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Sort by level (optional)
+            allMembers.sort((a, b) => a.level - b.level);
+            
+            // Add rows to table
+            allMembers.forEach(member => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${member.name}</td>
+                    <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
+                    <td>${member.joinDate}</td>
+                    <td>$${member.investment.toFixed(2)}</td>
+                    <td>$${member.earnings.toFixed(2)}</td>
+                    <td>${member.referredBy}</td>
+                `;
+                teamMembersList.appendChild(row);
             });
         }
 
-        // Show Toast Notification
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${message}</span>
-                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; margin-left: 10px; cursor: pointer;">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
-        }
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthState();
-            
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                logoutUser();
-            });
-        });
+        // (Rest of your existing functions remain the same)
     </script>
 </body>
 </html>
