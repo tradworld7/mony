@@ -1,86 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-  // Firebase Config (apna config use karein)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Investment Packages | Trade World</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="./assets/css/style.css">
     <style>
-        /* Additional styles for packages page */
+        /* Base Styles */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 70px;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        /* Packages Grid */
         .packages-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin-top: 2rem;
         }
-        
+
         .package-card {
-            background: #fff;
+            background: var(--white-color);
             border-radius: 10px;
             padding: 2rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             text-align: center;
             transition: transform 0.3s ease;
         }
-        
+
         .package-card:hover {
             transform: translateY(-5px);
         }
-        
+
         .package-name {
             font-size: 1.5rem;
-            color: #2c3e50;
+            color: var(--dark-color);
             margin-bottom: 1rem;
         }
-        
+
         .package-price {
             font-size: 2rem;
             font-weight: 700;
-            color: #3498db;
+            color: var(--primary-color);
             margin-bottom: 1rem;
         }
-        
+
         .package-return {
             font-size: 1.2rem;
-            color: #27ae60;
+            color: var(--success-color);
             margin-bottom: 1.5rem;
             font-weight: 600;
         }
-        
+
         .package-features {
             list-style: none;
             padding: 0;
             margin-bottom: 2rem;
             text-align: left;
         }
-        
+
         .package-features li {
             margin-bottom: 0.8rem;
             display: flex;
             align-items: center;
         }
-        
+
         .package-features i {
-            color: #27ae60;
+            color: var(--success-color);
             margin-right: 0.5rem;
         }
-        
+
         /* Modal styles */
         .modal {
             display: none;
@@ -94,20 +200,20 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .modal.open {
             display: flex;
         }
-        
+
         .modal-content {
-            background: #fff;
+            background: var(--white-color);
             padding: 2rem;
             border-radius: 10px;
             width: 90%;
             max-width: 500px;
             position: relative;
         }
-        
+
         .modal-close {
             position: absolute;
             top: 1rem;
@@ -116,17 +222,114 @@
             background: none;
             border: none;
             cursor: pointer;
+            color: var(--gray-color);
         }
-        
+
         .modal-title {
             margin-bottom: 1.5rem;
-            color: #2c3e50;
+            color: var(--dark-color);
         }
-        
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .error-text {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
         /* Spinner for loading */
         .spinner {
             display: inline-block;
             margin-left: 0.5rem;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .auth-buttons {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .packages-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -140,7 +343,7 @@
         <div class="auth-buttons">
             <a href="login.html" class="btn btn-outline" id="loginBtnHeader">Login</a>
             <a href="signup.html" class="btn btn-primary" id="signupBtnHeader">Sign Up</a>
-            <a href="dashboard.html" class="btn btn-outline" id="dashboardBtnHeader" style="display:none;">Dashboard</a>
+            <a href="index.html" class="btn btn-outline" id="dashboardBtnHeader" style="display:none;">Dashboard</a>
         </div>
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
@@ -158,7 +361,7 @@
                 <div class="package-return">Returns $20</div>
                 <ul class="package-features">
                     <li><i class="fas fa-check-circle"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle"></i>  Basic Trading Access</li>
+                    <li><i class="fas fa-check-circle"></i> Basic Trading Access</li>
                     <li><i class="fas fa-check-circle"></i> Beginner-Friendly Tools</li>
                 </ul>
                 <button class="btn btn-primary" data-package="10" data-package-name="Starter Package">Buy Now</button>
@@ -200,12 +403,12 @@
                 <div class="form-group">
                     <p>You are about to purchase the <strong><span id="packageName">Starter</span></strong> package for <strong>$<span id="packagePrice">10</span></strong></p>
                     <p>Your current balance: <strong>$<span id="modalBalance">0.00</span></strong></p>
-                    <p id="balanceWarning" class="error-text" style="display:none;color:#e74c3c;font-weight:bold;">Insufficient balance for this package!</p>
+                    <p id="balanceWarning" class="error-text" style="display:none;">Insufficient balance for this package!</p>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Enter your password to confirm</label>
-                    <input type="password" class="form-control" id="confirmPassword" placeholder="Your account password">
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Your account password" required>
                 </div>
                 
                 <button class="btn btn-primary" id="confirmPurchase">
@@ -226,14 +429,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Firebase configuration (replace with your actual config)
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
         };
 
         // Initialize Firebase
@@ -247,86 +452,115 @@
 
         // Show toast notification
         function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.textContent = message;
-            document.getElementById('toastContainer').appendChild(toast);
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
             
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
             setTimeout(() => {
                 toast.remove();
-            }, 3000);
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
         }
 
         // Update UI based on auth state
         function updateUI(user) {
             currentUser = user;
+            const loginBtn = document.getElementById('loginBtnHeader');
+            const signupBtn = document.getElementById('signupBtnHeader');
+            const dashboardBtn = document.getElementById('dashboardBtnHeader');
+
             if (user) {
-                document.getElementById('loginBtnHeader').style.display = 'none';
-                document.getElementById('signupBtnHeader').style.display = 'none';
-                document.getElementById('dashboardBtnHeader').style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+                dashboardBtn.style.display = 'inline-block';
                 
                 // Load user data
                 database.ref('users/' + user.uid).once('value').then(snapshot => {
                     userData = snapshot.val() || { balance: 0 };
-                    // Update balance display throughout the page
-                    document.querySelectorAll('.balance-display').forEach(el => {
-                        el.textContent = userData.balance.toFixed(2);
-                    });
+                    document.getElementById('modalBalance').textContent = userData.balance.toFixed(2);
+                }).catch(error => {
+                    showToast('Error loading user data: ' + error.message, 'error');
                 });
             } else {
-                document.getElementById('loginBtnHeader').style.display = 'inline-block';
-                document.getElementById('signupBtnHeader').style.display = 'inline-block';
-                document.getElementById('dashboardBtnHeader').style.display = 'none';
+                loginBtn.style.display = 'inline-block';
+                signupBtn.style.display = 'inline-block';
+                dashboardBtn.style.display = 'none';
             }
         }
 
         // Purchase package function
-        function purchasePackage(packageAmount) {
-            if (userData.balance < packageAmount) {
-                showToast('Insufficient balance for this package', 'error');
-                return;
-            }
+        function purchasePackage(packageAmount, packageName) {
+            const confirmBtn = document.getElementById('confirmPurchase');
+            const confirmText = document.getElementById('confirmText');
+            const confirmSpinner = document.getElementById('confirmSpinner');
+            
+            // Show loading state
+            confirmText.style.display = 'none';
+            confirmSpinner.style.display = 'inline-block';
+            confirmBtn.disabled = true;
 
-            document.getElementById('confirmText').style.display = 'none';
-            document.getElementById('confirmSpinner').style.display = 'inline-block';
-            document.getElementById('confirmPurchase').disabled = true;
+            // Calculate new balance
+            const newBalance = userData.balance - packageAmount;
+            
+            // Create package purchase record
+            const purchaseId = Date.now();
+            const purchaseData = {
+                date: new Date().toISOString(),
+                packageName: packageName,
+                amount: packageAmount,
+                returnAmount: packageAmount * 2,
+                status: 'Active',
+                purchaseDate: new Date().toISOString(),
+                maturityDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+            };
 
-            // Simulate purchase processing (replace with actual database update)
-            setTimeout(() => {
-                // Update user balance
-                const newBalance = userData.balance - packageAmount;
-                
-                // Update in database
-                database.ref('users/' + currentUser.uid).update({
-                    balance: newBalance
-                }).then(() => {
+            // Update database
+            const updates = {};
+            updates['users/' + currentUser.uid + '/balance'] = newBalance;
+            updates['investments/' + currentUser.uid + '/' + purchaseId] = purchaseData;
+            updates['transactions/' + currentUser.uid + '/' + purchaseId] = {
+                ...purchaseData,
+                type: 'Investment',
+                details: `Purchased ${packageName} package`
+            };
+
+            database.ref().update(updates)
+                .then(() => {
                     // Update local data
                     userData.balance = newBalance;
                     
                     // Show success message
-                    showToast('Package purchased successfully!', 'success');
+                    showToast(`${packageName} purchased successfully!`, 'success');
                     
                     // Close modal
                     document.getElementById('packageModal').classList.remove('open');
                     
                     // Reset modal
-                    document.getElementById('confirmText').style.display = 'inline-block';
-                    document.getElementById('confirmSpinner').style.display = 'none';
-                    document.getElementById('confirmPurchase').disabled = false;
+                    confirmText.style.display = 'inline-block';
+                    confirmSpinner.style.display = 'none';
+                    confirmBtn.disabled = false;
                     document.getElementById('confirmPassword').value = '';
                     
                     // Update balance display
                     document.getElementById('modalBalance').textContent = newBalance.toFixed(2);
-                    
-                    // Here you would also add the package to user's investments
-                    // database.ref('investments/' + currentUser.uid).push({...});
-                }).catch(error => {
+                })
+                .catch(error => {
                     showToast('Error processing purchase: ' + error.message, 'error');
-                    document.getElementById('confirmText').style.display = 'inline-block';
-                    document.getElementById('confirmSpinner').style.display = 'none';
-                    document.getElementById('confirmPurchase').disabled = false;
+                    confirmText.style.display = 'inline-block';
+                    confirmSpinner.style.display = 'none';
+                    confirmBtn.disabled = false;
                 });
-            }, 1500);
         }
 
         // DOM Content Loaded
@@ -334,18 +568,21 @@
             // Auth state listener
             auth.onAuthStateChanged(updateUI);
 
-            // Package purchase handling
+            // Package purchase buttons
             document.querySelectorAll('[data-package]').forEach(btn => {
                 btn.addEventListener('click', function() {
                     if (!currentUser) {
-                        window.location.href = 'login.html';
+                        showToast('Please login to purchase packages', 'error');
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 1500);
                         return;
                     }
                     
                     const packageAmount = parseFloat(this.getAttribute('data-package'));
                     const packageName = this.getAttribute('data-package-name');
                     
-                    // Show confirmation modal
+                    // Update modal with package details
                     document.getElementById('packageName').textContent = packageName;
                     document.getElementById('packagePrice').textContent = packageAmount;
                     document.getElementById('modalBalance').textContent = userData.balance.toFixed(2);
@@ -358,16 +595,20 @@
                         balanceWarning.style.display = 'none';
                     }
                     
-                    document.getElementById('packageModal').classList.add('open');
+                    // Store package details in modal button
+                    const confirmBtn = document.getElementById('confirmPurchase');
+                    confirmBtn.setAttribute('data-package', packageAmount);
+                    confirmBtn.setAttribute('data-package-name', packageName);
                     
-                    // Store package amount in modal
-                    document.getElementById('confirmPurchase').setAttribute('data-package', packageAmount);
+                    // Show modal
+                    document.getElementById('packageModal').classList.add('open');
                 });
             });
 
-            // Confirm purchase
+            // Confirm purchase button
             document.getElementById('confirmPurchase').addEventListener('click', function() {
                 const packageAmount = parseFloat(this.getAttribute('data-package'));
+                const packageName = this.getAttribute('data-package-name');
                 const password = document.getElementById('confirmPassword').value;
                 
                 if (!password) {
@@ -384,17 +625,29 @@
                 currentUser.reauthenticateWithCredential(credential)
                     .then(() => {
                         // Proceed with package purchase
-                        purchasePackage(packageAmount);
+                        purchasePackage(packageAmount, packageName);
                     })
                     .catch(error => {
                         showToast('Authentication failed: ' + error.message, 'error');
                     });
             });
 
-            // Close modal
+            // Close modal button
             document.getElementById('closePackageModal').addEventListener('click', function() {
                 document.getElementById('packageModal').classList.remove('open');
                 document.getElementById('confirmPassword').value = '';
+                
+                // Reset confirm button
+                const confirmBtn = document.getElementById('confirmPurchase');
+                confirmBtn.disabled = false;
+                document.getElementById('confirmText').style.display = 'inline-block';
+                document.getElementById('confirmSpinner').style.display = 'none';
+            });
+
+            // Menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                // This would toggle a mobile menu if implemented
+                showToast('Mobile menu will be implemented', 'error');
             });
         });
     </script>
