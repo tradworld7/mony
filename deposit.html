@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Funds | Trade World</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Base Styles */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 70px;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        /* Form Styles */
+        .form-container {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group .form-control {
+            flex: 1;
+        }
+
+        /* Address Box */
+        .address-box {
+            background-color: var(--light-color);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .address-box .address {
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        /* Instructions */
+        .instructions {
+            background-color: var(--light-color);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .instructions ol {
+            padding-left: 1.2rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Error Text */
+        .error-text {
+            color: var(--danger-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            margin-left: 0.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-outline" id="loginBtnHeader">Login</a>
+            <a href="signup.html" class="btn btn-primary" id="signupBtnHeader">Sign Up</a>
+            <a href="index.html" class="btn btn-outline" id="dashboardBtnHeader" style="display:none;">Dashboard</a>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Deposit Funds</h1>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">Amount (USD)</label>
+                <input type="number" class="form-control" id="depositAmount" min="10" max="2000" placeholder="Enter amount between $10 and $2000">
+                <div class="error-text" id="amountError">Please enter a valid amount between $10 and $2000</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">USDT BEP20 Address</label>
+                <div class="address-box">
+                    <div class="address">0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886</div>
+                    <button class="btn btn-outline copy-btn" id="copyAddressBtn">
+                        <i class="far fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>Deposit Instructions:</h3>
+                <ol>
+                    <li>Enter the amount you want to deposit (minimum $10, maximum $2000)</li>
+                    <li>Send the exact amount in USDT (BEP20) to the address above</li>
+                    <li>After transaction is complete, paste the transaction hash below</li>
+                    <li>Click "Submit Deposit" to verify your transaction</li>
+                </ol>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Transaction Hash</label>
+                <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash">
+                <div class="error-text" id="hashError">Please enter a valid transaction hash</div>
+            </div>
+            
+            <button class="btn btn-primary btn-block" id="submitDeposit">
+                <span id="submitText">Submit Deposit</span>
+                <span id="submitSpinner" class="spinner" style="display:none;">
+                    <i class="fas fa-spinner"></i>
+                </span>
+            </button>
+        </div>
+        
+        <!-- Toast Notifications Container -->
+        <div class="toast-container" id="toastContainer"></div>
+    </main>
+
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
+        // Update UI based on auth state
+        function updateUI(user) {
+            currentUser = user;
+            const loginBtn = document.getElementById('loginBtnHeader');
+            const signupBtn = document.getElementById('signupBtnHeader');
+            const dashboardBtn = document.getElementById('dashboardBtnHeader');
+
+            if (user) {
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+                dashboardBtn.style.display = 'inline-block';
+            } else {
+                loginBtn.style.display = 'inline-block';
+                signupBtn.style.display = 'inline-block';
+                dashboardBtn.style.display = 'none';
+                showToast('Please login to deposit funds', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            }
+        }
+
+        // Validate transaction hash (basic validation)
+        function validateTransactionHash(hash) {
+            return hash.length === 66 || hash.length === 64;
+        }
+
+        // Process deposit submission
+        function submitDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const txHash = document.getElementById('transactionHash').value.trim();
+            const submitBtn = document.getElementById('submitDeposit');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            // Validate amount
+            if (isNaN(amount) || amount < 10 || amount > 2000) {
+                document.getElementById('amountError').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('amountError').style.display = 'none';
+            }
+            
+            // Validate transaction hash
+            if (!validateTransactionHash(txHash)) {
+                document.getElementById('hashError').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('hashError').style.display = 'none';
+            }
+            
+            // Show loading state
+            submitText.style.display = 'none';
+            submitSpinner.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            // Create deposit record
+            const depositId = Date.now();
+            const depositData = {
+                amount: amount,
+                txHash: txHash,
+                status: 'Pending',
+                date: new Date().toISOString(),
+                userId: currentUser.uid,
+                walletAddress: '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886'
+            };
+            
+            // Save to database
+            database.ref('deposits/' + currentUser.uid + '/' + depositId).set(depositData)
+                .then(() => {
+                    // Add to transactions
+                    database.ref('transactions/' + currentUser.uid + '/' + depositId).set({
+                        type: 'Deposit',
+                        amount: amount,
+                        status: 'Pending',
+                        date: new Date().toISOString(),
+                        details: 'USDT Deposit (BEP20)'
+                    });
+                    
+                    showToast('Deposit submitted successfully! It will be processed after confirmation.', 'success');
+                    
+                    // Reset form
+                    document.getElementById('depositAmount').value = '';
+                    document.getElementById('transactionHash').value = '';
+                })
+                .catch(error => {
+                    showToast('Error submitting deposit: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    // Reset button
+                    submitText.style.display = 'inline-block';
+                    submitSpinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                });
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auth state listener
+            auth.onAuthStateChanged(updateUI);
+
+            // Copy address button
+            document.getElementById('copyAddressBtn').addEventListener('click', function() {
+                const address = '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886';
+                navigator.clipboard.writeText(address)
+                    .then(() => {
+                        showToast('Address copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        showToast('Failed to copy address', 'error');
+                    });
+            });
+
+            // Submit deposit button
+            document.getElementById('submitDeposit').addEventListener('click', function() {
+                if (!currentUser) {
+                    showToast('Please login to deposit funds', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                    return;
+                }
+                submitDeposit();
+            });
+
+            // Menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                // This would toggle a mobile menu if implemented
+                showToast('Mobile menu will be implemented', 'error');
+            });
+        });
+    </script>
+</body>
+</html>
