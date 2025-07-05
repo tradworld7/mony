@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Invoices | Trade World</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--white-color);
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            padding: 1rem 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            margin-right: 0.8rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Invoice Cards */
+        .invoice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .invoice-card {
+            background: var(--white-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .invoice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .invoice-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .invoice-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+
+        .invoice-details {
+            margin: 1rem 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-label {
+            color: var(--gray-color);
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .invoice-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .invoice-return {
+            font-size: 1.2rem;
+            color: var(--success-color);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .no-invoices {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-color);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 0.5rem;
+            animation: slideIn 0.3s;
+        }
+
+        .toast-success {
+            background-color: var(--success-color);
+        }
+
+        .toast-error {
+            background-color: var(--danger-color);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="invoices.html" class="active"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li><a href="signup.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">My Investment Invoices</h1>
+        
+        <div class="invoice-grid" id="invoiceContainer">
+            <!-- Invoices will be loaded here dynamically -->
+            <div class="no-invoices">
+                <i class="fas fa-file-invoice" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>No investment invoices found</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // DOM Elements
+        const invoiceContainer = document.getElementById('invoiceContainer');
+        const logoutLink = document.getElementById('logoutLink');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        // Show Toast
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Format Date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        // Load Invoices
+        function loadInvoices(userId) {
+            database.ref('investments/' + userId).orderByChild('date').once('value')
+                .then(snapshot => {
+                    const invoices = snapshot.val();
+                    invoiceContainer.innerHTML = '';
+
+                    if (!invoices) {
+                        invoiceContainer.innerHTML = `
+                            <div class="no-invoices">
+                                <i class="fas fa-file-invoice" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                <p>No investment invoices found</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Convert to array and sort by date (newest first)
+                    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
+                    invoicesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    // Display each invoice
+                    invoicesArray.forEach(invoice => {
+                        const invoiceElement = document.createElement('div');
+                        invoiceElement.className = 'invoice-card';
+                        invoiceElement.innerHTML = `
+                            <div class="invoice-header">
+                                <div class="invoice-title">${invoice.packageName || 'Investment Package'}</div>
+                                <div class="invoice-status status-active">Active</div>
+                            </div>
+                            
+                            <div class="invoice-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Investment Date:</span>
+                                    <span class="detail-value">${formatDate(invoice.date)}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Invoice ID:</span>
+                                    <span class="detail-value">${invoice.id}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="invoice-amount">$${invoice.amount.toFixed(2)}</div>
+                            <div class="invoice-return">Returns: $${(invoice.amount * 2).toFixed(2)}</div>
+                        `;
+                        invoiceContainer.appendChild(invoiceElement);
+                    });
+                })
+                .catch(error => {
+                    showToast('Error loading invoices: ' + error.message, 'error');
+                });
+        }
+
+        // Auth State Listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                loadInvoices(user.uid);
+                logoutLink.style.display = 'block';
+            } else {
+                // No user signed in
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Logout
+        logoutLink.addEventListener('click', e => {
+            e.preventDefault();
+            auth.signOut()
+                .then(() => {
+                    window.location.href = 'login.html';
+                })
+                .catch(error => {
+                    showToast('Error signing out: ' + error.message, 'error');
+                });
+        });
+
+        // Mobile Menu Toggle
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && e.target !== menuToggle) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
