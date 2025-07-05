@@ -1,26 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-  // Firebase Config (apna config use karein)
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - Team Structure</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #34495e;
+            color: white;
+            position: fixed;
+            top: 60px;
+            left: -250px;
+            height: calc(100vh - 60px);
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            gap: 10px;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: #2c3e50;
+        }
+
+        .sidebar-menu li a.active {
+            background-color: #3498db;
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 60px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .main-content.shifted {
+            margin-left: 250px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .table tr:hover {
+            background-color: #f5f7fa;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .level-1 { background-color: #3498db; }
+        .level-2 { background-color: #2ecc71; }
+        .level-3 { background-color: #f39c12; }
+        .level-4 { background-color: #e74c3c; }
+        .level-5 { background-color: #7f8c8d; }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        .toast {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background-color: #27ae60;
+        }
+
+        .toast.error {
+            background-color: #e74c3c;
+        }
+
+        .toast.warning {
+            background-color: #f39c12;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .sidebar.active + .main-content {
+                margin-left: 250px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -56,7 +314,7 @@
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Level 1 (Direct)</span>
-                    <div class="card-icon" style="background-color: var(--primary-color);">
+                    <div class="card-icon" style="background-color: #3498db;">
                         <i class="fas fa-user-friends"></i>
                     </div>
                 </div>
@@ -67,7 +325,7 @@
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Level 2</span>
-                    <div class="card-icon" style="background-color: var(--success-color);">
+                    <div class="card-icon" style="background-color: #2ecc71;">
                         <i class="fas fa-user-friends"></i>
                     </div>
                 </div>
@@ -78,7 +336,7 @@
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Level 3</span>
-                    <div class="card-icon" style="background-color: var(--warning-color);">
+                    <div class="card-icon" style="background-color: #f39c12;">
                         <i class="fas fa-user-friends"></i>
                     </div>
                 </div>
@@ -89,7 +347,7 @@
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Level 4</span>
-                    <div class="card-icon" style="background-color: var(--danger-color);">
+                    <div class="card-icon" style="background-color: #e74c3c;">
                         <i class="fas fa-user-friends"></i>
                     </div>
                 </div>
@@ -100,7 +358,7 @@
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Level 5</span>
-                    <div class="card-icon" style="background-color: var(--gray-color);">
+                    <div class="card-icon" style="background-color: #7f8c8d;">
                         <i class="fas fa-user-friends"></i>
                     </div>
                 </div>
@@ -120,10 +378,14 @@
                         <th>Join Date</th>
                         <th>Total Investment</th>
                         <th>Your Earnings</th>
+                        <th>Referred By</th>
                     </tr>
                 </thead>
                 <tbody id="teamMembersList">
                     <!-- Team members will be populated by JavaScript -->
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading team members...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -136,24 +398,235 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
-        // Initialize the team structure page
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        let currentUser = null;
+
+        // DOM Elements
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const logoutLink = document.getElementById('logoutLink');
+        const teamMembersList = document.getElementById('teamMembersList');
+        const toastContainer = document.getElementById('toastContainer');
+
+        // Level counters
+        const levelCounts = {
+            1: document.getElementById('level1Count'),
+            2: document.getElementById('level2Count'),
+            3: document.getElementById('level3Count'),
+            4: document.getElementById('level4Count'),
+            5: document.getElementById('level5Count')
+        };
+
+        // Level earnings
+        const levelEarnings = {
+            1: document.getElementById('level1Earnings'),
+            2: document.getElementById('level2Earnings'),
+            3: document.getElementById('level3Earnings'),
+            4: document.getElementById('level4Earnings'),
+            5: document.getElementById('level5Earnings')
+        };
+
+        // Toggle Sidebar
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('shifted');
+        });
+
+        // Check Authentication State
+        function checkAuthState() {
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    loadTeamStructure(user.uid);
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        // Load Team Structure
+        function loadTeamStructure(userId) {
+            // First load the user's referral tree
+            database.ref(`users/${userId}/referralTree`).once('value').then(snapshot => {
+                const referralTree = snapshot.val();
+                
+                if (!referralTree) {
+                    teamMembersList.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No team members found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Initialize level counters
+                const levelStats = {
+                    1: { count: 0, earnings: 0 },
+                    2: { count: 0, earnings: 0 },
+                    3: { count: 0, earnings: 0 },
+                    4: { count: 0, earnings: 0 },
+                    5: { count: 0, earnings: 0 }
+                };
+                
+                // Clear the table
+                teamMembersList.innerHTML = '';
+                
+                // Process each level
+                for (const level in referralTree) {
+                    if (referralTree.hasOwnProperty(level)) {
+                        const levelUsers = referralTree[level];
+                        
+                        // Update level stats
+                        levelStats[level].count = Object.keys(levelUsers).length;
+                        
+                        // Process each user in this level
+                        for (const referralId in levelUsers) {
+                            if (levelUsers.hasOwnProperty(referralId)) {
+                                const referralData = levelUsers[referralId];
+                                
+                                // Get user details
+                                database.ref(`users/${referralId}`).once('value').then(userSnapshot => {
+                                    const userData = userSnapshot.val();
+                                    
+                                    // Calculate total investment
+                                    let totalInvestment = 0;
+                                    if (userData.investments) {
+                                        Object.values(userData.investments).forEach(investment => {
+                                            totalInvestment += investment.amount || 0;
+                                        });
+                                    }
+                                    
+                                    // Calculate earnings for this level (5% of investment for level 1, decreasing by 1% each level)
+                                    const commissionPercentage = 6 - level; // 5% for level 1, 4% for level 2, etc.
+                                    const earnings = totalInvestment * (commissionPercentage / 100);
+                                    levelStats[level].earnings += earnings;
+                                    
+                                    // Format join date
+                                    const joinDate = new Date(userData.joinDate || Date.now());
+                                    const formattedDate = joinDate.toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    
+                                    // Get referrer name
+                                    let referrerName = "Direct";
+                                    if (userData.referredBy) {
+                                        database.ref(`users/${userData.referredBy}`).once('value').then(referrerSnapshot => {
+                                            const referrerData = referrerSnapshot.val();
+                                            referrerName = referrerData.name || referrerData.email || "Unknown";
+                                            
+                                            // Add row to table
+                                            addTeamMemberRow(
+                                                userData.name || userData.email,
+                                                level,
+                                                formattedDate,
+                                                totalInvestment,
+                                                earnings,
+                                                referrerName
+                                            );
+                                        });
+                                    } else {
+                                        // Add row to table
+                                        addTeamMemberRow(
+                                            userData.name || userData.email,
+                                            level,
+                                            formattedDate,
+                                            totalInvestment,
+                                            earnings,
+                                            referrerName
+                                        );
+                                    }
+                                    
+                                    // Update level stats display
+                                    updateLevelStats(levelStats);
+                                });
+                            }
+                        }
+                    }
+                }
+            }).catch(error => {
+                showToast('Error loading team structure', 'error');
+                console.error('Error loading team structure:', error);
+            });
+        }
+
+        // Add team member row to table
+        function addTeamMemberRow(name, level, joinDate, investment, earnings, referredBy) {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${name}</td>
+                <td><span class="level-badge level-${level}">Level ${level}</span></td>
+                <td>${joinDate}</td>
+                <td>$${investment.toFixed(2)}</td>
+                <td>$${earnings.toFixed(2)}</td>
+                <td>${referredBy}</td>
+            `;
+            
+            teamMembersList.appendChild(row);
+        }
+
+        // Update level statistics display
+        function updateLevelStats(stats) {
+            for (const level in stats) {
+                if (stats.hasOwnProperty(level)) {
+                    levelCounts[level].textContent = stats[level].count;
+                    levelEarnings[level].textContent = `$${stats[level].earnings.toFixed(2)}`;
+                }
+            }
+        }
+
+        // Logout User
+        function logoutUser() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                showToast('Error logging out', 'error');
+                console.error('Logout error:', error);
+            });
+        }
+
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; margin-left: 10px; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
-            // Check auth state
             checkAuthState();
             
-            // Load user data if logged in
-            if (currentUser) {
-                loadUserData(currentUser.uid);
-            } else {
-                window.location.href = 'login.html';
-            }
-            
-            // Set up logout
-            document.getElementById('logoutLink').addEventListener('click', (e) => {
+            logoutLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 logoutUser();
             });
