@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade World - Trading History</title>
+    <title>Trade World - Transaction History</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -122,6 +122,36 @@
             color: #2c3e50;
         }
 
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-controls select, 
+        .filter-controls input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .filter-controls button {
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .filter-controls button:hover {
+            background-color: #2980b9;
+        }
+
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
@@ -152,27 +182,44 @@
             background-color: #f5f7fa;
         }
 
-        .status-completed {
+        /* Transaction Type Badges */
+        .transaction-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .type-investment { background-color: #3498db; }
+        .type-deposit { background-color: #2ecc71; }
+        .type-withdrawal { background-color: #e74c3c; }
+        .type-transfer-sent { background-color: #f39c12; }
+        .type-transfer-received { background-color: #9b59b6; }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-completed { background-color: #27ae60; }
+        .status-pending { background-color: #f39c12; }
+        .status-failed { background-color: #e74c3c; }
+        .status-processing { background-color: #3498db; }
+
+        /* Amount Colors */
+        .amount-positive {
             color: #27ae60;
             font-weight: 500;
         }
 
-        .status-pending {
-            color: #f39c12;
-            font-weight: 500;
-        }
-
-        .status-failed {
-            color: #e74c3c;
-            font-weight: 500;
-        }
-
-        .profit {
-            color: #27ae60;
-            font-weight: 500;
-        }
-
-        .loss {
+        .amount-negative {
             color: #e74c3c;
             font-weight: 500;
         }
@@ -260,7 +307,7 @@
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
             <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html" class="active"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="trading-history.html" class="active"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
@@ -269,24 +316,47 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">Trading History</h1>
+        <h1 class="page-title">Transaction History</h1>
+        
+        <div class="filter-controls">
+            <select id="transactionTypeFilter">
+                <option value="all">All Transactions</option>
+                <option value="investment">Investments</option>
+                <option value="deposit">Deposits</option>
+                <option value="withdrawal">Withdrawals</option>
+                <option value="transfer">Transfers</option>
+            </select>
+            
+            <select id="statusFilter">
+                <option value="all">All Statuses</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+            </select>
+            
+            <input type="date" id="dateFromFilter" placeholder="From Date">
+            <input type="date" id="dateToFilter" placeholder="To Date">
+            
+            <button id="applyFilters">Apply Filters</button>
+            <button id="resetFilters">Reset</button>
+        </div>
         
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Trade ID</th>
-                        <th>Date</th>
-                        <th>Invested Amount</th>
-                        <th>Current Value</th>
-                        <th>Profit/Loss</th>
+                        <th>Transaction ID</th>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Details</th>
                         <th>Status</th>
                     </tr>
                 </thead>
-                <tbody id="tradingHistoryList">
-                    <!-- Trading history will be populated by JavaScript -->
+                <tbody id="transactionHistoryList">
+                    <!-- Transaction history will be populated by JavaScript -->
                     <tr>
-                        <td colspan="6" style="text-align: center;">Loading trading history...</td>
+                        <td colspan="6" style="text-align: center;">Loading transaction history...</td>
                     </tr>
                 </tbody>
             </table>
@@ -323,8 +393,16 @@
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const logoutLink = document.getElementById('logoutLink');
-        const tradingHistoryList = document.getElementById('tradingHistoryList');
+        const transactionHistoryList = document.getElementById('transactionHistoryList');
         const toastContainer = document.getElementById('toastContainer');
+        
+        // Filter elements
+        const transactionTypeFilter = document.getElementById('transactionTypeFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const dateFromFilter = document.getElementById('dateFromFilter');
+        const dateToFilter = document.getElementById('dateToFilter');
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        const resetFiltersBtn = document.getElementById('resetFilters');
 
         // Toggle Sidebar
         menuToggle.addEventListener('click', () => {
@@ -337,65 +415,201 @@
             firebase.auth().onAuthStateChanged(user => {
                 if (user) {
                     currentUser = user;
-                    loadTradingHistory(user.uid);
+                    loadTransactionHistory(user.uid);
                 } else {
                     window.location.href = 'login.html';
                 }
             });
         }
 
-        // Load Trading History
-        function loadTradingHistory(userId) {
-            const tradesRef = database.ref(`users/${userId}/trades`);
+        // Load Transaction History
+        function loadTransactionHistory(userId, filters = {}) {
+            const transactionsRef = database.ref(`users/${userId}/transactions`);
             
-            tradesRef.on('value', (snapshot) => {
-                const trades = snapshot.val();
-                tradingHistoryList.innerHTML = '';
+            transactionsRef.on('value', (snapshot) => {
+                const transactions = snapshot.val();
+                transactionHistoryList.innerHTML = '';
                 
-                if (trades) {
-                    Object.entries(trades).forEach(([tradeId, trade]) => {
-                        const row = document.createElement('tr');
-                        
-                        // Calculate profit/loss
-                        const profitLoss = trade.currentValue - trade.investedAmount;
-                        const profitLossClass = profitLoss >= 0 ? 'profit' : 'loss';
-                        const profitLossText = profitLoss >= 0 ? 
-                            `+$${profitLoss.toFixed(2)}` : 
-                            `-$${Math.abs(profitLoss).toFixed(2)}`;
-                        
-                        // Format date
-                        const tradeDate = new Date(trade.timestamp);
-                        const formattedDate = tradeDate.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
+                if (transactions) {
+                    // Convert to array and sort by timestamp (newest first)
+                    let transactionsArray = Object.entries(transactions).map(([id, tx]) => ({
+                        id,
+                        ...tx
+                    })).sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    // Apply filters
+                    transactionsArray = applyFilters(transactionsArray, filters);
+                    
+                    if (transactionsArray.length > 0) {
+                        transactionsArray.forEach(transaction => {
+                            const row = document.createElement('tr');
+                            
+                            // Format date
+                            const txDate = new Date(transaction.timestamp);
+                            const formattedDate = txDate.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            // Determine transaction type and styling
+                            let typeClass = '';
+                            let typeText = '';
+                            let amountClass = '';
+                            let amountPrefix = '';
+                            let details = '';
+                            
+                            switch(transaction.type) {
+                                case 'investment':
+                                    typeClass = 'type-investment';
+                                    typeText = 'Investment';
+                                    amountClass = 'amount-negative';
+                                    amountPrefix = '-';
+                                    details = `Package: ${transaction.packageName || 'N/A'}`;
+                                    break;
+                                case 'deposit':
+                                    typeClass = 'type-deposit';
+                                    typeText = 'Deposit';
+                                    amountClass = 'amount-positive';
+                                    amountPrefix = '+';
+                                    details = `Method: ${transaction.method || 'N/A'}`;
+                                    break;
+                                case 'withdrawal':
+                                    typeClass = 'type-withdrawal';
+                                    typeText = 'Withdrawal';
+                                    amountClass = 'amount-negative';
+                                    amountPrefix = '-';
+                                    details = `To: ${transaction.account || 'N/A'}`;
+                                    break;
+                                case 'transfer':
+                                    if (transaction.direction === 'sent') {
+                                        typeClass = 'type-transfer-sent';
+                                        typeText = 'Transfer Sent';
+                                        amountClass = 'amount-negative';
+                                        amountPrefix = '-';
+                                        details = `To: ${transaction.recipientName || transaction.recipientEmail || 'N/A'}`;
+                                    } else {
+                                        typeClass = 'type-transfer-received';
+                                        typeText = 'Transfer Received';
+                                        amountClass = 'amount-positive';
+                                        amountPrefix = '+';
+                                        details = `From: ${transaction.senderName || transaction.senderEmail || 'N/A'}`;
+                                    }
+                                    break;
+                                default:
+                                    typeClass = '';
+                                    typeText = transaction.type;
+                            }
+                            
+                            // Status styling
+                            let statusClass = '';
+                            switch(transaction.status) {
+                                case 'completed':
+                                    statusClass = 'status-completed';
+                                    break;
+                                case 'pending':
+                                    statusClass = 'status-pending';
+                                    break;
+                                case 'failed':
+                                    statusClass = 'status-failed';
+                                    break;
+                                case 'processing':
+                                    statusClass = 'status-processing';
+                                    break;
+                            }
+                            
+                            row.innerHTML = `
+                                <td>${transaction.id.substring(0, 8)}</td>
+                                <td>${formattedDate}</td>
+                                <td><span class="transaction-type ${typeClass}">${typeText}</span></td>
+                                <td class="${amountClass}">${amountPrefix}$${transaction.amount.toFixed(2)}</td>
+                                <td>${details}</td>
+                                <td><span class="status-badge ${statusClass}">${transaction.status}</span></td>
+                            `;
+                            
+                            transactionHistoryList.appendChild(row);
                         });
-                        
-                        row.innerHTML = `
-                            <td>${tradeId.substring(0, 8)}</td>
-                            <td>${formattedDate}</td>
-                            <td>$${trade.investedAmount.toFixed(2)}</td>
-                            <td>$${trade.currentValue.toFixed(2)}</td>
-                            <td class="${profitLossClass}">${profitLossText}</td>
-                            <td class="status-${trade.status.toLowerCase()}">${trade.status}</td>
+                    } else {
+                        transactionHistoryList.innerHTML = `
+                            <tr>
+                                <td colspan="6" style="text-align: center;">No transactions found matching your filters</td>
+                            </tr>
                         `;
-                        
-                        tradingHistoryList.appendChild(row);
-                    });
+                    }
                 } else {
-                    tradingHistoryList.innerHTML = `
+                    transactionHistoryList.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align: center;">No trading history found</td>
+                            <td colspan="6" style="text-align: center;">No transaction history found</td>
                         </tr>
                     `;
                 }
             }, (error) => {
-                showToast('Error loading trading history', 'error');
-                console.error('Error loading trading history:', error);
+                showToast('Error loading transaction history', 'error');
+                console.error('Error loading transaction history:', error);
             });
         }
+
+        // Apply filters to transactions
+        function applyFilters(transactions, filters) {
+            return transactions.filter(tx => {
+                // Type filter
+                if (filters.type && filters.type !== 'all' && tx.type !== filters.type) {
+                    return false;
+                }
+                
+                // Status filter
+                if (filters.status && filters.status !== 'all' && tx.status !== filters.status) {
+                    return false;
+                }
+                
+                // Date range filter
+                if (filters.dateFrom) {
+                    const fromDate = new Date(filters.dateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (tx.timestamp < fromDate.getTime()) {
+                        return false;
+                    }
+                }
+                
+                if (filters.dateTo) {
+                    const toDate = new Date(filters.dateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (tx.timestamp > toDate.getTime()) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        }
+
+        // Apply filters button click
+        applyFiltersBtn.addEventListener('click', () => {
+            const filters = {
+                type: transactionTypeFilter.value,
+                status: statusFilter.value,
+                dateFrom: dateFromFilter.value,
+                dateTo: dateToFilter.value
+            };
+            
+            if (currentUser) {
+                loadTransactionHistory(currentUser.uid, filters);
+            }
+        });
+
+        // Reset filters button click
+        resetFiltersBtn.addEventListener('click', () => {
+            transactionTypeFilter.value = 'all';
+            statusFilter.value = 'all';
+            dateFromFilter.value = '';
+            dateToFilter.value = '';
+            
+            if (currentUser) {
+                loadTransactionHistory(currentUser.uid);
+            }
+        });
 
         // Logout User
         function logoutUser() {
@@ -434,6 +648,14 @@
                 e.preventDefault();
                 logoutUser();
             });
+            
+            // Set default date range (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            dateFromFilter.valueAsDate = thirtyDaysAgo;
+            dateToFilter.valueAsDate = today;
         });
     </script>
 </body>
