@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - Dashboard</title>
@@ -65,11 +64,6 @@
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--dark-color);
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
         }
 
         .menu-toggle {
@@ -253,8 +247,6 @@
         .card-footer {
             padding: 1rem 1.5rem;
             border-top: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            gap: 0.5rem;
         }
 
         /* Packages Grid */
@@ -356,91 +348,7 @@
             border-bottom: none;
         }
 
-        /* Modal Styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1100;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal.open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--gray-color);
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .form-text {
-            display: block;
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--gray-color);
-        }
-
-        /* Toast Styles */
+        /* Toast Notifications Container */
         .toast-container {
             position: fixed;
             top: 1rem;
@@ -525,10 +433,6 @@
             .dashboard-cards {
                 grid-template-columns: 1fr;
             }
-
-            .auth-buttons {
-                display: none;
-            }
         }
     </style>
 </head>
@@ -538,10 +442,6 @@
         <div class="logo">
             <i class="fas fa-chart-line logo-icon"></i>
             <span class="logo-text">Trade World</span>
-        </div>
-        <div class="auth-buttons">
-            <a href="login.html" class="btn btn-outline">Login</a>
-            <a href="signup.html" class="btn btn-primary">Sign Up</a>
         </div>
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
@@ -553,9 +453,12 @@
         <ul class="sidebar-menu">
             <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
@@ -578,7 +481,7 @@
                 </div>
                 <div class="card-value" id="userBalance">$0.00</div>
                 <div class="card-footer">
-                    <button class="btn btn-primary" id="depositBtn">Deposit</button>
+                    Available balance for investments
                 </div>
             </div>
             
@@ -613,9 +516,6 @@
                 </div>
                 <div class="card-value" id="teamEarnings">$0.00</div>
                 <div class="card-footer">From all 5 levels</div>
-                <div class="card-footer">
-                    <button class="btn btn-outline" id="transferFundsBtn">Transfer Funds</button>
-                </div>
             </div>
         </div>
         
@@ -666,7 +566,7 @@
         <!-- Transaction History Section -->
         <div class="trading-section">
             <div class="trading-header">
-                <h2 class="trading-title">Transaction History</h2>
+                <h2 class="trading-title">Recent Transactions</h2>
                 <span>Updated: <span id="lastUpdated">Just now</span></span>
             </div>
             
@@ -691,72 +591,6 @@
         </div>
     </main>
 
-    <!-- Deposit Modal -->
-    <div class="modal" id="depositModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeDepositModal">&times;</button>
-            <h2 class="modal-title">Deposit Funds</h2>
-            
-            <div class="form-group">
-                <label class="form-label">Amount (USD)</label>
-                <input type="number" class="form-control" id="depositAmount" min="10" max="500" placeholder="Enter amount between $10 and $500">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">USDT BEP20 Address</label>
-                <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" class="form-control" id="depositAddress" value="0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886" readonly>
-                    <button class="btn btn-primary" id="copyDepositAddress">Copy</button>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Transaction Hash</label>
-                <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash after payment">
-                <small class="form-text">Please make sure to send the exact amount you entered above</small>
-            </div>
-            
-            <div class="form-group">
-                <div class="card" style="padding: 1rem; margin-top: 0.5rem;">
-                    <h4 style="margin-bottom: 0.5rem;">Deposit Instructions:</h4>
-                    <ol style="padding-left: 1.2rem;">
-                        <li>Enter the amount you want to deposit (minimum $10, maximum $500)</li>
-                        <li>Send the exact amount in USDT (BEP20) to the address above</li>
-                        <li>After transaction is complete, paste the transaction hash in the field above</li>
-                        <li>Click "Submit Deposit" to verify your transaction</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" id="submitDeposit">Submit Deposit</button>
-        </div>
-    </div>
-
-    <!-- Transfer Funds Modal -->
-    <div class="modal" id="transferModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeTransferModal">&times;</button>
-            <h2 class="modal-title">Transfer Funds</h2>
-            
-            <div class="form-group">
-                <label class="form-label">Recipient User ID</label>
-                <input type="text" class="form-control" id="recipientId" placeholder="Enter recipient's user ID">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Amount (USD)</label>
-                <input type="number" class="form-control" id="transferAmount" min="1" placeholder="Enter amount to transfer">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Your Current Balance</label>
-                <input type="text" class="form-control" id="currentBalance" value="$0.00" readonly>
-            </div>
-            
-            <button class="btn btn-primary" id="submitTransfer">Transfer Funds</button>
-        </div>
-    </div>
-
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -765,14 +599,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Firebase Config (replace with your actual config)
+        // Firebase Config
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
         };
         
         // Initialize Firebase
@@ -819,13 +655,11 @@
         
         // Update UI for logged in user
         function updateUIForLoggedInUser() {
-            document.querySelectorAll('.auth-buttons').forEach(el => el.style.display = 'none');
             document.getElementById('logoutLink').style.display = 'block';
         }
         
         // Update UI for logged out user
         function updateUIForLoggedOutUser() {
-            document.querySelectorAll('.auth-buttons').forEach(el => el.style.display = 'flex');
             document.getElementById('logoutLink').style.display = 'none';
         }
         
@@ -851,7 +685,7 @@
         function loadTransactionHistory() {
             if (!currentUser) return;
             
-            database.ref('transactions/' + currentUser.uid).once('value').then((snapshot) => {
+            database.ref('transactions/' + currentUser.uid).orderByChild('date').limitToLast(5).once('value').then((snapshot) => {
                 const transactions = snapshot.val();
                 const tbody = document.getElementById('transactionHistory');
                 tbody.innerHTML = '';
@@ -892,47 +726,6 @@
         
         // Set up event listeners
         function setupDashboardEventListeners() {
-            // Deposit modal
-            document.getElementById('depositBtn').addEventListener('click', () => {
-                if (!currentUser) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                document.getElementById('depositModal').classList.add('open');
-            });
-            
-            document.getElementById('closeDepositModal').addEventListener('click', () => {
-                document.getElementById('depositModal').classList.remove('open');
-            });
-            
-            // Transfer funds modal
-            document.getElementById('transferFundsBtn').addEventListener('click', () => {
-                if (!currentUser) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                document.getElementById('currentBalance').value = document.getElementById('userBalance').textContent;
-                document.getElementById('transferModal').classList.add('open');
-            });
-            
-            document.getElementById('closeTransferModal').addEventListener('click', () => {
-                document.getElementById('transferModal').classList.remove('open');
-            });
-            
-            // Submit transfer
-            document.getElementById('submitTransfer').addEventListener('click', transferFunds);
-            
-            // Copy deposit address
-            document.getElementById('copyDepositAddress').addEventListener('click', () => {
-                const addressInput = document.getElementById('depositAddress');
-                addressInput.select();
-                document.execCommand('copy');
-                showToast('Address copied to clipboard!', 'success');
-            });
-            
-            // Submit deposit
-            document.getElementById('submitDeposit').addEventListener('click', submitDepositRequest);
-            
             // Package purchase buttons
             document.querySelectorAll('[data-package]').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -965,136 +758,6 @@
             });
         }
         
-        // Transfer funds between users
-        function transferFunds() {
-            const recipientId = document.getElementById('recipientId').value.trim();
-            const amount = parseFloat(document.getElementById('transferAmount').value);
-            const balance = parseFloat(document.getElementById('userBalance').textContent.replace('$', ''));
-            
-            if (!recipientId) {
-                showToast('Please enter recipient ID', 'error');
-                return;
-            }
-            
-            if (isNaN(amount) || amount <= 0) {
-                showToast('Please enter a valid amount', 'error');
-                return;
-            }
-            
-            if (amount > balance) {
-                showToast('Insufficient balance', 'error');
-                return;
-            }
-            
-            // Check if recipient exists
-            database.ref('users/' + recipientId).once('value').then((snapshot) => {
-                if (!snapshot.exists()) {
-                    showToast('Recipient user not found', 'error');
-                    return;
-                }
-                
-                // Get current user data
-                database.ref('users/' + currentUser.uid).once('value').then((userSnapshot) => {
-                    const userData = userSnapshot.val();
-                    
-                    // Update sender's balance
-                    const senderUpdates = {
-                        balance: userData.balance - amount
-                    };
-                    
-                    // Update recipient's balance
-                    const recipientUpdates = {
-                        balance: (snapshot.val().balance || 0) + amount
-                    };
-                    
-                    // Create transaction records
-                    const transactionId = Date.now();
-                    const transactionData = {
-                        date: new Date().toISOString(),
-                        type: 'Transfer',
-                        amount: amount,
-                        status: 'Completed',
-                        details: `Transfer to user ${recipientId}`,
-                        senderId: currentUser.uid,
-                        recipientId: recipientId
-                    };
-                    
-                    // Perform all updates as a transaction
-                    const updates = {};
-                    updates['users/' + currentUser.uid] = senderUpdates;
-                    updates['users/' + recipientId] = recipientUpdates;
-                    updates['transactions/' + currentUser.uid + '/' + transactionId] = transactionData;
-                    updates['transactions/' + recipientId + '/' + transactionId] = {
-                        ...transactionData,
-                        details: `Transfer from user ${currentUser.uid}`
-                    };
-                    
-                    database.ref().update(updates).then(() => {
-                        showToast(`Successfully transferred $${amount.toFixed(2)} to user ${recipientId}`, 'success');
-                        document.getElementById('transferModal').classList.remove('open');
-                        
-                        // Reset form
-                        document.getElementById('recipientId').value = '';
-                        document.getElementById('transferAmount').value = '';
-                        
-                        // Refresh data
-                        loadUserData(currentUser.uid);
-                        loadTransactionHistory();
-                    }).catch((error) => {
-                        showToast('Error processing transfer', 'error');
-                        console.error('Transfer error:', error);
-                    });
-                });
-            }).catch((error) => {
-                showToast('Error verifying recipient', 'error');
-                console.error('Recipient verification error:', error);
-            });
-        }
-        
-        // Submit deposit request
-        function submitDepositRequest() {
-            const amount = parseFloat(document.getElementById('depositAmount').value);
-            const txHash = document.getElementById('transactionHash').value.trim();
-            
-            if (isNaN(amount) || amount < 10 || amount > 500) {
-                showToast('Please enter a valid amount between $10 and $500', 'error');
-                return;
-            }
-            
-            if (!txHash) {
-                showToast('Please enter your transaction hash', 'error');
-                return;
-            }
-            
-            // Create deposit record
-            const depositId = Date.now();
-            const depositData = {
-                date: new Date().toISOString(),
-                type: 'Deposit',
-                amount: amount,
-                status: 'Pending',
-                details: 'USDT Deposit',
-                txHash: txHash
-            };
-            
-            database.ref('deposits/' + currentUser.uid + '/' + depositId).set(depositData)
-                .then(() => {
-                    showToast('Deposit request submitted successfully', 'success');
-                    document.getElementById('depositModal').classList.remove('open');
-                    
-                    // Reset form
-                    document.getElementById('depositAmount').value = '';
-                    document.getElementById('transactionHash').value = '';
-                    
-                    // Refresh transaction history
-                    loadTransactionHistory();
-                })
-                .catch((error) => {
-                    showToast('Error submitting deposit request', 'error');
-                    console.error('Deposit error:', error);
-                });
-        }
-        
         // Purchase investment package
         function purchasePackage(amount) {
             // Get current user data
@@ -1119,14 +782,27 @@
                     amount: amount,
                     status: 'Active',
                     details: `Purchased $${amount} package`,
-                    packageValue: amount * 2 // Assuming 100% return
+                    packageValue: amount * 2, // Assuming 100% return
+                    expectedReturnDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+                };
+                
+                // Create invoice record
+                const invoiceData = {
+                    date: new Date().toISOString(),
+                    packageAmount: amount,
+                    packageName: getPackageName(amount),
+                    expectedReturn: amount * 2,
+                    status: 'Active',
+                    purchaseDate: new Date().toISOString(),
+                    expectedCompletion: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
                 };
                 
                 // Perform updates
                 database.ref().update({
                     ['users/' + currentUser.uid]: updates,
                     ['investments/' + currentUser.uid + '/' + purchaseId]: purchaseData,
-                    ['transactions/' + currentUser.uid + '/' + purchaseId]: purchaseData
+                    ['transactions/' + currentUser.uid + '/' + purchaseId]: purchaseData,
+                    ['invoices/' + currentUser.uid + '/' + purchaseId]: invoiceData
                 }).then(() => {
                     showToast(`Successfully purchased $${amount} package`, 'success');
                     
@@ -1143,6 +819,16 @@
                     console.error('Package purchase error:', error);
                 });
             });
+        }
+        
+        // Get package name based on amount
+        function getPackageName(amount) {
+            switch(amount) {
+                case 10: return 'Starter Package';
+                case 30: return 'Standard Package';
+                case 100: return 'Premium Package';
+                default: return 'Custom Package';
+            }
         }
         
         // Process referral earnings
