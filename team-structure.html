@@ -640,7 +640,7 @@
                 
                 // Get referrer name
                 let referrerName = "Direct";
-                if (userData.referredBy && userData.referredBy !== currentUser.uid) {
+                if (userData.referredBy) {
                     const referrerSnapshot = await database.ref(`users/${userData.referredBy}`).once('value');
                     const referrerData = referrerSnapshot.val();
                     referrerName = referrerData?.name || referrerData?.email || "Unknown";
