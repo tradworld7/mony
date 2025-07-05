@@ -6,7 +6,243 @@
     <title>Trade World - Sign Up</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-page {
+            background-color: #f5f7fa;
+        }
+
+        .form-container {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-text {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--gray-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* Toast Notifications Container */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .auth-buttons {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -31,7 +267,7 @@
             
             <div class="form-group">
                 <label class="form-label">Sponsor ID</label>
-                <input type="text" class="form-control" id="sponsorId" value="TW1381">
+                <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
                 <small class="form-text">This will be auto-filled if you came through a referral link</small>
             </div>
             
@@ -61,7 +297,10 @@
                 <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm your password">
             </div>
             
-            <button class="btn btn-primary btn-block" id="signupBtn">Create Account</button>
+            <button class="btn btn-primary btn-block" id="signupBtn">
+                <span id="signupBtnText">Create Account</span>
+                <span id="signupBtnSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
             
             <div class="form-group text-center" style="margin-top: 1.5rem;">
                 <p>Already have an account? <a href="login.html">Login</a></p>
@@ -76,10 +315,160 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
+        // Check if user came from a referral link
+        function checkReferralLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refId = urlParams.get('ref');
+            
+            if (refId) {
+                document.getElementById('sponsorId').value = refId;
+            }
+        }
+
+        // Create user data in database
+        async function createUserData(userId, email, name, mobile, sponsorId) {
+            const userData = {
+                email: email,
+                fullName: name,
+                mobileNumber: mobile,
+                balance: 0,
+                sponsorId: sponsorId || '',
+                joinDate: new Date().toISOString(),
+                lastLogin: new Date().toISOString()
+            };
+            
+            try {
+                await database.ref('users/' + userId).set(userData);
+                
+                // If there's a sponsor, update sponsor's referrals
+                if (sponsorId) {
+                    await database.ref(`users/${sponsorId}/referrals/${userId}`).set({
+                        joinDate: new Date().toISOString(),
+                        status: 'active'
+                    });
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error creating user data:', error);
+                return false;
+            }
+        }
+
+        // Sign up new user
+        async function signupUser() {
+            const name = document.getElementById('signupName').value.trim();
+            const mobile = document.getElementById('signupMobile').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const sponsorId = document.getElementById('sponsorId').value.trim();
+            
+            // Validation
+            if (!name || !mobile || !email || !password || !confirmPassword) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showToast('Password must be at least 8 characters', 'error');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('signupBtnText').style.display = 'none';
+            document.getElementById('signupBtnSpinner').style.display = 'inline-block';
+            document.getElementById('signupBtn').disabled = true;
+            
+            try {
+                // Create user with email and password
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Update user profile with name
+                await userCredential.user.updateProfile({
+                    displayName: name
+                });
+                
+                // Create user data in database
+                const success = await createUserData(userCredential.user.uid, email, name, mobile, sponsorId);
+                
+                if (success) {
+                    showToast('Account created successfully!', 'success');
+                    
+                    // Redirect to dashboard after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    showToast('Account created but profile setup failed', 'error');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                
+                let errorMessage = 'Signup failed. Please try again.';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Email is already in use';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Password is too weak';
+                }
+                
+                showToast(errorMessage, 'error');
+            } finally {
+                // Reset button state
+                document.getElementById('signupBtnText').style.display = 'inline-block';
+                document.getElementById('signupBtnSpinner').style.display = 'none';
+                document.getElementById('signupBtn').disabled = false;
+            }
+        }
+
         // Initialize the signup page
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user came from a referral link
@@ -87,6 +476,12 @@
             
             // Set up signup button
             document.getElementById('signupBtn').addEventListener('click', signupUser);
+            
+            // Set up menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                const authButtons = document.querySelector('.auth-buttons');
+                authButtons.style.display = authButtons.style.display === 'flex' ? 'none' : 'flex';
+            });
         });
     </script>
 </body>
