@@ -506,6 +506,15 @@
             5: document.getElementById('level5Earnings')
         };
 
+        // Commission percentages for each level (10% for L1, 2% for L2, etc.)
+        const commissionRates = {
+            1: 10, // 10% for Level 1
+            2: 2,  // 2% for Level 2
+            3: 1,  // 1% for Level 3
+            4: 0.5,// 0.5% for Level 4
+            5: 0.5 // 0.5% for Level 5
+        };
+
         // Toggle Sidebar
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('open');
@@ -538,31 +547,26 @@
                 // Clear the table
                 teamMembersList.innerHTML = '<tr><td colspan="6" style="text-align: center;">Loading team members...</td></tr>';
                 
-                // First, get direct referrals (Level 1)
-                const directRefSnapshot = await database.ref('users').orderByChild('referredBy').equalTo(userId).once('value');
-                const directRefs = directRefSnapshot.val() || {};
+                // First, get all users to build the referral tree
+                const allUsersSnapshot = await database.ref('users').once('value');
+                const allUsers = allUsersSnapshot.val() || {};
                 
-                levelStats[1].count = Object.keys(directRefs).length;
+                // Build referral tree
+                const referralTree = buildReferralTree(allUsers, userId);
                 
-                // Process each direct referral and their downlines
-                const processingPromises = [];
-                
-                for (const directRefId in directRefs) {
-                    if (directRefs.hasOwnProperty(directRefId)) {
-                        // Process Level 1 member
-                        processingPromises.push(
-                            processTeamMember(directRefId, 1, levelStats)
-                        );
-                        
-                        // Get Level 2 (referrals of Level 1)
-                        processingPromises.push(
-                            getDownlineMembers(directRefId, 2, levelStats)
-                        );
+                // Process each level
+                for (let level = 1; level <= 5; level++) {
+                    const levelUsers = getUsersAtLevel(referralTree, level);
+                    levelStats[level].count = levelUsers.length;
+                    
+                    // Process each user in this level
+                    for (const userId of levelUsers) {
+                        const userData = allUsers[userId];
+                        if (userData) {
+                            await processTeamMember(userId, level, levelStats, allUsers);
+                        }
                     }
                 }
-                
-                // Wait for all processing to complete
-                await Promise.all(processingPromises);
                 
                 // Update the UI
                 updateLevelStats(levelStats);
@@ -579,42 +583,63 @@
             }
         }
 
-        // Recursive function to get downline members
-        async function getDownlineMembers(uplineId, currentLevel, levelStats) {
-            if (currentLevel > 5) return;
+        // Build referral tree structure
+        function buildReferralTree(allUsers, rootUserId) {
+            const tree = {
+                userId: rootUserId,
+                children: []
+            };
             
-            const snapshot = await database.ref('users').orderByChild('referredBy').equalTo(uplineId).once('value');
-            const downlines = snapshot.val() || {};
+            // Map to find users quickly
+            const userMap = {};
+            userMap[rootUserId] = tree;
             
-            levelStats[currentLevel].count += Object.keys(downlines).length;
-            
-            const processingPromises = [];
-            
-            for (const downlineId in downlines) {
-                if (downlines.hasOwnProperty(downlineId)) {
-                    // Process this level member
-                    processingPromises.push(
-                        processTeamMember(downlineId, currentLevel, levelStats)
-                    );
+            // First pass - build the tree structure
+            for (const userId in allUsers) {
+                if (userId === rootUserId) continue;
+                
+                const user = allUsers[userId];
+                if (user.referredBy) {
+                    const node = {
+                        userId: userId,
+                        children: []
+                    };
                     
-                    // Get next level if not at level 5 yet
-                    if (currentLevel < 5) {
-                        processingPromises.push(
-                            getDownlineMembers(downlineId, currentLevel + 1, levelStats)
-                        );
-                    }
+                    userMap[userId] = node;
                 }
             }
             
-            await Promise.all(processingPromises);
+            // Second pass - connect children to parents
+            for (const userId in userMap) {
+                if (userId === rootUserId) continue;
+                
+                const user = allUsers[userId];
+                if (user.referredBy && userMap[user.referredBy]) {
+                    userMap[user.referredBy].children.push(userMap[userId]);
+                }
+            }
+            
+            return tree;
+        }
+
+        // Get all user IDs at a specific level in the referral tree
+        function getUsersAtLevel(tree, targetLevel, currentLevel = 1, result = []) {
+            if (currentLevel === targetLevel) {
+                result.push(tree.userId);
+                return result;
+            }
+            
+            for (const child of tree.children) {
+                getUsersAtLevel(child, targetLevel, currentLevel + 1, result);
+            }
+            
+            return result;
         }
 
         // Process team member data
-        async function processTeamMember(userId, level, levelStats) {
+        async function processTeamMember(userId, level, levelStats, allUsers) {
             try {
-                const userSnapshot = await database.ref(`users/${userId}`).once('value');
-                const userData = userSnapshot.val();
-                
+                const userData = allUsers[userId];
                 if (!userData) return;
                 
                 // Calculate total investment
@@ -625,8 +650,8 @@
                     });
                 }
                 
-                // Calculate earnings for this level (5% for L1, 4% for L2, etc.)
-                const commissionPercentage = [5, 4, 3, 2, 1][level - 1];
+                // Calculate earnings for this level based on commission rate
+                const commissionPercentage = commissionRates[level];
                 const earnings = totalInvestment * (commissionPercentage / 100);
                 levelStats[level].earnings += earnings;
                 
@@ -640,9 +665,8 @@
                 
                 // Get referrer name
                 let referrerName = "Direct";
-                if (userData.referredBy) {
-                    const referrerSnapshot = await database.ref(`users/${userData.referredBy}`).once('value');
-                    const referrerData = referrerSnapshot.val();
+                if (level > 1 && userData.referredBy) {
+                    const referrerData = allUsers[userData.referredBy];
                     referrerName = referrerData?.name || referrerData?.email || "Unknown";
                 }
                 
@@ -653,7 +677,7 @@
                     joinDate: formattedDate,
                     investment: totalInvestment,
                     earnings,
-                    referredBy: referrerName
+                    referredBy: level === 1 ? "You" : referrerName
                 });
                 
             } catch (error) {
@@ -681,7 +705,7 @@
             }
             
             // Sort by level (optional)
-            allMembers.sort((a, b) => a.level - b.level);
+            allMembers.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
             
             // Add rows to table
             allMembers.forEach(member => {
@@ -691,7 +715,7 @@
                     <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
                     <td>${member.joinDate}</td>
                     <td>$${member.investment.toFixed(2)}</td>
-                    <td>$${member.earnings.toFixed(2)}</td>
+                    <td>$${member.earnings.toFixed(2)} (${commissionRates[member.level]}%)</td>
                     <td>${member.referredBy}</td>
                 `;
                 teamMembersList.appendChild(row);
