@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Transfer button handler
     document.getElementById('submitTransfer').addEventListener('click', transferFunds);
+    
+    // Load side menu data
+    loadSideMenuData();
 });
 
 // Check user authentication state
@@ -63,6 +66,32 @@ function checkAuthState() {
                 !window.location.pathname.includes('signup.html')) {
                 window.location.href = 'login.html';
             }
+        }
+    });
+}
+
+// Load data for side menu
+function loadSideMenuData() {
+    if (!currentUser) return;
+    
+    database.ref('users/' + currentUser.uid).once('value').then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            // Update profile info
+            document.getElementById('sideMenuUserName').textContent = data.name || 'User';
+            document.getElementById('sideMenuUserEmail').textContent = currentUser.email;
+            document.getElementById('sideMenuUserBalance').textContent = `$${(data.balance || 0).toFixed(2)}`;
+            
+            // Update referral count
+            const directRefCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
+            document.getElementById('sideMenuDirectRef').textContent = directRefCount;
+            
+            // Update team earnings
+            document.getElementById('sideMenuTeamEarnings').textContent = `$${(data.teamEarnings || 0).toFixed(2)}`;
+            
+            // Update investment count
+            const investmentCount = data.investments ? Object.keys(data.investments).length : 0;
+            document.getElementById('sideMenuInvestments').textContent = investmentCount;
         }
     });
 }
@@ -98,15 +127,52 @@ function loadUserData(userId) {
             const directRefCount = userData.directReferrals ? Object.keys(userData.directReferrals).length : 0;
             document.getElementById('directReferrals').textContent = directRefCount;
             
+            // Update referral earnings
             document.getElementById('referralProfit').textContent = `Earnings: $${(userData.referralEarnings || 0).toFixed(2)}`;
+            
+            // Update team earnings (sum of all levels)
             document.getElementById('teamEarnings').textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
+            
+            // Also update the team structure data
+            if (userData.directReferrals) {
+                updateTeamStructure(userData.directReferrals);
+            }
             
             // Store user data locally
             localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Update side menu
+            loadSideMenuData();
         }
     }, (error) => {
         showToast('Error loading user data', 'error');
         console.error('Error loading user data:', error);
+    });
+}
+
+// Update team structure display
+function updateTeamStructure(directReferrals) {
+    const teamList = document.getElementById('teamStructureList');
+    if (!teamList) return;
+    
+    teamList.innerHTML = '';
+    
+    if (!directReferrals || Object.keys(directReferrals).length === 0) {
+        teamList.innerHTML = '<li>No team members yet</li>';
+        return;
+    }
+    
+    Object.entries(directReferrals).forEach(([userId, refData]) => {
+        const memberItem = document.createElement('li');
+        memberItem.innerHTML = `
+            <div class="team-member">
+                <span class="member-id">${userId.substring(0, 8)}...</span>
+                <span class="member-name">${refData.name || 'No name'}</span>
+                <span class="member-join-date">${formatDate(refData.joinDate)}</span>
+                <span class="member-earning">Earnings: $${(refData.earnings || 0).toFixed(2)}</span>
+            </div>
+        `;
+        teamList.appendChild(memberItem);
     });
 }
 
@@ -127,6 +193,9 @@ function loadTransactionHistory() {
             // Store transactions locally
             localStorage.setItem('transactions', JSON.stringify(transactions));
             displayTransactions(transactions);
+            
+            // Also update the transaction history in side menu
+            updateSideMenuTransactions(transactions);
         } else if (!localTransactions) {
             document.getElementById('transactionHistory').innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
         }
@@ -138,9 +207,39 @@ function loadTransactionHistory() {
     });
 }
 
+// Update transactions in side menu
+function updateSideMenuTransactions(transactions) {
+    const sideMenuTxList = document.getElementById('sideMenuTransactions');
+    if (!sideMenuTxList) return;
+    
+    sideMenuTxList.innerHTML = '';
+    
+    if (!transactions || Object.keys(transactions).length === 0) {
+        sideMenuTxList.innerHTML = '<li>No transactions yet</li>';
+        return;
+    }
+    
+    // Convert to array and sort by timestamp
+    const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
+    transactionsArray.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Show only last 3 in side menu
+    transactionsArray.slice(0, 3).forEach(tx => {
+        const txItem = document.createElement('li');
+        txItem.innerHTML = `
+            <span class="tx-type">${tx.type || 'Transfer'}</span>
+            <span class="tx-amount">$${tx.amount?.toFixed(2) || '0.00'}</span>
+            <span class="tx-date">${formatDateShort(tx.timestamp)}</span>
+        `;
+        sideMenuTxList.appendChild(txItem);
+    });
+}
+
 // Display transactions in the table
 function displayTransactions(transactions) {
     const tbody = document.getElementById('transactionHistory');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     if (!transactions || Object.keys(transactions).length === 0) {
@@ -170,6 +269,13 @@ function formatDate(timestamp) {
     if (!timestamp) return 'N/A';
     const date = new Date(timestamp);
     return date.toLocaleString();
+}
+
+// Format short date for side menu
+function formatDateShort(timestamp) {
+    if (!timestamp) return 'N/A';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString();
 }
 
 // Format status
@@ -492,6 +598,14 @@ function setupDashboardEventListeners() {
     // Menu toggle for mobile
     document.getElementById('menuToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
+    });
+    
+    // Navigation links
+    document.querySelectorAll('.side-menu a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            // Close mobile menu when a link is clicked
+            document.getElementById('sidebar').classList.remove('open');
+        });
     });
 }
 
