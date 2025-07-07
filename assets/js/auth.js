@@ -1,363 +1,439 @@
-// Firebase configuration
+// Firebase Initialization (Modular v9+)
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getDatabase, ref, onValue, set, update, push, get } from "firebase/database";
+
 const firebaseConfig = {
-    apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
-    authDomain: "mywebsite-600d3.firebaseapp.com",
-    databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "mywebsite-600d3",
-    storageBucket: "mywebsite-600d3.firebasestorage.app",
-    messagingSenderId: "584485288598",
-    appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
-    measurementId: "G-GQ9J9QH42J"
+  apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+  authDomain: "mywebsite-600d3.firebaseapp.com",
+  databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mywebsite-600d3",
+  storageBucket: "mywebsite-600d3.firebasestorage.app",
+  messagingSenderId: "584485288598",
+  appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+  measurementId: "G-GQ9J9QH42J"
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
 
-// Current user data
+// Admin details
+const ADMIN_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
+const ADMIN_NAME = "Ramesh kumar Verma";
+
+// Commission rates
+const COMMISSION_RATES = {
+  admin: 0.10,    // 10% to admin
+  direct: 0.10,   // 10% to direct referrer
+  levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
+};
+
+// Global Variables
 let currentUser = null;
 let userData = null;
 
-// Check authentication state
-function checkAuthState() {
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            // User is signed in
-            currentUser = user;
-            
-            // Save to local storage
-            localStorage.setItem('tradeWorldUser', JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                lastLogin: Date.now()
-            }));
-            
-            // Update UI based on auth state
-            updateAuthUI();
-            
-            // Load user data
-            loadUserData(user.uid);
-        } else {
-            // No user is signed in
-            currentUser = null;
-            userData = null;
-            localStorage.removeItem('tradeWorldUser');
-            
-            // Update UI based on auth state
-            updateAuthUI();
-            
-            // Redirect to login if not on auth pages
-            if (!isAuthPage()) {
-                window.location.href = 'login.html';
-            }
-        }
-    });
+// Generate invoice for package purchase
+function generateInvoice(packageAmount) {
+  if (!currentUser) return null;
+  
+  const invoiceId = push(ref(database, 'invoices')).key;
+  const purchaseDate = new Date().toISOString();
+  const maturityDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  
+  const invoiceData = {
+    invoiceId,
+    userId: currentUser.uid,
+    amount: packageAmount,
+    expectedReturn: packageAmount * 2,
+    purchaseDate,
+    maturityDate,
+    status: 'active',
+    packageName: getPackageName(packageAmount)
+  };
+  
+  return invoiceData;
 }
 
-// Update UI based on authentication state
-function updateAuthUI() {
-    const authButtons = document.querySelector('.auth-buttons');
-    const logoutLinks = document.querySelectorAll('#logoutLink');
-    
-    if (currentUser) {
-        // User is logged in
-        if (authButtons) authButtons.style.display = 'none';
-        logoutLinks.forEach(link => link.style.display = 'block');
-    } else {
-        // User is logged out
-        if (authButtons) authButtons.style.display = 'flex';
-        logoutLinks.forEach(link => link.style.display = 'none');
-    }
+function getPackageName(amount) {
+  switch(amount) {
+    case 10: return 'Starter Package';
+    case 30: return 'Standard Package';
+    case 100: return 'Premium Package';
+    default: return 'Custom Package';
+  }
 }
 
-// Check if current page is auth page
-function isAuthPage() {
-    const authPages = ['login.html', 'signup.html', 'forgot-password.html'];
-    return authPages.some(page => window.location.pathname.includes(page));
-}
+// Process package purchase with multi-level commissions
+async function processPackagePurchase(packageAmount) {
+  if (!currentUser) {
+    showToast('Please login first', 'error');
+    return;
+  }
 
-// Load user data from database
-function loadUserData(userId) {
-    database.ref('users/' + userId).on('value', snapshot => {
-        userData = snapshot.val();
-        
-        // Update UI elements that display user data
-        updateUserDataUI();
-    }, error => {
-        console.error('Error loading user data:', error);
-        showToast('Error loading user data', 'error');
-    });
-}
-
-// Update UI elements with user data
-function updateUserDataUI() {
-    // Update balance display
-    const balanceElements = document.querySelectorAll('.user-balance');
-    if (balanceElements.length > 0 && userData) {
-        balanceElements.forEach(el => {
-            el.textContent = `$${(userData.balance || 0).toFixed(2)}`;
-        });
-    }
+  try {
+    // Create invoice first
+    const invoice = generateInvoice(packageAmount);
     
-    // Update user name display
-    const nameElements = document.querySelectorAll('.user-name');
-    if (nameElements.length > 0 && userData) {
-        nameElements.forEach(el => {
-            el.textContent = userData.name || 'User';
-        });
-    }
-}
-
-// Login user
-function loginUser(email, password) {
-    if (!email || !password) {
-        showToast('Please enter both email and password', 'error');
-        return Promise.reject('Email and password required');
-    }
+    // Calculate total commission (30%)
+    const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
+    const tradingPool = packageAmount - totalCommission;
     
-    return auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-        .then(() => auth.signInWithEmailAndPassword(email, password))
-        .then(userCredential => {
-            currentUser = userCredential.user;
-            
-            // Update last login time
-            return database.ref('users/' + currentUser.uid).update({
-                lastLogin: firebase.database.ServerValue.TIMESTAMP
-            });
-        })
-        .then(() => {
-            showToast('Login successful!', 'success');
-            return currentUser;
-        })
-        .catch(error => {
-            let errorMessage = 'Login failed';
-            
-            switch(error.code) {
-                case 'auth/user-not-found':
-                    errorMessage = 'No account found with this email';
-                    break;
-                case 'auth/wrong-password':
-                    errorMessage = 'Incorrect password';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage = 'Invalid email address';
-                    break;
-                case 'auth/user-disabled':
-                    errorMessage = 'Account disabled';
-                    break;
-                default:
-                    errorMessage = error.message;
-            }
-            
-            showToast(errorMessage, 'error');
-            throw error;
-        });
-}
-
-// Signup user
-function signupUser(userData) {
-    const { name, email, password, confirmPassword, mobile, sponsor } = userData;
+    // Prepare all updates
+    const updates = {};
     
-    // Validate inputs
-    if (!name || !email || !password || !confirmPassword || !mobile) {
-        showToast('Please fill in all required fields', 'error');
-        return Promise.reject('Missing required fields');
-    }
+    // 1. Deduct from user balance
+    updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - packageAmount;
     
-    if (password !== confirmPassword) {
-        showToast('Passwords do not match', 'error');
-        return Promise.reject('Passwords do not match');
-    }
-    
-    if (password.length < 8) {
-        showToast('Password must be at least 8 characters', 'error');
-        return Promise.reject('Password too short');
-    }
-    
-    return auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            currentUser = userCredential.user;
-            
-            // Generate user ID
-            const userId = 'TW' + Math.floor(1000 + Math.random() * 9000);
-            
-            // Prepare user data for database
-            const dbUserData = {
-                name: name,
-                mobile: mobile,
-                email: email,
-                userId: userId,
-                sponsorId: sponsor || 'TW1381',
-                balance: 0,
-                tradingProfit: 0,
-                referralProfit: 0,
-                teamEarnings: 0,
-                availableTradingProfit: 0,
-                availableReferralProfit: 0,
-                createdAt: firebase.database.ServerValue.TIMESTAMP,
-                lastLogin: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            // Save to database
-            return database.ref('users/' + currentUser.uid).set(dbUserData);
-        })
-        .then(() => {
-            // Update sponsor's referrals if needed
-            if (sponsor && sponsor !== 'TW1381') {
-                return updateSponsorReferrals(sponsor, currentUser.uid, name);
-            }
-        })
-        .then(() => {
-            showToast('Account created successfully!', 'success');
-            return currentUser;
-        })
-        .catch(error => {
-            let errorMessage = 'Signup failed';
-            
-            switch(error.code) {
-                case 'auth/email-already-in-use':
-                    errorMessage = 'Email already in use';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage = 'Invalid email address';
-                    break;
-                case 'auth/weak-password':
-                    errorMessage = 'Password is too weak';
-                    break;
-                default:
-                    errorMessage = error.message;
-            }
-            
-            showToast(errorMessage, 'error');
-            throw error;
-        });
-}
-
-// Update sponsor's referral list
-function updateSponsorReferrals(sponsorId, referralId, referralName) {
-    return database.ref('users').orderByChild('userId').equalTo(sponsorId).once('value')
-        .then(snapshot => {
-            if (snapshot.exists()) {
-                const sponsorData = snapshot.val();
-                const sponsorKey = Object.keys(sponsorData)[0];
-                
-                // Add referral to sponsor's directReferrals
-                return database.ref(`users/${sponsorKey}/directReferrals/${referralId}`).set({
-                    name: referralName,
-                    joinDate: firebase.database.ServerValue.TIMESTAMP,
-                    investment: 0,
-                    earnings: 0
-                });
-            }
-        });
-}
-
-// Logout user
-function logoutUser() {
-    return auth.signOut()
-        .then(() => {
-            currentUser = null;
-            userData = null;
-            localStorage.removeItem('tradeWorldUser');
-            showToast('Logged out successfully', 'success');
-        })
-        .catch(error => {
-            showToast('Logout error: ' + error.message, 'error');
-            throw error;
-        });
-}
-
-// Change password
-function changePassword(currentPassword, newPassword) {
-    if (!currentPassword || !newPassword) {
-        showToast('Please fill in all password fields', 'error');
-        return Promise.reject('Missing password fields');
-    }
-    
-    if (newPassword.length < 8) {
-        showToast('Password must be at least 8 characters', 'error');
-        return Promise.reject('Password too short');
-    }
-    
-    const user = auth.currentUser;
-    const credential = firebase.auth.EmailAuthProvider.credential(
-        user.email, 
-        currentPassword
-    );
-    
-    return user.reauthenticateWithCredential(credential)
-        .then(() => user.updatePassword(newPassword))
-        .then(() => {
-            showToast('Password changed successfully!', 'success');
-        })
-        .catch(error => {
-            let errorMessage = 'Password change failed';
-            
-            switch(error.code) {
-                case 'auth/wrong-password':
-                    errorMessage = 'Current password is incorrect';
-                    break;
-                case 'auth/weak-password':
-                    errorMessage = 'New password is too weak';
-                    break;
-                default:
-                    errorMessage = error.message;
-            }
-            
-            showToast(errorMessage, 'error');
-            throw error;
-        });
-}
-
-// Check referral link
-function checkReferralLink() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const refId = urlParams.get('ref');
-    
-    if (refId && document.getElementById('sponsorId')) {
-        localStorage.setItem('tradeWorldReferral', refId);
-        document.getElementById('sponsorId').value = refId;
-    }
-}
-
-// Show toast notification
-function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toastContainer') || document.body;
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    const iconMap = {
-        success: 'fa-check-circle',
-        error: 'fa-exclamation-circle',
-        warning: 'fa-exclamation-triangle',
-        info: 'fa-info-circle'
+    // 2. Add to investments
+    updates[`users/${currentUser.uid}/investments/${invoice.invoiceId}`] = {
+      amount: packageAmount,
+      purchaseDate: invoice.purchaseDate,
+      status: 'active',
+      expectedReturn: packageAmount * 2,
+      maturityDate: invoice.maturityDate
     };
     
-    const icon = document.createElement('i');
-    icon.className = `fas ${iconMap[type] || 'fa-info-circle'}`;
+    // 3. Add invoice
+    updates[`users/${currentUser.uid}/invoices/${invoice.invoiceId}`] = invoice;
+    updates[`invoices/${invoice.invoiceId}`] = invoice;
     
-    const text = document.createElement('span');
-    text.textContent = message;
+    // 4. Add transaction record
+    const transactionId = push(ref(database, 'transactions')).key;
+    updates[`transactions/${transactionId}`] = {
+      type: 'investment',
+      amount: packageAmount,
+      status: 'completed',
+      timestamp: Date.now(),
+      userId: currentUser.uid,
+      details: `Purchased ${invoice.packageName}`
+    };
+    updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
+      type: 'investment',
+      amount: packageAmount,
+      status: 'completed',
+      timestamp: Date.now(),
+      details: `Purchased ${invoice.packageName}`
+    };
     
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'toast-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => toast.remove();
+    // 5. Add admin commission (10%)
+    const adminCommission = packageAmount * COMMISSION_RATES.admin;
+    updates[`users/${ADMIN_ID}/tradingProfit`] = (await getValue(`users/${ADMIN_ID}/tradingProfit`)) + adminCommission;
+    updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
     
-    toast.appendChild(icon);
-    toast.appendChild(text);
-    toast.appendChild(closeBtn);
+    // 6. Process referral commissions (if any)
+    if (userData.referredBy) {
+      await processReferralCommissions(userData.referredBy, packageAmount, updates);
+    }
     
-    toastContainer.appendChild(toast);
+    // 7. Add to trading pool (70%)
+    updates[`system/tradingPool`] = (await getValue('system/tradingPool')) + tradingPool;
     
-    // Auto-remove after 5 seconds
-    setTimeout(() => toast.remove(), 5000);
+    // Execute all updates
+    await update(ref(database), updates);
+    
+    showToast(`Successfully purchased ${invoice.packageName}`, 'success');
+    loadUserData(currentUser.uid);
+    
+  } catch (error) {
+    console.error('Package purchase error:', error);
+    showToast('Failed to purchase package', 'error');
+  }
 }
 
-// Initialize auth when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuthState();
-    checkReferralLink();
+// Process multi-level referral commissions
+async function processReferralCommissions(referrerId, packageAmount, updates, currentLevel = 1) {
+  if (currentLevel > 5) return;
+
+  // Get referrer data
+  const referrerSnapshot = await get(ref(database, `users/${referrerId}`));
+  if (!referrerSnapshot.exists()) return;
+  
+  const referrerData = referrerSnapshot.val();
+  
+  // Calculate commission based on level
+  let commissionRate = 0;
+  if (currentLevel === 1) {
+    commissionRate = COMMISSION_RATES.direct; // 10% for direct referrer
+  } else if (currentLevel <= 6) {
+    commissionRate = COMMISSION_RATES.levels[currentLevel-2]; // 2% for levels 2-6
+  }
+  
+  const commission = packageAmount * commissionRate;
+  
+  if (commission > 0) {
+    // Update referrer's earnings
+    updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
+    updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
+    
+    // Update team structure counts
+    updates[`users/${referrerId}/teamStructure/level${currentLevel}`] = (referrerData.teamStructure?.[`level${currentLevel}`] || 0) + 1;
+    
+    // Add transaction record for referrer
+    const transactionId = push(ref(database, 'transactions')).key;
+    updates[`users/${referrerId}/transactions/${transactionId}`] = {
+      type: 'referral',
+      amount: commission,
+      status: 'completed',
+      timestamp: Date.now(),
+      details: `Level ${currentLevel} referral commission from ${currentUser.email}`
+    };
+  }
+  
+  // Continue to next level if available
+  if (referrerData.referredBy && currentLevel < 6) {
+    await processReferralCommissions(referrerData.referredBy, packageAmount, updates, currentLevel + 1);
+  }
+}
+
+async function getValue(path) {
+  const snapshot = await get(ref(database, path));
+  return snapshot.val() || 0;
+}
+
+// Load user data from Firebase
+function loadUserData(userId) {
+  const userRef = ref(database, 'users/' + userId);
+  
+  onValue(userRef, (snapshot) => {
+    userData = snapshot.val();
+    if (userData) {
+      console.log("User data loaded:", userData);
+      updateDashboardUI(userData);
+      localStorage.setItem('tradeWorldUser', JSON.stringify(userData));
+      
+      // Load team structure if available
+      if (userData.teamStructure) {
+        updateTeamStructureUI(userData.teamStructure);
+      }
+    }
+  }, (error) => {
+    console.error("Error loading user data:", error);
+  });
+}
+
+function updateDashboardUI(data) {
+  if (!data) return;
+  
+  // Update balance
+  document.getElementById('userBalance').textContent = `$${(data.balance || 0).toFixed(2)}`;
+  
+  // Update trading profit
+  document.getElementById('tradingProfit').textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
+  
+  // Update referrals
+  const referralCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
+  document.getElementById('directReferrals').textContent = referralCount;
+  document.getElementById('referralProfit').textContent = `Earnings: $${(data.referralEarnings || 0).toFixed(2)}`;
+  
+  // Update team earnings
+  document.getElementById('teamEarnings').textContent = `$${(data.teamEarnings || 0).toFixed(2)}`;
+  
+  // Load transactions
+  loadRecentTransactions();
+}
+
+function updateTeamStructureUI(teamStructure) {
+  const teamStructureDiv = document.getElementById('teamStructure');
+  if (!teamStructureDiv) return;
+  
+  let html = '<h3>Your Team Structure</h3><ul>';
+  
+  for (let level = 1; level <= 5; level++) {
+    const count = teamStructure[`level${level}`] || 0;
+    html += `<li>Level ${level}: ${count} members</li>`;
+  }
+  
+  html += '</ul>';
+  teamStructureDiv.innerHTML = html;
+}
+
+function loadRecentTransactions() {
+  if (!currentUser) return;
+  
+  const transactionsRef = ref(database, `users/${currentUser.uid}/transactions`);
+  
+  onValue(transactionsRef, (snapshot) => {
+    const transactions = snapshot.val();
+    const tbody = document.getElementById('transactionHistory');
+    tbody.innerHTML = '';
+    
+    if (!transactions) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
+      return;
+    }
+    
+    // Convert to array and sort by timestamp
+    const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
+    transactionsArray.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Show only last 5 transactions
+    transactionsArray.slice(0, 5).forEach(tx => {
+      const row = document.createElement('tr');
+      
+      const date = new Date(tx.timestamp).toLocaleDateString();
+      const type = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+      const amount = `$${tx.amount?.toFixed(2) || '0.00'}`;
+      const status = tx.status ? tx.status.charAt(0).toUpperCase() + tx.status.slice(1) : 'Completed';
+      const details = tx.details || '';
+      
+      row.innerHTML = `
+        <td>${date}</td>
+        <td>${type}</td>
+        <td>${amount}</td>
+        <td class="status-${tx.status || 'completed'}">${status}</td>
+        <td>${details}</td>
+      `;
+      
+      tbody.appendChild(row);
+    });
+    
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+  });
+}
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', function() {
+  setupSidebarToggle();
+  
+  // Firebase Auth State Listener
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      loadUserData(user.uid);
+      generateTradingData();
+    } else {
+      // Redirect if not on auth pages
+      if (!window.location.pathname.includes('login.html') && 
+          !window.location.pathname.includes('signup.html')) {
+        window.location.href = 'login.html';
+      }
+    }
+  });
+  
+  // Setup package purchase buttons
+  document.querySelectorAll('[data-package]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const amount = parseFloat(btn.getAttribute('data-package'));
+      processPackagePurchase(amount);
+    });
+  });
+  
+  // Setup transfer button
+  document.getElementById('submitTransfer').addEventListener('click', transferFunds);
+  
+  // Setup logout
+  document.getElementById('logoutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    logoutUser();
+  });
 });
+
+async function transferFunds() {
+  const recipientId = document.getElementById('recipientId').value.trim();
+  const amount = parseFloat(document.getElementById('transferAmount').value);
+  
+  if (!recipientId || isNaN(amount) || amount <= 0) {
+    showToast('Please enter valid details', 'error');
+    return;
+  }
+  
+  if (amount > (userData?.balance || 0)) {
+    showToast('Insufficient balance', 'error');
+    return;
+  }
+  
+  if (recipientId === currentUser?.uid) {
+    showToast('Cannot transfer to yourself', 'error');
+    return;
+  }
+  
+  try {
+    const updates = {};
+    const timestamp = Date.now();
+    const transactionId = push(ref(database, 'transactions')).key;
+    
+    // Update balances
+    updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
+    
+    const recipientRef = ref(database, `users/${recipientId}`);
+    const recipientSnap = await get(recipientRef);
+    
+    if (!recipientSnap.exists()) {
+      showToast('Recipient not found', 'error');
+      return;
+    }
+    
+    const recipientData = recipientSnap.val();
+    updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
+    
+    // Record transactions
+    updates[`transactions/${transactionId}`] = {
+      type: 'transfer',
+      amount,
+      status: 'completed',
+      timestamp,
+      from: currentUser.uid,
+      to: recipientId
+    };
+    
+    updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
+      type: 'sent',
+      amount,
+      status: 'completed',
+      timestamp,
+      to: recipientId
+    };
+    
+    updates[`users/${recipientId}/transactions/${transactionId}`] = {
+      type: 'received',
+      amount,
+      status: 'completed',
+      timestamp,
+      from: currentUser.uid
+    };
+    
+    await update(ref(database), updates);
+    
+    showToast(`Successfully transferred $${amount.toFixed(2)}`, 'success');
+    document.getElementById('transferAmount').value = '';
+    document.getElementById('recipientId').value = '';
+    
+  } catch (error) {
+    console.error('Transfer error:', error);
+    showToast('Transfer failed', 'error');
+  }
+}
+
+function showToast(message, type) {
+  const toastContainer = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span>${message}</span>
+    <button class="toast-close">&times;</button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 5000);
+  
+  // Close button
+  toast.querySelector('.toast-close').addEventListener('click', () => {
+    toast.remove();
+  });
+}
+
+function logoutUser() {
+  signOut(auth).then(() => {
+    showToast('Successfully logged out', 'success');
+    window.location.href = 'login.html';
+  }).catch((error) => {
+    showToast('Error logging out', 'error');
+    console.error('Logout error:', error);
+  });
+}
