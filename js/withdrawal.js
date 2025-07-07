@@ -46,8 +46,8 @@ function loadUserData(userId) {
         userData = snapshot.val();
         if (userData) {
             // Update available balances
-            const tradingProfit = userData.tradingProfit || 0;
-            const referralEarnings = userData.referralEarnings || 0;
+            const tradingProfit = parseFloat(userData.tradingProfit || 0);
+            const referralEarnings = parseFloat(userData.referralEarnings || 0);
             const totalBalance = tradingProfit + referralEarnings;
             
             document.getElementById('availableTradingProfit').textContent = 
@@ -83,7 +83,7 @@ function loadWithdrawalHistory(userId) {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${formatDate(wd.timestamp)}</td>
-                <td>$${wd.amount?.toFixed(2) || '0.00'}</td>
+                <td>$${(parseFloat(wd.amount) || 0).toFixed(2)}</td>
                 <td>${wd.type === 'trading' ? 'Trading Profit' : 'Referral Profit'}</td>
                 <td>${wd.walletAddress || ''}</td>
                 <td class="status-${wd.status || 'pending'}">${formatStatus(wd.status)}</td>
@@ -142,16 +142,22 @@ function updateWithdrawalMinAmount() {
 // Submit withdrawal request
 async function submitWithdrawalRequest() {
     const type = document.getElementById('withdrawalType').value;
-    const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+    const amountInput = document.getElementById('withdrawalAmount').value;
     const walletAddress = document.getElementById('walletAddress').value.trim();
     
-    // Validation
+    // Basic validation
     if (!walletAddress) {
         showToast('Please enter your USDT BEP20 wallet address', 'error');
         return;
     }
     
-    if (isNaN(amount) {
+    if (!amountInput) {
+        showToast('Please enter an amount', 'error');
+        return;
+    }
+    
+    const amount = parseFloat(amountInput);
+    if (isNaN(amount) || amount <= 0) {
         showToast('Please enter a valid amount', 'error');
         return;
     }
@@ -165,8 +171,8 @@ async function submitWithdrawalRequest() {
     
     // Check available balance
     const availableBalance = type === 'trading' ? 
-        (userData?.tradingProfit || 0) : 
-        (userData?.referralEarnings || 0);
+        parseFloat(userData?.tradingProfit || 0) : 
+        parseFloat(userData?.referralEarnings || 0);
     
     if (amount > availableBalance) {
         showToast('Insufficient balance for this withdrawal', 'error');
@@ -192,34 +198,29 @@ async function submitWithdrawalRequest() {
         updates[`withdrawals/${currentUser.uid}/${withdrawalId}`] = withdrawalData;
         
         if (type === 'trading') {
-            updates[`users/${currentUser.uid}/tradingProfit`] = (userData.tradingProfit || 0) - amount;
+            updates[`users/${currentUser.uid}/tradingProfit`] = parseFloat(userData.tradingProfit || 0) - amount;
         } else {
-            updates[`users/${currentUser.uid}/referralEarnings`] = (userData.referralEarnings || 0) - amount;
+            updates[`users/${currentUser.uid}/referralEarnings`] = parseFloat(userData.referralEarnings || 0) - amount;
         }
         
         // Execute all updates atomically
         await database.ref().update(updates);
         
-        showToast('Withdrawal request submitted successfully', 'success');
+        showToast('Withdrawal request submitted successfully! It will be processed within 24 hours.', 'success');
         
         // Clear form
         document.getElementById('withdrawalAmount').value = '';
         document.getElementById('walletAddress').value = '';
         
-        // Refresh data
-        loadUserData(currentUser.uid);
-        loadWithdrawalHistory(currentUser.uid);
-        
     } catch (error) {
         console.error('Withdrawal error:', error);
-        showToast('Withdrawal failed: ' + error.message, 'error');
+        showToast('Withdrawal failed. Please try again later.', 'error');
     }
 }
 
 // Logout user
 function logoutUser() {
     firebase.auth().signOut().then(() => {
-        showToast('Successfully logged out', 'success');
         window.location.href = 'login.html';
     }).catch((error) => {
         showToast('Error logging out', 'error');
