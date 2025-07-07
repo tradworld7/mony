@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade World - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
+            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
+            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">Dashboard</h1>
+        
+        <div class="dashboard-cards">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">My Balance</span>
+                    <div class="card-icon balance">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="userBalance">$0.00</div>
+                <div class="card-footer">
+                    Available balance for investments
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Trading Profit</span>
+                    <div class="card-icon trading">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="tradingProfit">$0.00</div>
+                <div class="card-footer">Total profit from your investments</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Direct Referrals</span>
+                    <div class="card-icon referral">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="directReferrals">0</div>
+                <div class="card-value" id="referralProfit" style="font-size: 1.2rem;">Earnings: $0.00</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Total Team Earnings</span>
+                    <div class="card-icon team">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="teamEarnings">$0.00</div>
+                <div class="card-footer">From all 5 levels</div>
+            </div>
+        </div>
+        
+        <!-- Transfer Funds Section -->
+        <div class="transfer-form">
+            <h2 class="section-title">Transfer Funds</h2>
+            <div class="form-group">
+                <label for="recipientId">Recipient User ID</label>
+                <input type="text" id="recipientId" class="form-control" placeholder="Enter recipient's ID">
+            </div>
+            <div class="form-group">
+                <label for="transferAmount">Amount ($)</label>
+                <input type="number" id="transferAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <button id="submitTransfer" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Transfer Now
+            </button>
+        </div>
+        
+        <!-- Investment Packages Section -->
+        <h2 class="section-title">Investment Packages</h2>
+        
+        <div class="packages-grid">
+            <div class="package-card">
+                <h3 class="package-name">Starter Package</h3>
+                <div class="package-price">$10</div>
+                <div class="package-return">Returns $20</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Small-Scale Investments</li>
+                </ul>
+                <button class="btn btn-primary" data-package="10">Buy Now</button>
+            </div>
+            
+            <div class="package-card">
+                <h3 class="package-name">Standard Package</h3>
+                <div class="package-price">$30</div>
+                <div class="package-return">Returns $60</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Exclusive Market Insights</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Higher Profit Potential</li>
+                </ul>
+                <button class="btn btn-primary" data-package="30">Buy Now</button>
+            </div>
+            
+            <div class="package-card">
+                <h3 class="package-name">Premium Package</h3>
+                <div class="package-price">$100</div>
+                <div class="package-return">Returns $200</div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Priority Customer Support</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> High-Yield Opportunities</li>
+                </ul>
+                <button class="btn btn-primary" data-package="100">Buy Now</button>
+            </div>
+        </div>
+        
+        <!-- Transaction History Section -->
+        <div class="trading-section">
+            <div class="trading-header">
+                <h2 class="trading-title">Recent Transactions</h2>
+                <span>Updated: <span id="lastUpdated">Just now</span></span>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table trading-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionHistory">
+                        <tr>
+                            <td colspan="5" class="text-center">No transactions yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
