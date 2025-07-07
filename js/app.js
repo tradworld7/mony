@@ -27,6 +27,9 @@ let userData = null;
 
 // Initialize the dashboard page
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize navigation menu
+    initializeNavigationMenu();
+    
     // Check auth state
     checkAuthState();
     
@@ -37,37 +40,69 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDashboardEventListeners();
     
     // Transfer button handler
-    document.getElementById('submitTransfer').addEventListener('click', transferFunds);
+    const transferBtn = document.getElementById('submitTransfer');
+    if (transferBtn) {
+        transferBtn.addEventListener('click', transferFunds);
+    }
     
     // Load side menu data
     loadSideMenuData();
 });
 
-// Check user authentication state
-function checkAuthState() {
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // User is signed in
-            currentUser = user;
-            updateUIForLoggedInUser();
-            loadUserData(user.uid);
+// Initialize navigation menu
+function initializeNavigationMenu() {
+    const menuContainer = document.getElementById('sideMenu');
+    if (!menuContainer) return;
+
+    // Create menu HTML structure
+    menuContainer.innerHTML = `
+        <div class="menu-header">
+            <div class="user-info">
+                <h3 id="sideMenuUserName">Loading...</h3>
+                <span id="sideMenuUserEmail">user@example.com</span>
+            </div>
+            <div class="balance-info">
+                <span>Balance</span>
+                <h2 id="sideMenuUserBalance">$0.00</h2>
+            </div>
+        </div>
+        
+        <div class="menu-divider"></div>
+        
+        <ul class="menu-items">
+            <li class="menu-title">Dashboard</li>
+            <li><a href="index.html"><i class="fas fa-home"></i> Overview</a></li>
+            <li><a href="#" class="dashboard-submenu"><i class="fas fa-users"></i> Direct Referrals <span id="sideMenuDirectRef" class="menu-badge">0</span></a></li>
+            <li><a href="#" class="dashboard-submenu"><i class="fas fa-money-bill-wave"></i> Total Team Earnings <span id="sideMenuTeamEarnings" class="menu-badge">$0.00</span></a></li>
             
-            // Special handling for admin dashboard
-            if (user.uid === ADMIN_USER_ID) {
-                setupAdminDashboard();
-            }
-        } else {
-            // User is signed out
-            currentUser = null;
-            updateUIForLoggedOutUser();
+            <li class="menu-title">Transactions</li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-alt"></i> Deposit</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdrawal</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-chart-line"></i> Trading History</a></li>
             
-            // Redirect to login if not on auth pages
-            if (!window.location.pathname.includes('login.html') && 
-                !window.location.pathname.includes('signup.html')) {
-                window.location.href = 'login.html';
-            }
-        }
-    });
+            <li class="menu-title">Account</li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="referral.html"><i class="fas fa-user-plus"></i> Referral Program</a></li>
+            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> Invoices</a></li>
+            
+            <li class="menu-title">Authentication</li>
+            <li><a href="login.html" id="loginLink"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li><a href="signup.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+            <li><a href="#" id="logoutLink" style="display:none"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+        
+        <div class="menu-footer">
+            <div class="recent-transactions">
+                <h4>Recent Transactions</h4>
+                <ul id="sideMenuTransactions">
+                    <li>No recent transactions</li>
+                </ul>
+            </div>
+        </div>
+    `;
 }
 
 // Load data for side menu
@@ -92,6 +127,33 @@ function loadSideMenuData() {
             // Update investment count
             const investmentCount = data.investments ? Object.keys(data.investments).length : 0;
             document.getElementById('sideMenuInvestments').textContent = investmentCount;
+        }
+    });
+}
+
+// Check user authentication state
+function checkAuthState() {
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // User is signed in
+            currentUser = user;
+            updateUIForLoggedInUser();
+            loadUserData(user.uid);
+            
+            // Special handling for admin dashboard
+            if (user.uid === ADMIN_USER_ID) {
+                setupAdminDashboard();
+            }
+        } else {
+            // User is signed out
+            currentUser = null;
+            updateUIForLoggedOutUser();
+            
+            // Redirect to login if not on auth pages
+            if (!window.location.pathname.includes('login.html') && 
+                !window.location.pathname.includes('signup.html')) {
+                window.location.href = 'login.html';
+            }
         }
     });
 }
@@ -646,9 +708,11 @@ function showToast(message, type) {
 // Update UI for logged in user
 function updateUIForLoggedInUser() {
     document.getElementById('logoutLink').style.display = 'block';
+    document.getElementById('loginLink').style.display = 'none';
 }
 
 // Update UI for logged out user
 function updateUIForLoggedOutUser() {
     document.getElementById('logoutLink').style.display = 'none';
+    document.getElementById('loginLink').style.display = 'block';
 }
