@@ -196,37 +196,48 @@
             color: var(--gray-color);
         }
 
-        /* Card Styles */
-        .card {
-            background-color: var(--light-color);
-            border-radius: 5px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
+        /* Balance Card Styles */
         .balance-card {
             display: flex;
             justify-content: space-between;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            background-color: var(--white-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .balance-item {
             text-align: center;
             flex: 1;
+            padding: 0 1rem;
+        }
+
+        .balance-item:not(:last-child) {
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .balance-label {
             font-size: 0.9rem;
             color: var(--gray-color);
+            margin-bottom: 0.5rem;
         }
 
         .balance-amount {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: 600;
+        }
+
+        .trading-profit {
+            color: var(--success-color);
+        }
+
+        .referral-profit {
             color: var(--primary-color);
+        }
+
+        .total-balance {
+            color: var(--secondary-color);
         }
 
         /* Table Styles */
@@ -306,6 +317,10 @@
             background-color: var(--danger-color);
         }
 
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
         .toast-close {
             background: none;
             border: none;
@@ -330,6 +345,17 @@
 
             .menu-toggle {
                 display: block;
+            }
+
+            .balance-card {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .balance-item:not(:last-child) {
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                padding-bottom: 1.5rem;
             }
         }
 
@@ -385,15 +411,15 @@
         <div class="balance-card">
             <div class="balance-item">
                 <div class="balance-label">Trading Profit</div>
-                <div class="balance-amount" id="availableTradingProfit">$0.00</div>
+                <div class="balance-amount trading-profit" id="availableTradingProfit">$0.00</div>
             </div>
             <div class="balance-item">
                 <div class="balance-label">Referral Profit</div>
-                <div class="balance-amount" id="availableReferralProfit">$0.00</div>
+                <div class="balance-amount referral-profit" id="availableReferralProfit">$0.00</div>
             </div>
             <div class="balance-item">
                 <div class="balance-label">Total Balance</div>
-                <div class="balance-amount" id="totalBalance">$0.00</div>
+                <div class="balance-amount total-balance" id="totalBalance">$0.00</div>
             </div>
         </div>
         
