@@ -1,20 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <head>
-    <!-- Add these correct paths -->
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="js/app.js" defer></script>
-</head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* CSS Styles */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        /* ... (Include all your CSS styles here) ... */
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -32,157 +96,13 @@
     <aside class="sidebar" id="sidebar">
         <ul class="sidebar-menu">
             <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
-            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
-            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
-            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
-            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <!-- ... (Include all your HTML content) ... -->
         </ul>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">Dashboard</h1>
-        
-        <div class="dashboard-cards">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">My Balance</span>
-                    <div class="card-icon balance">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="userBalance">$0.00</div>
-                <div class="card-footer">
-                    Available balance for investments
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Trading Profit</span>
-                    <div class="card-icon trading">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="tradingProfit">$0.00</div>
-                <div class="card-footer">Total profit from your investments</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Direct Referrals</span>
-                    <div class="card-icon referral">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="directReferrals">0</div>
-                <div class="card-value" id="referralProfit" style="font-size: 1.2rem;">Earnings: $0.00</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Total Team Earnings</span>
-                    <div class="card-icon team">
-                        <i class="fas fa-users"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="teamEarnings">$0.00</div>
-                <div class="card-footer">From all 5 levels</div>
-            </div>
-        </div>
-        
-        <!-- Transfer Funds Section -->
-        <div class="transfer-form">
-            <h2 class="section-title">Transfer Funds</h2>
-            <div class="form-group">
-                <label for="recipientId">Recipient User ID</label>
-                <input type="text" id="recipientId" class="form-control" placeholder="Enter recipient's ID">
-            </div>
-            <div class="form-group">
-                <label for="transferAmount">Amount ($)</label>
-                <input type="number" id="transferAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-            </div>
-            <button id="submitTransfer" class="btn btn-primary">
-                <i class="fas fa-paper-plane"></i> Transfer Now
-            </button>
-        </div>
-        
-        <!-- Investment Packages Section -->
-        <h2 class="section-title">Investment Packages</h2>
-        
-        <div class="packages-grid">
-            <div class="package-card">
-                <h3 class="package-name">Starter Package</h3>
-                <div class="package-price">$10</div>
-                <div class="package-return">Returns $20</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Small-Scale Investments</li>
-                </ul>
-                <button class="btn btn-primary" data-package="10">Buy Now</button>
-            </div>
-            
-            <div class="package-card">
-                <h3 class="package-name">Standard Package</h3>
-                <div class="package-price">$30</div>
-                <div class="package-return">Returns $60</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Exclusive Market Insights</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Higher Profit Potential</li>
-                </ul>
-                <button class="btn btn-primary" data-package="30">Buy Now</button>
-            </div>
-            
-            <div class="package-card">
-                <h3 class="package-name">Premium Package</h3>
-                <div class="package-price">$100</div>
-                <div class="package-return">Returns $200</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Priority Customer Support</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> High-Yield Opportunities</li>
-                </ul>
-                <button class="btn btn-primary" data-package="100">Buy Now</button>
-            </div>
-        </div>
-        
-        <!-- Transaction History Section -->
-        <div class="trading-section">
-            <div class="trading-header">
-                <h2 class="trading-title">Recent Transactions</h2>
-                <span>Updated: <span id="lastUpdated">Just now</span></span>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table trading-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionHistory">
-                        <tr>
-                            <td colspan="5" class="text-center">No transactions yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <!-- ... (Include all your HTML content) ... -->
     </main>
 
     <!-- Toast Notifications Container -->
@@ -192,6 +112,60 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Admin configuration
+        const ADMIN_USER_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
+        const ADMIN_NAME = "Ramesh Kumar Verma";
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Firebase services
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+        let userData = null;
+
+        // Initialize the dashboard page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check auth state
+            checkAuthState();
+            
+            // Load transaction history
+            loadTransactionHistory();
+            
+            // Set up event listeners
+            setupDashboardEventListeners();
+            
+            // Transfer button handler
+            document.getElementById('submitTransfer').addEventListener('click', transferFunds);
+        });
+
+        // ... (Include all your JavaScript code here) ...
+
+        // Update UI for logged in user
+        function updateUIForLoggedInUser() {
+            document.getElementById('logoutLink').style.display = 'block';
+        }
+
+        // Update UI for logged out user
+        function updateUIForLoggedOutUser() {
+            document.getElementById('logoutLink').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
