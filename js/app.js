@@ -191,7 +191,7 @@ function checkAuthState() {
         if (user) {
             currentUser = user;
             updateUIForLoggedInUser();
-            loadUserData(user.uid); // Load essential user data
+            loadUserData(user.uid); // Load essential user data and update dashboard cards
 
             // Determine current page and load specific data
             const currentPage = window.location.pathname.split('/').pop(); // e.g., "index.html"
@@ -759,7 +759,7 @@ function loadPackagesPage() {
     if (userInvestmentPackagesContainer && userData?.investments) {
         displayInvestmentPackages(userData.investments);
     } else if (userInvestmentPackagesContainer) {
-        userInvestmentPackagesContainer.innerHTML = '<p class="text-center">You have not purchased any investment packages yet.</p>';
+        userInvestmentPackagesContainer.innerHTML = '<p class="text-center">You have no active investment packages.</p>';
     }
 }
 
