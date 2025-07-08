@@ -76,7 +76,7 @@ function formatStatus(status) {
 document.addEventListener('DOMContentLoaded', function() {
     initializeNavigationMenu();
     checkAuthState();
-    setupDashboardEventListeners();
+    setupDashboardEventListeners(); // For package purchase and transfer button etc.
 });
 
 // Initialize navigation menu
@@ -162,12 +162,12 @@ function initializeNavigationMenu() {
     });
 }
 
-// Load data for side menu
+// Load data for side menu (always updates regardless of the current page)
 function loadSideMenuData() {
     if (!currentUser || !userData) {
         // If userData is not yet loaded, try to load it
         if (currentUser && !userData) {
-            loadUserData(currentUser.uid);
+            loadUserData(currentUser.uid); // This will trigger a full data load
         }
         return;
     }
@@ -185,15 +185,50 @@ function loadSideMenuData() {
     document.getElementById('sideMenuTeamEarnings').textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
 }
 
-// Check user authentication state
+// Check user authentication state and load specific page data
 function checkAuthState() {
     auth.onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
             updateUIForLoggedInUser();
-            loadUserData(user.uid);
-            // Load transaction history for the side menu only once here.
-            loadTransactionHistory();
+            loadUserData(user.uid); // Load essential user data
+
+            // Determine current page and load specific data
+            const currentPage = window.location.pathname.split('/').pop(); // e.g., "index.html"
+
+            switch (currentPage) {
+                case 'index.html':
+                    loadDashboardData(); // Loads main dashboard stats and recent transactions
+                    break;
+                case 'deposit.html':
+                    setupDepositPage();
+                    break;
+                case 'withdrawal.html':
+                    setupWithdrawalPage();
+                    break;
+                case 'transfer.html':
+                    setupTransferPage();
+                    break;
+                case 'trading-history.html':
+                    loadTradingHistory();
+                    break;
+                case 'profile.html':
+                    loadProfileData();
+                    break;
+                case 'referral.html':
+                    loadReferralProgramData();
+                    break;
+                case 'team-structure.html':
+                    loadTeamStructureData();
+                    break;
+                case 'packages.html':
+                    loadPackagesPage(); // Loads packages to purchase AND purchased packages
+                    break;
+                case 'invoices.html':
+                    loadInvoicesPage();
+                    break;
+                // login.html and signup.html don't require user-specific data loading
+            }
 
             if (user.uid === ADMIN_USER_ID) {
                 setupAdminDashboard();
@@ -232,51 +267,37 @@ function loadAdminStats() {
     });
 }
 
-// Load user data from database and update dashboard cards
+// Load essential user data from database and update dashboard cards (main listener)
 function loadUserData(userId) {
     database.ref('users/' + userId).on('value', (snapshot) => {
         userData = snapshot.val();
         if (userData) {
-            // Update dashboard cards
+            // Update dashboard cards (if on index.html, handled by loadDashboardData, but here for general update)
             const userBalanceElement = document.getElementById('userBalance');
             if (userBalanceElement) userBalanceElement.textContent = `$${(userData.balance || 0).toFixed(2)}`;
 
             const tradingProfitElement = document.getElementById('tradingProfit');
             if (tradingProfitElement) tradingProfitElement.textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
 
-            // Calculate and update direct referrals count
-            const directRefCount = userData.directReferrals ? Object.keys(userData.directReferrals).length : 0;
             const directReferralsElement = document.getElementById('directReferrals');
+            const directRefCount = userData.directReferrals ? Object.keys(userData.directReferrals).length : 0;
             if (directReferralsElement) directReferralsElement.textContent = directRefCount;
 
-            // Update referral earnings
             const referralProfitElement = document.getElementById('referralProfit');
             if (referralProfitElement) referralProfitElement.textContent = `Earnings: $${(userData.referralEarnings || 0).toFixed(2)}`;
 
-            // Update total team earnings (sum of all levels)
             const teamEarningsElement = document.getElementById('teamEarnings');
             if (teamEarningsElement) teamEarningsElement.textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
 
-            // Update team structure data if on the team-structure.html page
-            if (window.location.pathname.includes('team-structure.html') && userData.directReferrals) {
-                updateTeamStructure(userData.directReferrals);
-            }
-
-            // Update investment packages if on packages.html
-            if (window.location.pathname.includes('packages.html') && userData.investments) {
-                displayInvestmentPackages(userData.investments);
-            }
-
-            // Update invoices if on invoices.html
-            if (window.location.pathname.includes('invoices.html') && userData.invoices) {
-                displayInvoices(userData.invoices);
-            }
-
-            // Store user data locally (consider clearing sensitive data on logout)
+            // Store user data locally
             localStorage.setItem('userData', JSON.stringify(userData));
 
             // Always update side menu after user data is loaded
             loadSideMenuData();
+
+            // Update user's last active timestamp
+            database.ref('users/' + currentUser.uid + '/lastActive').set(firebase.database.ServerValue.TIMESTAMP);
+
         } else {
             // If user data is null, ensure dashboard elements show default values
             if (document.getElementById('userBalance')) document.getElementById('userBalance').textContent = '$0.00';
@@ -292,184 +313,147 @@ function loadUserData(userId) {
     });
 }
 
-// Update team structure display (for team-structure.html)
-function updateTeamStructure(directReferrals) {
-    const teamList = document.getElementById('teamStructureList');
-    if (!teamList) return;
+// --- Page Specific Data Loading and Logic ---
 
-    teamList.innerHTML = '';
-
-    if (!directReferrals || Object.keys(directReferrals).length === 0) {
-        teamList.innerHTML = '<li>No team members yet. Invite someone to grow your team!</li>';
-        return;
-    }
-
-    Object.entries(directReferrals).forEach(([userId, refData]) => {
-        const memberItem = document.createElement('li');
-        memberItem.className = 'team-member-item'; // Add a class for styling
-        memberItem.innerHTML = `
-            <div class="member-details">
-                <span class="member-name">${refData.name || 'N/A'}</span>
-                <span class="member-email">${refData.email || 'N/A'}</span>
-                <span class="member-id">ID: ${userId.substring(0, 8)}...</span>
-            </div>
-            <div class="member-stats">
-                <span class="member-join-date">Joined: ${formatDate(refData.joinDate)}</span>
-                <span class="member-earning">Referral Earnings: $${(refData.referralEarnings || 0).toFixed(2)}</span>
-            </div>
-        `;
-        teamList.appendChild(memberItem);
-    });
+// For index.html (Dashboard Overview)
+function loadDashboardData() {
+    loadTransactionHistory(); // Loads and displays recent transactions on dashboard
+    // Dashboard cards are updated by loadUserData, which is called on auth state change
 }
 
-// Display investment packages (for packages.html)
-function displayInvestmentPackages(investments) {
-    const packagesContainer = document.getElementById('userInvestmentPackages');
-    if (!packagesContainer) return;
+// For deposit.html
+function setupDepositPage() {
+    // You'll need an input field for amount and a button on deposit.html
+    const depositAmountInput = document.getElementById('depositAmount');
+    const submitDepositBtn = document.getElementById('submitDeposit');
 
-    packagesContainer.innerHTML = '';
-
-    if (!investments || Object.keys(investments).length === 0) {
-        packagesContainer.innerHTML = '<p class="text-center">You have not purchased any investment packages yet.</p>';
-        return;
-    }
-
-    const investmentsArray = Object.entries(investments).map(([id, inv]) => ({ id, ...inv }));
-    investmentsArray.sort((a, b) => b.purchaseDate - a.purchaseDate);
-
-    investmentsArray.forEach(inv => {
-        const packageCard = document.createElement('div');
-        packageCard.className = 'package-card'; // Assuming you have some CSS for this
-        packageCard.innerHTML = `
-            <h4>Package: $${inv.amount.toFixed(2)}</h4>
-            <p>Purchase Date: ${formatDate(inv.purchaseDate)}</p>
-            <p>Expected Return: $${(inv.expectedReturn || 0).toFixed(2)}</p>
-            <p>Maturity Date: ${formatDate(inv.maturityDate)}</p>
-            <p>Status: <span class="status-${inv.status}">${formatStatus(inv.status)}</span></p>
-        `;
-        packagesContainer.appendChild(packageCard);
-    });
-}
-
-// Display invoices (for invoices.html)
-function displayInvoices(invoices) {
-    const invoicesTableBody = document.getElementById('invoicesTableBody');
-    if (!invoicesTableBody) return;
-
-    invoicesTableBody.innerHTML = '';
-
-    if (!invoices || Object.keys(invoices).length === 0) {
-        invoicesTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No invoices generated yet.</td></tr>';
-        return;
-    }
-
-    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
-    invoicesArray.sort((a, b) => b.timestamp - a.timestamp); // Sort by most recent
-
-    invoicesArray.forEach(invoice => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>INV-${invoice.id.substring(0, 8).toUpperCase()}</td>
-            <td>${invoice.type || 'N/A'}</td>
-            <td>$${(invoice.amount || 0).toFixed(2)}</td>
-            <td>${formatDate(invoice.timestamp)}</td>
-            <td><span class="status-${invoice.status || 'generated'}">${formatStatus(invoice.status || 'generated')}</span></td>
-        `;
-        invoicesTableBody.appendChild(row);
-    });
-}
-
-// Load transaction history for main dashboard table and side menu
-function loadTransactionHistory() {
-    if (!currentUser) return;
-
-    const transactionRef = database.ref('users/' + currentUser.uid + '/transactions').orderByChild('timestamp');
-
-    // Attach a listener for real-time updates
-    transactionRef.on('value', (snapshot) => {
-        const transactions = snapshot.val();
-        if (transactions) {
-            const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
-            transactionsArray.sort((a, b) => b.timestamp - a.timestamp); // Sort descending
-
-            // Update main transaction history table (if it exists on the page)
-            displayTransactions(transactionsArray);
-
-            // Update side menu transactions
-            updateSideMenuTransactions(transactionsArray);
-        } else {
-            // No transactions
-            const tbody = document.getElementById('transactionHistory');
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
+    if (submitDepositBtn) {
+        submitDepositBtn.addEventListener('click', async () => {
+            if (!currentUser || !userData) {
+                showToast('Please log in to deposit.', 'error');
+                return;
             }
-            const sideMenuTxList = document.getElementById('sideMenuTransactions');
-            if (sideMenuTxList) {
-                sideMenuTxList.innerHTML = '<li>No recent transactions</li>';
+            const amount = parseFloat(depositAmountInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid amount.', 'error');
+                return;
             }
-        }
-        const lastUpdatedElement = document.getElementById('lastUpdated');
-        if (lastUpdatedElement) {
-            lastUpdatedElement.textContent = new Date().toLocaleTimeString();
-        }
-    }, (error) => {
-        console.error('Error loading transaction history:', error);
-        showToast('Error loading transactions', 'error');
-    });
-}
 
+            // Simulate a deposit process (e.g., via a payment gateway)
+            // In a real app, this would involve server-side processing for security.
+            // For now, we'll directly update the balance.
+            try {
+                const newBalance = (userData.balance || 0) + amount;
+                const timestamp = firebase.database.ServerValue.TIMESTAMP;
+                const transactionId = database.ref().child('transactions').push().key;
 
-// Update transactions in side menu
-function updateSideMenuTransactions(transactionsArray) {
-    const sideMenuTxList = document.getElementById('sideMenuTransactions');
-    if (!sideMenuTxList) return;
+                const updates = {};
+                updates[`users/${currentUser.uid}/balance`] = newBalance;
+                updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
+                    type: 'deposit',
+                    amount: amount,
+                    status: 'completed',
+                    timestamp: timestamp,
+                    details: `Deposited $${amount.toFixed(2)}`
+                };
 
-    sideMenuTxList.innerHTML = '';
+                await database.ref().update(updates);
+                showToast(`Successfully deposited $${amount.toFixed(2)}.`, 'success');
+                depositAmountInput.value = ''; // Clear input
 
-    if (!transactionsArray || transactionsArray.length === 0) {
-        sideMenuTxList.innerHTML = '<li>No recent transactions</li>';
-        return;
+            } catch (error) {
+                console.error('Deposit error:', error);
+                showToast('Deposit failed: ' + error.message, 'error');
+            }
+        });
     }
-
-    // Show only last 3 in side menu
-    transactionsArray.slice(0, 3).forEach(tx => {
-        const txItem = document.createElement('li');
-        txItem.innerHTML = `
-            <span class="tx-type">${tx.type || 'Transaction'}</span>
-            <span class="tx-amount">$${tx.amount?.toFixed(2) || '0.00'}</span>
-            <span class="tx-date">${formatDateShort(tx.timestamp)}</span>
-        `;
-        sideMenuTxList.appendChild(txItem);
-    });
 }
 
-// Display transactions in the main dashboard table
-function displayTransactions(transactionsArray) {
-    const tbody = document.getElementById('transactionHistory');
-    if (!tbody) return;
+// For withdrawal.html
+function setupWithdrawalPage() {
+    // You'll need input fields for amount, withdrawal method, and a button on withdrawal.html
+    const withdrawalAmountInput = document.getElementById('withdrawalAmount');
+    const withdrawalMethodSelect = document.getElementById('withdrawalMethod'); // e.g., bank, crypto
+    const withdrawalAddressInput = document.getElementById('withdrawalAddress'); // e.g., bank account number, wallet address
+    const submitWithdrawalBtn = document.getElementById('submitWithdrawal');
 
-    tbody.innerHTML = '';
+    if (submitWithdrawalBtn) {
+        submitWithdrawalBtn.addEventListener('click', async () => {
+            if (!currentUser || !userData) {
+                showToast('Please log in to withdraw.', 'error');
+                return;
+            }
+            const amount = parseFloat(withdrawalAmountInput.value);
+            const method = withdrawalMethodSelect.value;
+            const address = withdrawalAddressInput.value.trim();
+            const currentBalance = parseFloat(userData.balance || 0);
 
-    if (!transactionsArray || transactionsArray.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
-        return;
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid amount.', 'error');
+                return;
+            }
+            if (amount > currentBalance) {
+                showToast('Insufficient balance for withdrawal.', 'error');
+                return;
+            }
+            if (!method || !address) {
+                showToast('Please select a withdrawal method and provide details.', 'error');
+                return;
+            }
+
+            try {
+                // In a real app, withdrawals would be pending and require admin approval.
+                // For this example, we'll mark them as pending.
+                const newBalance = currentBalance - amount;
+                const timestamp = firebase.database.ServerValue.TIMESTAMP;
+                const transactionId = database.ref().child('transactions').push().key;
+
+                const updates = {};
+                updates[`users/${currentUser.uid}/balance`] = newBalance;
+                updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
+                    type: 'withdrawal',
+                    amount: amount,
+                    method: method,
+                    address: address,
+                    status: 'pending', // Important: Withdrawals are usually pending
+                    timestamp: timestamp,
+                    details: `Withdrawal request of $${amount.toFixed(2)} via ${method}`
+                };
+
+                // Optionally, add a record for admin to review
+                updates[`withdrawalRequests/${transactionId}`] = {
+                    userId: currentUser.uid,
+                    amount: amount,
+                    method: method,
+                    address: address,
+                    status: 'pending',
+                    timestamp: timestamp,
+                    userName: userData.name || currentUser.email
+                };
+
+
+                await database.ref().update(updates);
+                showToast(`Withdrawal request of $${amount.toFixed(2)} submitted. Status: Pending.`, 'info');
+                withdrawalAmountInput.value = '';
+                withdrawalAddressInput.value = '';
+
+            } catch (error) {
+                console.error('Withdrawal error:', error);
+                showToast('Withdrawal failed: ' + error.message, 'error');
+            }
+        });
     }
-
-    transactionsArray.forEach(tx => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${formatDate(tx.timestamp)}</td>
-            <td>${tx.type || 'Transaction'}</td>
-            <td>$${tx.amount?.toFixed(2) || '0.00'}</td>
-            <td class="status-${tx.status || 'completed'}">${formatStatus(tx.status)}</td>
-            <td>${tx.details || (tx.type === 'sent' ? 'To: ' + (tx.to || '') : tx.type === 'received' ? 'From: ' + (tx.from || '') : 'N/A')}</td>
-        `;
-        tbody.appendChild(row);
-    });
 }
 
+// For transfer.html
+function setupTransferPage() {
+    const transferBtn = document.getElementById('submitTransfer');
+    if (transferBtn) {
+        transferBtn.addEventListener('click', transferFunds);
+    }
+}
 
-// Transfer funds function (for transfer.html)
+// Transfer funds function (retained from previous update)
 async function transferFunds() {
     if (!currentUser) {
         showToast('Please log in to transfer funds.', 'error');
@@ -547,17 +531,6 @@ async function transferFunds() {
             details: `Received from ${userData.name || 'Unknown User'}`
         };
 
-        // Global transaction record (optional, but good for admin overview)
-        updates[`transactions/${transactionId}`] = {
-            senderId: currentUser.uid,
-            recipientId: recipientId,
-            type: 'transfer',
-            amount: amount,
-            status: 'completed',
-            timestamp: timestamp,
-            details: `Transfer from ${currentUser.email} to ${recipientData.email || recipientId}`
-        };
-
         await database.ref().update(updates);
 
         showToast(`Successfully transferred $${amount.toFixed(2)} to ${recipientData.name || recipientId}.`, 'success');
@@ -566,7 +539,6 @@ async function transferFunds() {
         transferAmountInput.value = '';
         recipientIdInput.value = '';
 
-        // Data will automatically refresh via loadUserData and loadTransactionHistory listeners
     } catch (error) {
         console.error('Transfer error:', error);
         showToast('Transfer failed: ' + error.message, 'error');
@@ -577,7 +549,387 @@ async function transferFunds() {
 }
 
 
-// Purchase investment package
+// For trading-history.html
+function loadTradingHistory() {
+    if (!currentUser) return;
+
+    const tradingHistoryTableBody = document.getElementById('tradingHistoryTableBody');
+    if (!tradingHistoryTableBody) return;
+
+    database.ref('users/' + currentUser.uid + '/transactions')
+        .orderByChild('timestamp')
+        .on('value', (snapshot) => {
+            const allTransactions = snapshot.val();
+            const tradingTransactions = [];
+
+            if (allTransactions) {
+                // Filter for trading-related transactions
+                Object.values(allTransactions).forEach(tx => {
+                    if (tx.type === 'trading_profit_distribution' || tx.type === 'immediate_profit') {
+                        tradingTransactions.push(tx);
+                    }
+                });
+                tradingTransactions.sort((a, b) => b.timestamp - a.timestamp); // Sort by most recent
+            }
+
+            if (tradingTransactions.length === 0) {
+                tradingHistoryTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No trading history yet.</td></tr>';
+                return;
+            }
+
+            tradingHistoryTableBody.innerHTML = ''; // Clear previous entries
+            tradingTransactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(tx.timestamp)}</td>
+                    <td>${tx.type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</td>
+                    <td>$${(tx.amount || 0).toFixed(2)}</td>
+                    <td>${tx.details || 'N/A'}</td>
+                `;
+                tradingHistoryTableBody.appendChild(row);
+            });
+        }, (error) => {
+            console.error('Error loading trading history:', error);
+            showToast('Error loading trading history.', 'error');
+        });
+}
+
+// For profile.html
+function loadProfileData() {
+    if (!currentUser || !userData) {
+        showToast('User data not available. Please log in.', 'error');
+        return;
+    }
+
+    // Assume you have elements like these on profile.html
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileUserId = document.getElementById('profileUserId');
+    const profileReferralCode = document.getElementById('profileReferralCode');
+    const profileBalance = document.getElementById('profileBalance');
+    const profileJoinDate = document.getElementById('profileJoinDate');
+
+    if (profileName) profileName.textContent = userData.name || 'Not Set';
+    if (profileEmail) profileEmail.textContent = currentUser.email;
+    if (profileUserId) profileUserId.textContent = currentUser.uid;
+    if (profileReferralCode) profileReferralCode.textContent = userData.referralCode || 'Generate one!'; // You might have a way to generate this
+    if (profileBalance) profileBalance.textContent = `$${(userData.balance || 0).toFixed(2)}`;
+    if (profileJoinDate) profileJoinDate.textContent = formatDate(userData.joinDate || currentUser.metadata.creationTime);
+
+    // If there's a form to update profile, set it up
+    const updateProfileForm = document.getElementById('updateProfileForm');
+    if (updateProfileForm) {
+        const inputName = document.getElementById('inputName');
+        if (inputName) inputName.value = userData.name || '';
+
+        updateProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = inputName.value.trim();
+            if (!newName) {
+                showToast('Name cannot be empty.', 'error');
+                return;
+            }
+            try {
+                await database.ref('users/' + currentUser.uid + '/name').set(newName);
+                showToast('Profile updated successfully!', 'success');
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showToast('Failed to update profile: ' + error.message, 'error');
+            }
+        });
+    }
+}
+
+// For referral.html
+function loadReferralProgramData() {
+    if (!currentUser || !userData) {
+        showToast('User data not available. Please log in.', 'error');
+        return;
+    }
+
+    const referralLinkElement = document.getElementById('referralLink');
+    const directReferralsCountElement = document.getElementById('directReferralsCount'); // On referral.html
+    const referralEarningsElement = document.getElementById('referralEarnings'); // On referral.html
+    const copyReferralLinkBtn = document.getElementById('copyReferralLink');
+
+    const userReferralCode = userData.referralCode || currentUser.uid; // Use UID if no custom code
+    const referralLink = `${window.location.origin}/signup.html?ref=${userReferralCode}`;
+
+    if (referralLinkElement) referralLinkElement.value = referralLink;
+    if (directReferralsCountElement) directReferralsCountElement.textContent = userData.directReferrals ? Object.keys(userData.directReferrals).length : 0;
+    if (referralEarningsElement) referralEarningsElement.textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
+
+    if (copyReferralLinkBtn) {
+        copyReferralLinkBtn.addEventListener('click', () => {
+            if (referralLinkElement) {
+                referralLinkElement.select();
+                document.execCommand('copy');
+                showToast('Referral link copied to clipboard!', 'success');
+            }
+        });
+    }
+
+    // Display direct referrals details
+    const directReferralsList = document.getElementById('directReferralsList');
+    if (directReferralsList && userData.directReferrals) {
+        directReferralsList.innerHTML = ''; // Clear previous entries
+        Object.entries(userData.directReferrals).forEach(([uid, refData]) => {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item'; // Assuming Bootstrap list styling
+            listItem.innerHTML = `
+                <strong>${refData.name || 'User'}</strong> (${refData.email || 'N/A'}) - Joined: ${formatDateShort(refData.joinDate)}
+                <span class="badge badge-primary float-right">Earnings: $${(refData.earnings || 0).toFixed(2)}</span>
+            `;
+            directReferralsList.appendChild(listItem);
+        });
+        if (Object.keys(userData.directReferrals).length === 0) {
+            directReferralsList.innerHTML = '<p class="text-center">No direct referrals yet. Share your link!</p>';
+        }
+    }
+}
+
+// For team-structure.html
+function loadTeamStructureData() {
+    if (!currentUser || !userData) {
+        showToast('User data not available. Please log in.', 'error');
+        return;
+    }
+
+    const totalTeamEarningsElement = document.getElementById('totalTeamEarningsDisplay'); // On team-structure.html
+    const teamStructureList = document.getElementById('teamStructureList'); // This is the UL/DIV for team members
+
+    if (totalTeamEarningsElement) totalTeamEarningsElement.textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
+
+    if (teamStructureList) {
+        teamStructureList.innerHTML = ''; // Clear previous entries
+
+        if (!userData.directReferrals || Object.keys(userData.directReferrals).length === 0) {
+            teamStructureList.innerHTML = '<p class="text-center">Your team is empty. Invite members to grow it!</p>';
+            return;
+        }
+
+        // Fetch details for all direct referrals and then recursively for their teams
+        const fetchTeamRecursive = async (userId, level = 1) => {
+            const userSnap = await database.ref(`users/${userId}`).once('value');
+            const user = userSnap.val();
+            if (!user) return;
+
+            const memberItem = document.createElement('li');
+            memberItem.className = `team-member-item level-${level}`;
+            memberItem.innerHTML = `
+                <div class="member-details">
+                    <span class="member-name">${user.name || 'N/A'}</span>
+                    <span class="member-email">${user.email || 'N/A'}</span>
+                    <span class="member-id">ID: ${userId.substring(0, 8)}...</span>
+                </div>
+                <div class="member-stats">
+                    <span class="member-level">Level ${level}</span>
+                    <span class="member-join-date">Joined: ${formatDateShort(user.joinDate || user.metadata?.creationTime)}</span>
+                    <span class="member-earning">Team Earnings: $${(user.teamEarnings || 0).toFixed(2)}</span>
+                    <span class="member-referral-earnings">Referral Earnings: $${(user.referralEarnings || 0).toFixed(2)}</span>
+                </div>
+            `;
+            teamStructureList.appendChild(memberItem);
+
+            if (user.directReferrals && level < 5) { // Limit depth to avoid infinite loops and too many reads
+                for (const refId of Object.keys(user.directReferrals)) {
+                    await fetchTeamRecursive(refId, level + 1);
+                }
+            }
+        };
+
+        // Start fetching from the current user's direct referrals
+        for (const directRefId of Object.keys(userData.directReferrals)) {
+            fetchTeamRecursive(directRefId);
+        }
+    }
+}
+
+// For packages.html
+function loadPackagesPage() {
+    // This function will display both available packages to buy and user's purchased packages.
+    if (!currentUser) return;
+
+    // Display available packages (static content or from Firebase if you have dynamic packages)
+    // Assuming you have HTML elements with data-package for purchase buttons
+    setupDashboardEventListeners(); // Re-attaches purchase listeners if needed
+
+    // Display user's purchased packages (re-using displayInvestmentPackages)
+    const userInvestmentPackagesContainer = document.getElementById('userInvestmentPackages');
+    if (userInvestmentPackagesContainer && userData?.investments) {
+        displayInvestmentPackages(userData.investments);
+    } else if (userInvestmentPackagesContainer) {
+        userInvestmentPackagesContainer.innerHTML = '<p class="text-center">You have not purchased any investment packages yet.</p>';
+    }
+}
+
+// Display investment packages (for packages.html)
+function displayInvestmentPackages(investments) {
+    const packagesContainer = document.getElementById('userInvestmentPackages');
+    if (!packagesContainer) return;
+
+    packagesContainer.innerHTML = '';
+
+    if (!investments || Object.keys(investments).length === 0) {
+        packagesContainer.innerHTML = '<p class="text-center">You have no active investment packages.</p>';
+        return;
+    }
+
+    const investmentsArray = Object.entries(investments).map(([id, inv]) => ({ id, ...inv }));
+    investmentsArray.sort((a, b) => b.purchaseDate - a.purchaseDate);
+
+    investmentsArray.forEach(inv => {
+        const packageCard = document.createElement('div');
+        packageCard.className = 'package-card'; // Assuming you have some CSS for this
+        packageCard.innerHTML = `
+            <h4>Package: $${inv.amount.toFixed(2)}</h4>
+            <p>Purchase Date: ${formatDate(inv.purchaseDate)}</p>
+            <p>Expected Return: $${(inv.expectedReturn || 0).toFixed(2)}</p>
+            <p>Maturity Date: ${formatDate(inv.maturityDate)}</p>
+            <p>Status: <span class="status-${inv.status}">${formatStatus(inv.status)}</span></p>
+        `;
+        packagesContainer.appendChild(packageCard);
+    });
+}
+
+// For invoices.html
+function loadInvoicesPage() {
+    if (!currentUser) return;
+
+    const invoicesTableBody = document.getElementById('invoicesTableBody');
+    if (!invoicesTableBody) return;
+
+    database.ref('users/' + currentUser.uid + '/invoices')
+        .orderByChild('timestamp')
+        .on('value', (snapshot) => {
+            const invoices = snapshot.val();
+            displayInvoices(invoices);
+        }, (error) => {
+            console.error('Error loading invoices:', error);
+            showToast('Error loading invoices.', 'error');
+        });
+}
+
+// Display invoices (for invoices.html)
+function displayInvoices(invoices) {
+    const invoicesTableBody = document.getElementById('invoicesTableBody');
+    if (!invoicesTableBody) return;
+
+    invoicesTableBody.innerHTML = '';
+
+    if (!invoices || Object.keys(invoices).length === 0) {
+        invoicesTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No invoices generated yet.</td></tr>';
+        return;
+    }
+
+    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
+    invoicesArray.sort((a, b) => b.timestamp - a.timestamp); // Sort by most recent
+
+    invoicesArray.forEach(invoice => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>INV-${invoice.id.substring(0, 8).toUpperCase()}</td>
+            <td>${invoice.type || 'N/A'}</td>
+            <td>$${(invoice.amount || 0).toFixed(2)}</td>
+            <td>${formatDate(invoice.timestamp)}</td>
+            <td><span class="status-${invoice.status || 'generated'}">${formatStatus(invoice.status || 'generated')}</span></td>
+        `;
+        invoicesTableBody.appendChild(row);
+    });
+}
+
+// Load transaction history for main dashboard table and side menu (generalized)
+function loadTransactionHistory() {
+    if (!currentUser) return;
+
+    const transactionRef = database.ref('users/' + currentUser.uid + '/transactions').orderByChild('timestamp');
+
+    transactionRef.on('value', (snapshot) => {
+        const transactions = snapshot.val();
+        if (transactions) {
+            const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
+            transactionsArray.sort((a, b) => b.timestamp - a.timestamp); // Sort descending
+
+            // Update main transaction history table (if it exists on the current page)
+            const mainTransactionTableBody = document.getElementById('transactionHistory');
+            if (mainTransactionTableBody) {
+                displayTransactions(transactionsArray, mainTransactionTableBody);
+            }
+
+            // Update side menu transactions
+            updateSideMenuTransactions(transactionsArray);
+        } else {
+            // No transactions
+            const mainTransactionTableBody = document.getElementById('transactionHistory');
+            if (mainTransactionTableBody) {
+                mainTransactionTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
+            }
+            const sideMenuTxList = document.getElementById('sideMenuTransactions');
+            if (sideMenuTxList) {
+                sideMenuTxList.innerHTML = '<li>No recent transactions</li>';
+            }
+        }
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        if (lastUpdatedElement) {
+            lastUpdatedElement.textContent = new Date().toLocaleTimeString();
+        }
+    }, (error) => {
+        console.error('Error loading transaction history:', error);
+        showToast('Error loading transactions', 'error');
+    });
+}
+
+// Display transactions in a given table body
+function displayTransactions(transactionsArray, tbodyElement) {
+    if (!tbodyElement) return;
+
+    tbodyElement.innerHTML = '';
+
+    if (!transactionsArray || transactionsArray.length === 0) {
+        tbodyElement.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
+        return;
+    }
+
+    transactionsArray.forEach(tx => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatDate(tx.timestamp)}</td>
+            <td>${tx.type || 'Transaction'}</td>
+            <td>$${tx.amount?.toFixed(2) || '0.00'}</td>
+            <td class="status-${tx.status || 'completed'}">${formatStatus(tx.status)}</td>
+            <td>${tx.details || (tx.type === 'sent' ? 'To: ' + (tx.to || '') : tx.type === 'received' ? 'From: ' + (tx.from || '') : 'N/A')}</td>
+        `;
+        tbodyElement.appendChild(row);
+    });
+}
+
+
+// Update transactions in side menu
+function updateSideMenuTransactions(transactionsArray) {
+    const sideMenuTxList = document.getElementById('sideMenuTransactions');
+    if (!sideMenuTxList) return;
+
+    sideMenuTxList.innerHTML = '';
+
+    if (!transactionsArray || transactionsArray.length === 0) {
+        sideMenuTxList.innerHTML = '<li>No transactions yet</li>';
+        return;
+    }
+
+    // Show only last 3 in side menu
+    transactionsArray.slice(0, 3).forEach(tx => {
+        const txItem = document.createElement('li');
+        txItem.innerHTML = `
+            <span class="tx-type">${tx.type || 'Transaction'}</span>
+            <span class="tx-amount">$${tx.amount?.toFixed(2) || '0.00'}</span>
+            <span class="tx-date">${formatDateShort(tx.timestamp)}</span>
+        `;
+        sideMenuTxList.appendChild(txItem);
+    });
+}
+
+
+// Purchase investment package (retained)
 async function purchasePackage(amount) {
     if (!currentUser) {
         showToast('Please log in to purchase a package.', 'error');
@@ -605,13 +957,13 @@ async function purchasePackage(amount) {
         const updates = {};
         const timestamp = firebase.database.ServerValue.TIMESTAMP;
         const packageId = database.ref().child('investments').push().key;
-        const invoiceId = database.ref().child('invoices').push().key; // New invoice ID
+        const invoiceId = database.ref().child('invoices').push().key;
 
         // Calculate profit distribution
-        const adminCommission = amount * 0.10; // 10% to admin
-        const referralCommissionsAllocation = amount * 0.10; // 10% for referral chain
-        const tradingProfitAllocation = amount * 0.70; // 70% to trading pool
-        const userImmediateProfit = amount * 0.10; // 10% immediate profit to user
+        const adminCommission = amount * 0.10;
+        const referralCommissionsAllocation = amount * 0.10;
+        const tradingProfitAllocation = amount * 0.70;
+        const userImmediateProfit = amount * 0.10;
 
         // 1. Update user balance (subtract investment, add immediate profit)
         updates[`users/${currentUser.uid}/balance`] = currentBalance - amount + userImmediateProfit;
@@ -622,15 +974,15 @@ async function purchasePackage(amount) {
             amount: amount,
             purchaseDate: timestamp,
             status: 'active',
-            expectedReturn: amount * 2, // Example: 2x return
-            maturityDate: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days from now
+            expectedReturn: amount * 2,
+            maturityDate: Date.now() + (30 * 24 * 60 * 60 * 1000)
         };
 
         // 3. Add transaction records for the user
         const investmentTxId = database.ref().child('transactions').push().key;
         updates[`users/${currentUser.uid}/transactions/${investmentTxId}`] = {
             type: 'investment_purchase',
-            amount: -amount, // Negative for outflow
+            amount: -amount,
             status: 'completed',
             timestamp: timestamp,
             details: `Purchased $${amount} investment package`
@@ -671,7 +1023,7 @@ async function purchasePackage(amount) {
         const adminData = adminRef.val();
         const adminCurrentBalance = parseFloat(adminData?.balance || 0);
         updates[`users/${ADMIN_USER_ID}/balance`] = adminCurrentBalance + adminCommission;
-        updates[`users/${ADMIN_USER_ID}/tradingProfit`] = (adminData?.tradingProfit || 0) + adminCommission; // Admin also gets trading profit portion
+        updates[`users/${ADMIN_USER_ID}/tradingProfit`] = (adminData?.tradingProfit || 0) + adminCommission;
 
         // Record admin commission transaction
         const adminTxId = database.ref().child('transactions').push().key;
@@ -695,8 +1047,6 @@ async function purchasePackage(amount) {
         await distributeTradingProfit(tradingProfitAllocation);
 
         showToast(`Successfully purchased $${amount} package. You received $${userImmediateProfit.toFixed(2)} immediate profit!`, 'success');
-        // No need to manually loadUserData and loadTransactionHistory here,
-        // as the 'on' listener for loadUserData and loadTransactionHistory will handle updates.
 
     } catch (error) {
         console.error('Package purchase error:', error);
@@ -704,7 +1054,7 @@ async function purchasePackage(amount) {
     }
 }
 
-// Distribute trading profit equally among all active users (including admin)
+// Distribute trading profit equally among all active users (including admin) (retained)
 async function distributeTradingProfit(totalProfit) {
     try {
         const usersSnapshot = await database.ref('users').once('value');
@@ -712,8 +1062,6 @@ async function distributeTradingProfit(totalProfit) {
 
         if (!users || totalProfit <= 0) return;
 
-        // Filter users who are active (e.g., logged in within last 30 days or have active investments)
-        // For simplicity, let's consider all users with a 'lastActive' timestamp within 30 days, plus the admin.
         const activeUsersUids = Object.keys(users).filter(uid => {
             const user = users[uid];
             const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
@@ -728,9 +1076,8 @@ async function distributeTradingProfit(totalProfit) {
 
         activeUsersUids.forEach(uid => {
             updates[`users/${uid}/tradingProfit`] = (users[uid].tradingProfit || 0) + profitPerUser;
-            updates[`users/${uid}/balance`] = (users[uid].balance || 0) + profitPerUser; // Add to balance directly
+            updates[`users/${uid}/balance`] = (users[uid].balance || 0) + profitPerUser;
 
-            // Record profit transaction for each user
             const txId = database.ref().child('transactions').push().key;
             updates[`users/${uid}/transactions/${txId}`] = {
                 type: 'trading_profit_distribution',
@@ -741,7 +1088,6 @@ async function distributeTradingProfit(totalProfit) {
             };
         });
 
-        // Clear the trading pool after distribution
         updates['system/tradingPool'] = 0;
 
         await database.ref().update(updates);
@@ -752,24 +1098,22 @@ async function distributeTradingProfit(totalProfit) {
     }
 }
 
-// Distribute referral commissions (recursive function for up to 5 levels)
+// Distribute referral commissions (recursive function for up to 5 levels) (retained)
 async function distributeReferralCommissions(referrerId, initialAmount, currentLevel, updates) {
     if (currentLevel > 5 || !referrerId) return;
 
-    // Commission percentage per level (example: 2% for each of 5 levels)
-    const commissionRate = 0.02; // 2% of the initial package amount
+    const commissionRate = 0.02;
     const commission = initialAmount * commissionRate;
 
     const referrerSnapshot = await database.ref(`users/${referrerId}`).once('value');
     const referrerData = referrerSnapshot.val();
 
-    if (!referrerData) return; // Referrer does not exist
+    if (!referrerData) return;
 
     updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
     updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
-    updates[`users/${referrerId}/balance`] = (referrerData.balance || 0) + commission; // Add commission to balance
+    updates[`users/${referrerId}/balance`] = (referrerData.balance || 0) + commission;
 
-    // Add transaction record for referrer
     const transactionId = database.ref().child('transactions').push().key;
     updates[`users/${referrerId}/transactions/${transactionId}`] = {
         type: 'referral_commission',
@@ -779,15 +1123,13 @@ async function distributeReferralCommissions(referrerId, initialAmount, currentL
         details: `Level ${currentLevel} referral commission from new package purchase`
     };
 
-    // Continue to next level if available
     if (referrerData.referredBy && currentLevel < 5) {
         await distributeReferralCommissions(referrerData.referredBy, initialAmount, currentLevel + 1, updates);
     }
 }
 
-// Set up event listeners for dashboard actions
+// Set up event listeners for dashboard actions (retained for purchase buttons)
 function setupDashboardEventListeners() {
-    // Package purchase buttons (assuming these are on index.html or packages.html)
     document.querySelectorAll('[data-package]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -795,29 +1137,21 @@ function setupDashboardEventListeners() {
             purchasePackage(packageAmount);
         });
     });
-
-    // Transfer button (assuming this is on transfer.html)
-    const transferBtn = document.getElementById('submitTransfer');
-    if (transferBtn) {
-        transferBtn.addEventListener('click', transferFunds);
-    }
-
-    // You can add more event listeners here for other dashboard elements
-    // For example, deposit, withdrawal buttons if they are on the dashboard
+    // The transfer button listener is now in setupTransferPage
 }
 
-// Update UI for logged in user
+// Update UI for logged in user (retained)
 function updateUIForLoggedInUser() {
     const logoutLink = document.getElementById('logoutLink');
     const loginLink = document.getElementById('loginLink');
-    const signupLink = document.getElementById('signupLink'); // Assuming you have this ID for signup.html link
+    const signupLink = document.getElementById('signupLink');
 
     if (logoutLink) logoutLink.style.display = 'block';
     if (loginLink) loginLink.style.display = 'none';
     if (signupLink) signupLink.style.display = 'none';
 }
 
-// Update UI for logged out user
+// Update UI for logged out user (retained)
 function updateUIForLoggedOutUser() {
     const logoutLink = document.getElementById('logoutLink');
     const loginLink = document.getElementById('loginLink');
@@ -828,10 +1162,9 @@ function updateUIForLoggedOutUser() {
     if (signupLink) signupLink.style.display = 'block';
 }
 
-// Logout user
+// Logout user (retained)
 function logoutUser() {
     auth.signOut().then(() => {
-        // Clear local storage data on logout
         localStorage.removeItem('userData');
         localStorage.removeItem('transactions');
         showToast('Successfully logged out.', 'success');
