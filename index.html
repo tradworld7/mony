@@ -90,35 +90,131 @@
             z-index: 999;
         }
 
-        .sidebar-menu {
-            list-style: none;
-            padding: 1rem 0;
+        .menu-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .sidebar-menu li a {
+        .user-info {
+            margin-bottom: 1rem;
+        }
+
+        .user-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info span {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+        }
+
+        .balance-info span {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            display: block;
+        }
+
+        .balance-info h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background-color: rgba(0, 0, 0, 0.05);
+            margin: 0.5rem 0;
+        }
+
+        .menu-items {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .menu-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-color);
+            margin: 1rem 0 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .menu-items li a {
             display: flex;
             align-items: center;
-            padding: 0.8rem 1.5rem;
+            padding: 0.75rem 0.5rem;
             color: var(--dark-color);
             text-decoration: none;
+            border-radius: 5px;
             transition: all 0.3s ease;
-            gap: 0.8rem;
         }
 
-        .sidebar-menu li a:hover {
+        .menu-items li a:hover {
             background-color: rgba(67, 97, 238, 0.1);
             color: var(--primary-color);
         }
 
-        .sidebar-menu li a.active {
+        .menu-items li a.active {
             background-color: rgba(67, 97, 238, 0.2);
             color: var(--primary-color);
-            border-left: 3px solid var(--primary-color);
         }
 
-        .sidebar-menu li a i {
-            width: 20px;
+        .menu-items li a i {
+            width: 30px;
+            font-size: 1rem;
             text-align: center;
+        }
+
+        .menu-badge {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+
+        .menu-footer {
+            padding: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .recent-transactions h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: var(--gray-color);
+        }
+
+        .recent-transactions ul {
+            list-style: none;
+        }
+
+        .recent-transactions li {
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recent-transactions li:last-child {
+            border-bottom: none;
+        }
+
+        .tx-type {
+            font-weight: 500;
+        }
+
+        .tx-amount {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .tx-date {
+            font-size: 0.75rem;
+            color: var(--gray-color);
         }
 
         /* Main Content Styles */
@@ -424,27 +520,6 @@
             font-size: 1rem;
         }
 
-        /* Utility Classes */
-        .text-center {
-            text-align: center;
-        }
-
-        .mb-3 {
-            margin-bottom: 1rem;
-        }
-
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
         /* Responsive Styles */
         @media (max-width: 992px) {
             .sidebar {
@@ -692,5 +767,27 @@
     
     <!-- App JS -->
     <script src="app.js"></script>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Menu toggle functionality
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    </script>
 </body>
 </html>
