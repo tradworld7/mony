@@ -98,8 +98,8 @@ const App = () => {
     const [invoicesData, setInvoicesData] = useState([]);
     const [packagesData, setPackagesData] = useState([]);
     const [profileData, setProfileData] = useState({});
-    const [referralData, setReferralData] = useState([]);
-    const [teamStructureData, setTeamStructureData] = useState([]);
+    const [referralData, setReferralData] = useState([]); // Stores direct referrals with their details
+    const [teamStructureData, setTeamStructureData] = useState([]); // Stores multi-level team structure
     const [transferData, setTransferData] = useState([]);
     const [withdrawalData, setWithdrawalData] = useState([]);
     const [adminStats, setAdminStats] = useState(0); // For admin earnings
@@ -174,9 +174,6 @@ const App = () => {
                     directReferrals: Object.values(data.directReferrals || {}),
                     totalTeamEarnings: data.teamEarnings || 0
                 }));
-                if (data.directReferrals) {
-                    updateTeamStructure(data.directReferrals);
-                }
             } else {
                 console.log("User data not found in Firestore. May be a new anonymous user.");
                 // Optionally create a basic profile for new anonymous users
@@ -209,17 +206,10 @@ const App = () => {
     const loadTransactionHistory = useCallback(() => {
         if (!db || !userId || !isAuthReady) return;
 
-        // Check local storage first (for initial quick load, then Firestore will update)
-        const localTransactions = localStorage.getItem('transactions');
-        if (localTransactions) {
-            setTransactionHistory(JSON.parse(localTransactions));
-            console.log("Transaction history loaded from local storage.");
-        }
-
         const q = query(
             collection(db, `artifacts/${appId}/users/${userId}/transactions`),
             orderBy('timestamp', 'desc'),
-            limit(5) // Limit to last 5 transactions
+            limit(50) // Increased limit for more history
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -228,7 +218,6 @@ const App = () => {
                 transactions.push({ id: doc.id, ...doc.data() });
             });
             setTransactionHistory(transactions);
-            localStorage.setItem('transactions', JSON.stringify(transactions)); // Update local storage
             console.log("Transaction history updated from Firestore.");
         }, (error) => {
             console.error('Error loading transaction history:', error);
@@ -238,80 +227,199 @@ const App = () => {
         return () => unsubscribe(); // Cleanup on unmount or re-run
     }, [db, userId, isAuthReady, showToast]);
 
-    // --- General Data Loading Functions (Simulated for other sections) ---
+    // --- Load Deposit Data from Firestore ---
     const loadDepositData = useCallback(() => {
-        // In a real app, you'd fetch from Firestore:
-        // const q = query(collection(db, `artifacts/${appId}/users/${userId}/deposits`), orderBy('date', 'desc'));
-        // onSnapshot(q, (snapshot) => { ... });
-        const deposits = JSON.parse(localStorage.getItem('deposits')) || [
-            { id: 'd1', amount: 500, method: 'Bank Transfer', status: 'Completed', date: '2024-06-20' },
-            { id: 'd2', amount: 200, method: 'Crypto', status: 'Pending', date: '2024-07-02' },
-        ];
-        setDepositData(deposits);
-        console.log("Deposit data loaded.");
-    }, []);
+        if (!db || !userId || !isAuthReady) return;
+        const q = query(
+            collection(db, `artifacts/${appId}/users/${userId}/deposits`),
+            orderBy('timestamp', 'desc')
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const deposits = [];
+            snapshot.forEach(doc => deposits.push({ id: doc.id, ...doc.data() }));
+            setDepositData(deposits);
+            console.log("Deposit data loaded from Firestore.");
+        }, (error) => {
+            console.error('Error loading deposit data:', error);
+            showToast('Error loading deposits', 'error');
+        });
+        return () => unsubscribe();
+    }, [db, userId, isAuthReady, showToast]);
 
+    // --- Load Invoices Data from Firestore ---
     const loadInvoicesData = useCallback(() => {
-        const invoices = JSON.parse(localStorage.getItem('invoices')) || [
-            { id: 'inv001', amount: 150, status: 'Paid', date: '2024-05-10' },
-            { id: 'inv002', amount: 250, status: 'Due', date: '2024-07-15' },
-        ];
-        setInvoicesData(invoices);
-        console.log("Invoices data loaded.");
-    }, []);
+        if (!db || !userId || !isAuthReady) return;
+        const q = query(
+            collection(db, `artifacts/${appId}/users/${userId}/invoices`),
+            orderBy('invoiceDate', 'desc')
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const invoices = [];
+            snapshot.forEach(doc => invoices.push({ id: doc.id, ...doc.data() }));
+            setInvoicesData(invoices);
+            console.log("Invoices data loaded from Firestore.");
+        }, (error) => {
+            console.error('Error loading invoices data:', error);
+            showToast('Error loading invoices', 'error');
+        });
+        return () => unsubscribe();
+    }, [db, userId, isAuthReady, showToast]);
 
+    // --- Load Packages Data (Static for now, could be from Firestore public collection) ---
     const loadPackagesData = useCallback(() => {
-        const packages = JSON.parse(localStorage.getItem('packages')) || [
-            { id: 'pkg1', name: 'Starter Plan', price: 100, duration: '30 days' },
-            { id: 'pkg2', name: 'Premium Plan', price: 500, duration: '90 days' },
+        // In a real app, these packages might be stored in a public Firestore collection
+        const packages = [
+            { id: 'pkg1', name: 'Starter Plan', price: 100, duration: '30 days', expectedReturn: 200 },
+            { id: 'pkg2', name: 'Standard Plan', price: 500, duration: '60 days', expectedReturn: 1200 },
+            { id: 'pkg3', name: 'Premium Plan', price: 1000, duration: '90 days', expectedReturn: 2500 },
         ];
         setPackagesData(packages);
         console.log("Packages data loaded.");
     }, []);
 
-    const loadReferralData = useCallback(() => {
-        const referrals = JSON.parse(localStorage.getItem('referrals')) || [
-            { id: 'r1', name: 'Charlie', earnings: 50, date: '2024-06-01' },
-            { id: 'r2', name: 'Diana', earnings: 30, date: '2024-06-15' },
-        ];
-        setReferralData(referrals);
-        console.log("Referral data loaded.");
-    }, []);
+    // --- Load Referral Data (Direct Referrals with details) ---
+    const loadReferralData = useCallback(async () => {
+        if (!db || !userId || !isAuthReady || !userData?.directReferrals) return;
 
-    const loadTeamStructureData = useCallback((directReferrals) => {
-        // This function now relies on directReferrals from userData
-        const teamList = [];
-        if (directReferrals && Object.keys(directReferrals).length > 0) {
-            Object.entries(directReferrals).forEach(([id, refData]) => {
-                teamList.push({
-                    id,
-                    name: refData.name || 'No name',
-                    joinDate: refData.joinDate,
-                    earnings: refData.earnings || 0
-                });
+        const directReferralIds = Object.keys(userData.directReferrals);
+        const fetchedReferrals = [];
+
+        for (const refId of directReferralIds) {
+            try {
+                const refProfileDoc = await getDoc(doc(db, `artifacts/${appId}/users/${refId}/data/profile`));
+                if (refProfileDoc.exists()) {
+                    const refProfileData = refProfileDoc.data();
+                    // Fetch investments for this referral
+                    const investmentsQuery = query(collection(db, `artifacts/${appId}/users/${refId}/investments`), orderBy('purchaseDate', 'desc'));
+                    const investmentsSnapshot = await getDocs(investmentsQuery);
+                    const totalInvestment = investmentsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
+
+                    fetchedReferrals.push({
+                        id: refId,
+                        name: refProfileData.name || `User ${refId.substring(0, 6)}`,
+                        joinDate: userData.directReferrals[refId].joinDate, // Use joinDate from referrer's directReferrals map
+                        status: refProfileData.status || 'Active', // Assuming status field exists
+                        totalInvestment: totalInvestment,
+                        earningsFromThisReferral: userData.directReferrals[refId].earnings || 0 // Earnings from this specific direct referral
+                    });
+                }
+            } catch (error) {
+                console.error(`Error fetching data for referral ${refId}:`, error);
+            }
+        }
+        setReferralData(fetchedReferrals);
+        console.log("Referral data loaded.");
+    }, [db, userId, isAuthReady, userData]);
+
+    // --- Load Team Structure Data (Multi-level, by traversing referredBy chain) ---
+    const loadTeamStructureData = useCallback(async () => {
+        if (!db || !userId || !isAuthReady) return;
+
+        const teamMembers = [];
+        const usersCollectionRef = collection(db, `artifacts/${appId}/users`);
+
+        // Fetch all users to build the hierarchy client-side.
+        // In a very large app, this might need server-side processing or a more denormalized structure.
+        const allUsersSnapshot = await getDocs(usersCollectionRef);
+        const allUsersMap = new Map(); // Map userId to { profileData, directReferrals }
+
+        allUsersSnapshot.forEach(userDoc => {
+            const profile = userDoc.data().data?.profile;
+            const directReferrals = userDoc.data().data?.profile?.directReferrals || {}; // Get their direct referrals
+            if (profile) {
+                allUsersMap.set(userDoc.id, { profile, directReferrals });
+            }
+        });
+
+        // Function to recursively find downline members
+        const findDownline = (currentUserId, level) => {
+            const userEntry = allUsersMap.get(currentUserId);
+            if (!userEntry || !userEntry.directReferrals) return;
+
+            Object.keys(userEntry.directReferrals).forEach(referredId => {
+                const referredUserEntry = allUsersMap.get(referredId);
+                if (referredUserEntry && level <= 5) { // Limit to 5 levels
+                    teamMembers.push({
+                        id: referredId,
+                        name: referredUserEntry.profile.name || `User ${referredId.substring(0, 6)}`,
+                        joinDate: referredUserEntry.profile.joinDate || serverTimestamp(), // Assuming joinDate exists
+                        earnings: referredUserEntry.profile.referralEarnings || 0, // Total referral earnings of this downline
+                        level: level
+                    });
+                    findDownline(referredId, level + 1); // Recurse for next level
+                }
+            });
+        };
+
+        // Start building the team structure from the current user's direct referrals
+        const currentUserEntry = allUsersMap.get(userId);
+        if (currentUserEntry && currentUserEntry.directReferrals) {
+            Object.keys(currentUserEntry.directReferrals).forEach(directRefId => {
+                const directRefEntry = allUsersMap.get(directRefId);
+                if (directRefEntry) {
+                    teamMembers.push({
+                        id: directRefId,
+                        name: directRefEntry.profile.name || `User ${directRefId.substring(0, 6)}`,
+                        joinDate: directRefEntry.profile.joinDate || serverTimestamp(),
+                        earnings: directRefEntry.profile.referralEarnings || 0,
+                        level: 1 // Direct referrals are Level 1
+                    });
+                    findDownline(directRefId, 2); // Start recursion for Level 2
+                }
             });
         }
-        setTeamStructureData(teamList);
+        setTeamStructureData(teamMembers);
         console.log("Team structure data loaded.");
-    }, []);
+    }, [db, userId, isAuthReady]);
+
 
     const loadTransferData = useCallback(() => {
-        const transfers = JSON.parse(localStorage.getItem('transfers')) || [
-            { id: 'tr1', amount: 75, recipient: 'UserX', date: '2024-07-03' },
-            { id: 'tr2', amount: 25, recipient: 'UserY', date: '2024-07-06' },
-        ];
-        setTransferData(transfers);
-        console.log("Transfer data loaded.");
-    }, []);
+        if (!db || !userId || !isAuthReady) return;
+        const q = query(
+            collection(db, `artifacts/${appId}/users/${userId}/transactions`),
+            where('type', 'in', ['sent', 'received']), // Filter for transfer types
+            orderBy('timestamp', 'desc')
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const transfers = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.type === 'sent' || data.type === 'received') {
+                    transfers.push({
+                        id: doc.id,
+                        amount: data.amount,
+                        recipient: data.type === 'sent' ? (data.to || 'Unknown') : (data.from || 'Unknown'),
+                        date: data.timestamp,
+                        type: data.type
+                    });
+                }
+            });
+            setTransferData(transfers);
+            console.log("Transfer data loaded from Firestore.");
+        }, (error) => {
+            console.error('Error loading transfer data:', error);
+            showToast('Error loading transfers', 'error');
+        });
+        return () => unsubscribe();
+    }, [db, userId, isAuthReady, showToast]);
 
     const loadWithdrawalData = useCallback(() => {
-        const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [
-            { id: 'w1', amount: 100, method: 'Bank', status: 'Processed', date: '2024-06-25' },
-            { id: 'w2', amount: 50, method: 'Crypto', status: 'Pending', date: '2024-07-04' },
-        ];
-        setWithdrawalData(withdrawals);
-        console.log("Withdrawal data loaded.");
-    }, []);
+        if (!db || !userId || !isAuthReady) return;
+        const q = query(
+            collection(db, `artifacts/${appId}/users/${userId}/withdrawals`),
+            orderBy('timestamp', 'desc')
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const withdrawals = [];
+            snapshot.forEach(doc => withdrawals.push({ id: doc.id, ...doc.data() }));
+            setWithdrawalData(withdrawals);
+            console.log("Withdrawal data loaded from Firestore.");
+        }, (error) => {
+            console.error('Error loading withdrawal data:', error);
+            showToast('Error loading withdrawals', 'error');
+        });
+        return () => unsubscribe();
+    }, [db, userId, isAuthReady, showToast]);
 
     // --- Effect to load data when activeMenuItem or auth state changes ---
     useEffect(() => {
@@ -326,7 +434,7 @@ const App = () => {
             packages: loadPackagesData,
             profile: () => {}, // Profile data is loaded via onSnapshot in main useEffect
             referral: loadReferralData,
-            'team-structure': () => loadTeamStructureData(userData?.directReferrals),
+            'team-structure': loadTeamStructureData,
             transfer: loadTransferData,
             withdrawal: loadWithdrawalData,
             // For 'index', 'login', 'signup', we just display a message
@@ -366,7 +474,7 @@ const App = () => {
         if (currentLevel > 5 || !referrerId) return;
 
         const referrerDocRef = doc(db, `artifacts/${appId}/users/${referrerId}/data/profile`);
-        const referrerSnapshot = await getDoc(referrerDocRef);
+        const referrerSnapshot = await batch.get(referrerDocRef); // Use batch.get for transactions
         const referrerData = referrerSnapshot.data();
 
         if (!referrerData) return;
@@ -404,7 +512,7 @@ const App = () => {
             await runTransaction(db, async (transaction) => {
                 // Get all users
                 const usersCollectionRef = collection(db, `artifacts/${appId}/users`);
-                const usersSnapshot = await getDocs(usersCollectionRef);
+                const usersSnapshot = await getDocs(usersCollectionRef); // Use getDocs outside transaction if too many users
 
                 const activeUsers = [];
                 usersSnapshot.forEach(userDoc => {
@@ -538,7 +646,7 @@ const App = () => {
     };
 
     // Purchase investment package
-    const purchasePackage = async (amount) => {
+    const purchasePackage = async (packageAmount, packageName) => {
         if (!db || !userId || !userData) {
             showToast('Please log in to purchase packages.', 'error');
             return;
@@ -546,7 +654,7 @@ const App = () => {
 
         const currentBalance = parseFloat(userData?.balance || 0);
 
-        if (amount > currentBalance) {
+        if (packageAmount > currentBalance) {
             showToast('Insufficient balance for this package', 'error');
             return;
         }
@@ -557,28 +665,28 @@ const App = () => {
                 const userDoc = await transaction.get(userProfileRef);
                 const currentUserData = userDoc.data();
 
-                if ((currentUserData.balance || 0) < amount) {
+                if ((currentUserData.balance || 0) < packageAmount) {
                     throw new Error("Insufficient balance during package purchase transaction.");
                 }
 
                 const timestamp = serverTimestamp();
-                const userProfit = amount * 0.10; // 10% immediate profit to user
-                const adminCommission = amount * 0.10; // 10% to admin
-                const tradingProfit = amount * 0.70; // 70% to trading pool
+                const userProfit = packageAmount * 0.10; // 10% immediate profit to user
+                const adminCommission = packageAmount * 0.10; // 10% to admin
+                const tradingProfit = packageAmount * 0.70; // 70% to trading pool
 
                 // Update user balance (subtract investment, add immediate profit)
                 transaction.update(userProfileRef, {
-                    balance: (currentUserData.balance || 0) - amount + userProfit,
+                    balance: (currentUserData.balance || 0) - packageAmount + userProfit,
                     tradingProfit: (currentUserData.tradingProfit || 0) + userProfit,
                 });
 
                 // Add investment record
                 const investmentRef = doc(collection(db, `artifacts/${appId}/users/${userId}/investments`));
                 transaction.set(investmentRef, {
-                    amount: amount,
+                    amount: packageAmount,
                     purchaseDate: timestamp,
                     status: 'active',
-                    expectedReturn: amount * 2,
+                    expectedReturn: packageAmount * 2,
                     maturityDate: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) // 30 days from now
                 });
 
@@ -586,10 +694,10 @@ const App = () => {
                 const investmentTxRef = doc(collection(db, `artifacts/${appId}/users/${userId}/transactions`));
                 transaction.set(investmentTxRef, {
                     type: 'investment',
-                    amount: amount,
+                    amount: packageAmount,
                     status: 'completed',
                     timestamp: timestamp,
-                    details: `Purchased ₹${amount} package`
+                    details: `Purchased ₹${packageAmount} package (${packageName})`
                 });
 
                 // Add profit transaction
@@ -599,12 +707,23 @@ const App = () => {
                     amount: userProfit,
                     status: 'completed',
                     timestamp: timestamp,
-                    details: `Immediate profit from ₹${amount} package`
+                    details: `Immediate profit from ₹${packageAmount} package`
+                });
+
+                // Generate Invoice
+                const invoiceRef = doc(collection(db, `artifacts/${appId}/users/${userId}/invoices`));
+                transaction.set(invoiceRef, {
+                    packageId: investmentRef.id,
+                    packageName: packageName,
+                    amount: packageAmount,
+                    invoiceDate: timestamp,
+                    status: 'Paid',
+                    userId: userId
                 });
 
                 // Distribute commissions to referral chain (5 levels)
                 if (currentUserData.referredBy) {
-                    await distributeReferralCommissions(currentUserData.referredBy, amount, 1, transaction);
+                    await distributeReferralCommissions(currentUserData.referredBy, packageAmount, 1, transaction);
                 }
 
                 // Add trading profit to pool
@@ -642,7 +761,7 @@ const App = () => {
             // and might exceed transaction limits if done inside.
             await distributeTradingProfit(tradingProfit);
 
-            showToast(`Successfully purchased ₹${amount} package. You received ₹${userProfit.toFixed(2)} immediate profit!`, 'success');
+            showToast(`Successfully purchased ₹${packageAmount} package. You received ₹${userProfit.toFixed(2)} immediate profit!`, 'success');
             // Data will automatically refresh due to onSnapshot listeners
         } catch (error) {
             console.error('Package purchase error:', error);
@@ -688,13 +807,13 @@ const App = () => {
             if (activeMenuItem !== 'login' && activeMenuItem !== 'signup') {
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md text-center">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Please Log In</h2>
-                        <p className="text-gray-600 mb-4">You need to be logged in to access this content.</p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">कृपया लॉगिन करें</h2> {/* Please Log In */}
+                        <p className="text-gray-600 mb-4">इस सामग्री तक पहुँचने के लिए आपको लॉग इन करना होगा।</p> {/* You need to be logged in to access this content. */}
                         <button
                             onClick={() => handleMenuItemClick('login')}
                             className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                         >
-                            Go to Login
+                            लॉगिन पर जाएं
                         </button>
                     </div>
                 );
@@ -706,14 +825,14 @@ const App = () => {
             case 'index': // Index also points to dashboard
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Dashboard</h2>
-                        <p className="text-gray-500 mb-4">User ID: <span className="font-mono text-sm break-all">{userId || 'Not available'}</span></p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">डैशबोर्ड</h2> {/* Dashboard */}
+                        <p className="text-gray-500 mb-4">यूजर आईडी: <span className="font-mono text-sm break-all">{userId || 'उपलब्ध नहीं'}</span></p> {/* User ID: Not available */}
 
                         {isAdmin && (
                             <div className="bg-yellow-50 p-4 rounded-lg shadow-sm mb-6">
                                 <h3 className="text-lg font-medium text-gray-700 flex items-center mb-2">
-                                    <DollarSign className="w-5 h-5 mr-2 text-yellow-600" /> Admin Total Earnings
-                                </h3>
+                                    <DollarSign className="w-5 h-5 mr-2 text-yellow-600" /> एडमिन कुल कमाई
+                                </h3> {/* Admin Total Earnings */}
                                 <p className="text-3xl font-bold text-yellow-700">₹{adminStats.toFixed(2)}</p>
                             </div>
                         )}
@@ -721,25 +840,25 @@ const App = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
                                 <h3 className="text-lg font-medium text-gray-700 flex items-center mb-2">
-                                    <DollarSign className="w-5 h-5 mr-2 text-blue-600" /> Current Balance
-                                </h3>
+                                    <DollarSign className="w-5 h-5 mr-2 text-blue-600" /> वर्तमान शेष
+                                </h3> {/* Current Balance */}
                                 <p className="text-3xl font-bold text-blue-700">₹{(userData?.balance || 0).toFixed(2)}</p>
                             </div>
                             <div className="bg-purple-50 p-4 rounded-lg shadow-sm">
                                 <h3 className="text-lg font-medium text-gray-700 flex items-center mb-2">
-                                    <TrendingUp className="w-5 h-5 mr-2 text-purple-600" /> Trading Profit
-                                </h3>
+                                    <TrendingUp className="w-5 h-5 mr-2 text-purple-600" /> ट्रेडिंग लाभ
+                                </h3> {/* Trading Profit */}
                                 <p className="text-3xl font-bold text-purple-700">₹{(userData?.tradingProfit || 0).toFixed(2)}</p>
                             </div>
                             <div className="bg-green-50 p-4 rounded-lg shadow-sm">
                                 <h3 className="text-lg font-medium text-gray-700 flex items-center mb-2">
-                                    <Users className="w-5 h-5 mr-2 text-green-600" /> Direct Referrals
-                                </h3>
+                                    <Users className="w-5 h-5 mr-2 text-green-600" /> सीधे रेफरल
+                                </h3> {/* Direct Referrals */}
                                 <p className="text-3xl font-bold text-green-700">{dashboardData.directReferrals.length}</p>
                                 {dashboardData.directReferrals.length > 0 && (
                                     <ul className="list-disc pl-5 text-gray-600 text-sm mt-2">
                                         {dashboardData.directReferrals.slice(0, 3).map(ref => (
-                                            <li key={ref.id || ref.name}>{ref.name || 'Unknown'} ({ref.status || 'Active'})</li>
+                                            <li key={ref.id || ref.name}>{ref.name || 'अज्ञात'} ({ref.status || 'सक्रिय'})</li> {/* Unknown, Active */}
                                         ))}
                                         {dashboardData.directReferrals.length > 3 && <li>...</li>}
                                     </ul>
@@ -747,14 +866,14 @@ const App = () => {
                             </div>
                             <div className="bg-red-50 p-4 rounded-lg shadow-sm">
                                 <h3 className="text-lg font-medium text-gray-700 flex items-center mb-2">
-                                    <DollarSign className="w-5 h-5 mr-2 text-red-600" /> Total Team Earnings
-                                </h3>
+                                    <DollarSign className="w-5 h-5 mr-2 text-red-600" /> कुल टीम कमाई
+                                </h3> {/* Total Team Earnings */}
                                 <p className="text-3xl font-bold text-red-700">₹{(userData?.teamEarnings || 0).toFixed(2)}</p>
                             </div>
                             <div className="bg-orange-50 p-4 rounded-lg shadow-sm">
                                 <h3 className="text-lg font-medium text-gray-700 flex items-center mb-2">
-                                    <Share2 className="w-5 h-5 mr-2 text-orange-600" /> Referral Earnings
-                                </h3>
+                                    <Share2 className="w-5 h-5 mr-2 text-orange-600" /> रेफरल कमाई
+                                </h3> {/* Referral Earnings */}
                                 <p className="text-3xl font-bold text-orange-700">₹{(userData?.referralEarnings || 0).toFixed(2)}</p>
                             </div>
                         </div>
@@ -763,156 +882,203 @@ const App = () => {
             case 'deposit':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Deposit</h2>
-                        <p className="text-gray-600 mb-4">This section would contain your deposit form and history.</p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">फंड जमा करें</h2> {/* Deposit Fund */}
+                        <p className="text-gray-600 mb-4">यह अनुभाग आपके जमा फॉर्म और इतिहास को शामिल करेगा।</p> {/* This section would contain your deposit form and history. */}
                         {depositData.length > 0 ? (
                             <ul className="space-y-3">
                                 {depositData.map(dep => (
                                     <li key={dep.id} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
                                         <div>
-                                            <p className="font-medium text-gray-700">Amount: ₹{dep.amount}</p>
-                                            <p className="text-sm text-gray-500">Method: {dep.method} | Status: {dep.status}</p>
+                                            <p className="font-medium text-gray-700">राशि: ₹{dep.amount}</p> {/* Amount */}
+                                            <p className="text-sm text-gray-500">तरीका: {dep.method} | स्थिति: {dep.status}</p> {/* Method, Status */}
                                         </div>
-                                        <span className="text-xs text-gray-400">{dep.date}</span>
+                                        <span className="text-xs text-gray-400">{formatDateShort(dep.timestamp)}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-gray-500">No deposit history found.</p>
+                            <p className="text-gray-500">कोई जमा इतिहास नहीं मिला।</p> {/* No deposit history found. */}
                         )}
                     </div>
                 );
             case 'invoices':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Invoices</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">मेरे चालान</h2> {/* My Invoices */}
                         {invoicesData.length > 0 ? (
-                            <ul className="space-y-3">
-                                {invoicesData.map(inv => (
-                                    <li key={inv.id} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
-                                        <div>
-                                            <p className="font-medium text-gray-700">Invoice #{inv.id}</p>
-                                            <p className="text-sm text-gray-500">Amount: ₹{inv.amount} | Status: {inv.status}</p>
-                                        </div>
-                                        <span className="text-xs text-gray-400">{inv.date}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead>
+                                        <tr className="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">चालान आईडी</th> {/* Invoice ID */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">पैकेज</th> {/* Package */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">राशि</th> {/* Amount */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">दिनांक</th> {/* Date */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">स्थिति</th> {/* Status */}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {invoicesData.map(inv => (
+                                            <tr key={inv.id} className="text-gray-700 text-sm">
+                                                <td className="py-3 px-4 border-b border-gray-200">{inv.id.substring(0, 8)}...</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">{inv.packageName || 'N/A'}</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">₹{inv.amount?.toFixed(2) || '0.00'}</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">{formatDateShort(inv.invoiceDate)}</td>
+                                                <td className={`py-3 px-4 border-b border-gray-200 status-${inv.status || 'completed'}`}>
+                                                    {formatStatus(inv.status)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
-                            <p className="text-gray-500">No invoices found.</p>
+                            <p className="text-gray-500">कोई चालान नहीं मिला।</p> {/* No invoices found. */}
                         )}
                     </div>
                 );
             case 'login':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md text-center">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Login Page</h2>
-                        <p className="text-gray-600">This would be your login form. (Functionality not implemented in this demo)</p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">लॉगिन पेज</h2> {/* Login Page */}
+                        <p className="text-gray-600">यह आपका लॉगिन फॉर्म होगा। (कार्यक्षमता इस डेमो में लागू नहीं है)</p> {/* This would be your login form. (Functionality not implemented in this demo) */}
                     </div>
                 );
             case 'packages':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Investment Packages</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">निवेश पैकेज</h2> {/* Investment Packages */}
                         {packagesData.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {packagesData.map(pkg => (
                                     <div key={pkg.id} className="bg-blue-50 p-4 rounded-lg shadow-sm">
                                         <h3 className="text-lg font-semibold text-blue-700">{pkg.name}</h3>
-                                        <p className="text-gray-700">Price: ₹{pkg.price}</p>
-                                        <p className="text-gray-500 text-sm">Duration: {pkg.duration}</p>
+                                        <p className="text-gray-700">मूल्य: ₹{pkg.price}</p> {/* Price */}
+                                        <p className="text-gray-500 text-sm">अवधि: {pkg.duration}</p> {/* Duration */}
+                                        <p className="text-gray-600 text-sm">अपेक्षित रिटर्न: ₹{pkg.expectedReturn}</p> {/* Expected Return */}
                                         <button
-                                            onClick={() => purchasePackage(pkg.price)}
+                                            onClick={() => purchasePackage(pkg.price, pkg.name)}
                                             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                                         >
-                                            Select Plan
-                                        </button>
+                                            प्लान चुनें
+                                        </button> {/* Select Plan */}
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-gray-500">No packages available.</p>
+                            <p className="text-gray-500">कोई पैकेज उपलब्ध नहीं है।</p> {/* No packages available. */}
                         )}
                     </div>
                 );
             case 'profile':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">User Profile</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">उपयोगकर्ता प्रोफ़ाइल</h2> {/* User Profile */}
                         <div className="space-y-4">
-                            <p className="text-gray-700"><span className="font-medium">Name:</span> {profileData.name || 'N/A'}</p>
-                            <p className="text-gray-700"><span className="font-medium">Email:</span> {profileData.email || 'N/A'}</p>
-                            <p className="text-gray-700"><span className="font-medium">Phone:</span> {profileData.phone || 'N/A'}</p>
-                            <p className="text-gray-700"><span className="font-medium">Address:</span> {profileData.address || 'N/A'}</p>
+                            <p className="text-gray-700"><span className="font-medium">नाम:</span> {profileData.name || 'N/A'}</p> {/* Name */}
+                            <p className="text-gray-700"><span className="font-medium">ईमेल:</span> {profileData.email || 'N/A'}</p> {/* Email */}
+                            <p className="text-gray-700"><span className="font-medium">फ़ोन:</span> {profileData.phone || 'N/A'}</p> {/* Phone */}
+                            <p className="text-gray-700"><span className="font-medium">पता:</span> {profileData.address || 'N/A'}</p> {/* Address */}
                             <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
-                                Edit Profile
-                            </button>
+                                प्रोफ़ाइल संपादित करें
+                            </button> {/* Edit Profile */}
                         </div>
                     </div>
                 );
             case 'referral':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Referral Program</h2>
-                        <p className="text-gray-600 mb-4">Your referral ID: <span className="font-mono text-sm break-all font-semibold">{userId || 'Loading...'}</span></p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">रेफरल प्रोग्राम</h2> {/* Referral Program */}
+                        <p className="text-gray-600 mb-4">आपका रेफरल आईडी: <span className="font-mono text-sm break-all font-semibold">{userId || 'लोड हो रहा है...'}</span></p> {/* Your referral ID: Loading... */}
                         {referralData.length > 0 ? (
-                            <ul className="space-y-3">
-                                {referralData.map(ref => (
-                                    <li key={ref.id} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
-                                        <div>
-                                            <p className="font-medium text-gray-700">Referral: {ref.name}</p>
-                                            <p className="text-sm text-gray-500">Earnings: ₹{ref.earnings}</p>
-                                        </div>
-                                        <span className="text-xs text-gray-400">{ref.date}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead>
+                                        <tr className="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">रेफरल आईडी</th> {/* Referral ID */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">नाम</th> {/* Name */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">जुड़ने की तारीख</th> {/* Join Date */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">स्थिति</th> {/* Status */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">कुल निवेश</th> {/* Total Investment */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">आपकी कमाई</th> {/* Your Earnings */}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {referralData.map(ref => (
+                                            <tr key={ref.id} className="text-gray-700 text-sm">
+                                                <td className="py-3 px-4 border-b border-gray-200">{ref.id.substring(0, 8)}...</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">{ref.name}</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">{formatDateShort(ref.joinDate)}</td>
+                                                <td className={`py-3 px-4 border-b border-gray-200 status-${ref.status || 'completed'}`}>
+                                                    {formatStatus(ref.status)}
+                                                </td>
+                                                <td className="py-3 px-4 border-b border-gray-200">₹{ref.totalInvestment?.toFixed(2) || '0.00'}</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">₹{ref.earningsFromThisReferral?.toFixed(2) || '0.00'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
-                            <p className="text-gray-500">No referrals yet.</p>
+                            <p className="text-gray-500">अभी तक कोई रेफरल नहीं है।</p> {/* No referrals yet. */}
                         )}
                     </div>
                 );
             case 'signup':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md text-center">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Sign Up Page</h2>
-                        <p className="text-gray-600">This would be your registration form. (Functionality not implemented in this demo)</p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">साइन अप पेज</h2> {/* Sign Up Page */}
+                        <p className="text-gray-600">यह आपका पंजीकरण फॉर्म होगा। (कार्यक्षमता इस डेमो में लागू नहीं है)</p> {/* This would be your registration form. (Functionality not implemented in this demo) */}
                     </div>
                 );
             case 'team-structure':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Team Structure</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">टीम संरचना</h2> {/* Team Structure */}
                         {teamStructureData.length > 0 ? (
-                            <ul className="space-y-3">
-                                {teamStructureData.map(member => (
-                                    <li key={member.id} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
-                                        <div>
-                                            <p className="font-medium text-gray-700">Member: {member.name}</p>
-                                            <p className="text-sm text-gray-500">Joined: {formatDateShort(member.joinDate)} | Earnings: ₹{member.earnings.toFixed(2)}</p>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead>
+                                        <tr className="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">सदस्य आईडी</th> {/* Member ID */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">नाम</th> {/* Name */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">स्तर</th> {/* Level */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">जुड़ने की तारीख</th> {/* Join Date */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">कुल कमाई</th> {/* Total Earnings */}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {teamStructureData.map(member => (
+                                            <tr key={member.id} className="text-gray-700 text-sm">
+                                                <td className="py-3 px-4 border-b border-gray-200">{member.id.substring(0, 8)}...</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">{member.name}</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">स्तर {member.level}</td> {/* Level */}
+                                                <td className="py-3 px-4 border-b border-gray-200">{formatDateShort(member.joinDate)}</td>
+                                                <td className="py-3 px-4 border-b border-gray-200">₹{member.earnings?.toFixed(2) || '0.00'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
-                            <p className="text-gray-500">No team members yet.</p>
+                            <p className="text-gray-500">अभी तक कोई टीम सदस्य नहीं है।</p> {/* No team members yet. */}
                         )}
                     </div>
                 );
             case 'trading-history':
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Trading History</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">ट्रेडिंग इतिहास</h2> {/* Trading History */}
                         {transactionHistory.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <table className="min-w-full bg-white border border-gray-200 rounded-lg">
                                     <thead>
                                         <tr className="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            <th className="py-3 px-4 border-b-2 border-gray-200">Date</th>
-                                            <th className="py-3 px-4 border-b-2 border-gray-200">Type</th>
-                                            <th className="py-3 px-4 border-b-2 border-gray-200">Amount</th>
-                                            <th className="py-3 px-4 border-b-2 border-gray-200">Status</th>
-                                            <th className="py-3 px-4 border-b-2 border-gray-200">Details</th>
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">दिनांक</th> {/* Date */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">प्रकार</th> {/* Type */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">राशि</th> {/* Amount */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">स्थिति</th> {/* Status */}
+                                            <th className="py-3 px-4 border-b-2 border-gray-200">विवरण</th> {/* Details */}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -931,7 +1097,7 @@ const App = () => {
                                 </table>
                             </div>
                         ) : (
-                            <p className="text-gray-500">No trading history found.</p>
+                            <p className="text-gray-500">कोई ट्रेडिंग इतिहास नहीं मिला।</p> {/* No trading history found. */}
                         )}
                     </div>
                 );
@@ -940,28 +1106,28 @@ const App = () => {
                 const [transferAmount, setTransferAmount] = useState('');
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Transfer Funds</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">फंड ट्रांसफर करें</h2> {/* Transfer Funds */}
                         <div className="space-y-4 mb-6">
                             <div>
-                                <label htmlFor="recipientId" className="block text-sm font-medium text-gray-700">Recipient User ID</label>
+                                <label htmlFor="recipientId" className="block text-sm font-medium text-gray-700">प्राप्तकर्ता यूजर आईडी</label> {/* Recipient User ID */}
                                 <input
                                     type="text"
                                     id="recipientId"
                                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     value={recipientId}
                                     onChange={(e) => setRecipientId(e.target.value)}
-                                    placeholder="Enter recipient's user ID"
+                                    placeholder="प्राप्तकर्ता की यूजर आईडी दर्ज करें" // Enter recipient's user ID
                                 />
                             </div>
                             <div>
-                                <label htmlFor="transferAmount" className="block text-sm font-medium text-gray-700">Amount (₹)</label>
+                                <label htmlFor="transferAmount" className="block text-sm font-medium text-gray-700">राशि (₹)</label> {/* Amount (₹) */}
                                 <input
                                     type="number"
                                     id="transferAmount"
                                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     value={transferAmount}
                                     onChange={(e) => setTransferAmount(e.target.value)}
-                                    placeholder="Enter amount to transfer"
+                                    placeholder="स्थानांतरित करने के लिए राशि दर्ज करें" // Enter amount to transfer
                                     min="0.01"
                                     step="0.01"
                                 />
@@ -970,54 +1136,74 @@ const App = () => {
                                 onClick={() => transferFunds(recipientId, parseFloat(transferAmount))}
                                 className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                             >
-                                Submit Transfer
-                            </button>
+                                ट्रांसफर सबमिट करें
+                            </button> {/* Submit Transfer */}
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-3">Transfer History</h3>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-3">ट्रांसफर इतिहास</h3> {/* Transfer History */}
                         {transferData.length > 0 ? (
                             <ul className="space-y-3">
                                 {transferData.map(trans => (
                                     <li key={trans.id} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
                                         <div>
-                                            <p className="font-medium text-gray-700">Amount: ₹{trans.amount}</p>
-                                            <p className="text-sm text-gray-500">Recipient: {trans.recipient}</p>
+                                            <p className="font-medium text-gray-700">राशि: ₹{trans.amount}</p> {/* Amount */}
+                                            <p className="text-sm text-gray-500">प्राप्तकर्ता: {trans.recipient} ({trans.type === 'sent' ? 'भेजा गया' : 'प्राप्त'})</p> {/* Recipient, Sent, Received */}
                                         </div>
-                                        <span className="text-xs text-gray-400">{trans.date}</span>
+                                        <span className="text-xs text-gray-400">{formatDateShort(trans.date)}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-gray-500">No transfer history found.</p>
+                            <p className="text-gray-500">कोई ट्रांसफर इतिहास नहीं मिला।</p> {/* No transfer history found. */}
                         )}
                     </div>
                 );
             case 'withdrawal':
+                const totalAvailableBalance = (userData?.balance || 0) + (userData?.tradingProfit || 0) + (userData?.referralEarnings || 0);
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Withdrawal</h2>
-                        <p className="text-gray-600 mb-4">This section would contain your withdrawal form and history.</p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">फंड निकालें</h2> {/* Withdraw Funds */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="bg-blue-50 p-4 rounded-lg shadow-sm text-center">
+                                <h3 className="text-lg font-medium text-gray-700">वर्तमान शेष</h3> {/* Current Balance */}
+                                <p className="text-2xl font-bold text-blue-700">₹{(userData?.balance || 0).toFixed(2)}</p>
+                            </div>
+                            <div className="bg-purple-50 p-4 rounded-lg shadow-sm text-center">
+                                <h3 className="text-lg font-medium text-gray-700">ट्रेडिंग लाभ</h3> {/* Trading Profit */}
+                                <p className="text-2xl font-bold text-purple-700">₹{(userData?.tradingProfit || 0).toFixed(2)}</p>
+                            </div>
+                            <div className="bg-orange-50 p-4 rounded-lg shadow-sm text-center">
+                                <h3 className="text-lg font-medium text-gray-700">रेफरल लाभ</h3> {/* Referral Profit */}
+                                <p className="text-2xl font-bold text-orange-700">₹{(userData?.referralEarnings || 0).toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div className="bg-green-100 p-4 rounded-lg shadow-md text-center mb-6">
+                            <h3 className="text-xl font-semibold text-gray-800">कुल निकासी योग्य शेष</h3> {/* Total Withdraw-able Balance */}
+                            <p className="text-3xl font-bold text-green-800">₹{totalAvailableBalance.toFixed(2)}</p>
+                        </div>
+                        {/* Withdrawal form would go here */}
+                        <p className="text-gray-600 mb-4">यह अनुभाग आपके निकासी फॉर्म और इतिहास को शामिल करेगा।</p> {/* This section would contain your withdrawal form and history. */}
                         {withdrawalData.length > 0 ? (
                             <ul className="space-y-3">
                                 {withdrawalData.map(wd => (
                                     <li key={wd.id} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
                                         <div>
-                                            <p className="font-medium text-gray-700">Amount: ₹{wd.amount}</p>
-                                            <p className="text-sm text-gray-500">Method: {wd.method} | Status: {wd.status}</p>
+                                            <p className="font-medium text-gray-700">राशि: ₹{wd.amount}</p> {/* Amount */}
+                                            <p className="text-sm text-gray-500">तरीका: {wd.method} | स्थिति: {wd.status}</p> {/* Method, Status */}
                                         </div>
-                                        <span className="text-xs text-gray-400">{wd.date}</span>
+                                        <span className="text-xs text-gray-400">{formatDateShort(wd.timestamp)}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-gray-500">No withdrawal history found.</p>
+                            <p className="text-gray-500">कोई निकासी इतिहास नहीं मिला।</p> {/* No withdrawal history found. */}
                         )}
                     </div>
                 );
             default:
                 return (
                     <div className="p-6 bg-white rounded-lg shadow-md text-center">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Select a Menu Item</h2>
-                        <p className="text-gray-600">Please choose an option from the sidebar.</p>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">एक मेनू आइटम चुनें</h2> {/* Select a Menu Item */}
+                        <p className="text-gray-600">कृपया साइडबार से एक विकल्प चुनें।</p> {/* Please choose an option from the sidebar. */}
                     </div>
                 );
         }
@@ -1041,21 +1227,21 @@ const App = () => {
 
             {/* Sidebar */}
             <aside className="w-full md:w-64 bg-gray-800 text-white p-4 flex flex-col rounded-b-lg md:rounded-r-lg md:rounded-bl-none shadow-lg">
-                <div className="text-2xl font-bold mb-6 text-center text-blue-400">My App</div>
+                <div className="text-2xl font-bold mb-6 text-center text-blue-400">मेरा ऐप</div> {/* My App */}
                 <div className="menu-header mb-6">
                     <div className="user-info text-center">
-                        <h3 id="sideMenuUserName" className="text-lg font-semibold text-white">{userData?.name || 'Guest User'}</h3>
+                        <h3 id="sideMenuUserName" className="text-lg font-semibold text-white">{userData?.name || 'अतिथि उपयोगकर्ता'}</h3> {/* Guest User */}
                         <span id="sideMenuUserEmail" className="text-sm text-gray-400">{auth?.currentUser?.email || 'N/A'}</span>
                     </div>
                     <div className="balance-info mt-3 text-center">
-                        <span className="text-sm text-gray-400">Balance</span>
+                        <span className="text-sm text-gray-400">शेष</span> {/* Balance */}
                         <h2 id="sideMenuUserBalance" className="text-2xl font-bold text-green-400">₹{(userData?.balance || 0).toFixed(2)}</h2>
                     </div>
                 </div>
 
                 <nav className="flex-grow">
                     <ul className="space-y-2">
-                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mb-2">Dashboard</li>
+                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mb-2">डैशबोर्ड</li> {/* Dashboard */}
                         <li>
                             <button
                                 onClick={() => handleMenuItemClick('dashboard')}
@@ -1063,8 +1249,8 @@ const App = () => {
                                     ${activeMenuItem === 'dashboard' || activeMenuItem === 'index' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
                             >
                                 <LayoutDashboard className="w-5 h-5 mr-3" />
-                                Overview
-                            </button>
+                                अवलोकन
+                            </button> {/* Overview */}
                         </li>
                         <li>
                             <button
@@ -1072,11 +1258,11 @@ const App = () => {
                                 className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200
                                     ${activeMenuItem === 'dashboard' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
                             >
-                                <Users className="w-5 h-5 mr-3" /> Direct Referrals
+                                <Users className="w-5 h-5 mr-3" /> सीधे रेफरल
                                 <span className="ml-auto bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                                     {dashboardData.directReferrals.length}
                                 </span>
-                            </button>
+                            </button> {/* Direct Referrals */}
                         </li>
                         <li>
                             <button
@@ -1084,19 +1270,19 @@ const App = () => {
                                 className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200
                                     ${activeMenuItem === 'dashboard' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
                             >
-                                <DollarSign className="w-5 h-5 mr-3" /> Total Team Earnings
+                                <DollarSign className="w-5 h-5 mr-3" /> कुल टीम कमाई
                                 <span className="ml-auto bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                                     ₹{dashboardData.totalTeamEarnings.toFixed(2)}
                                 </span>
-                            </button>
+                            </button> {/* Total Team Earnings */}
                         </li>
 
-                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mt-4 mb-2">Transactions</li>
+                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mt-4 mb-2">लेन-देन</li> {/* Transactions */}
                         {[
-                            { name: 'Deposit', key: 'deposit', icon: CreditCard },
-                            { name: 'Withdrawal', key: 'withdrawal', icon: DollarSign },
-                            { name: 'Transfer', key: 'transfer', icon: Repeat },
-                            { name: 'Trading History', key: 'trading-history', icon: TrendingUp },
+                            { name: 'फंड जमा करें', key: 'deposit', icon: CreditCard }, // Deposit Fund
+                            { name: 'फंड निकालें', key: 'withdrawal', icon: DollarSign }, // Withdraw Fund
+                            { name: 'फंड ट्रांसफर करें', key: 'transfer', icon: Repeat }, // Transfer Fund
+                            { name: 'ट्रेडिंग इतिहास', key: 'trading-history', icon: TrendingUp }, // Trading History
                         ].map((item) => (
                             <li key={item.key}>
                                 <button
@@ -1110,13 +1296,13 @@ const App = () => {
                             </li>
                         ))}
 
-                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mt-4 mb-2">Account</li>
+                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mt-4 mb-2">खाता</li> {/* Account */}
                         {[
-                            { name: 'Profile', key: 'profile', icon: User },
-                            { name: 'Referral Program', key: 'referral', icon: Share2 },
-                            { name: 'Team Structure', key: 'team-structure', icon: GitMerge },
-                            { name: 'Investment Packages', key: 'packages', icon: Package },
-                            { name: 'Invoices', key: 'invoices', icon: FileText },
+                            { name: 'प्रोफ़ाइल', key: 'profile', icon: User }, // Profile
+                            { name: 'रेफरल प्रोग्राम', key: 'referral', icon: Share2 }, // Referral Program
+                            { name: 'टीम संरचना', key: 'team-structure', icon: GitMerge }, // Team Structure
+                            { name: 'निवेश पैकेज', key: 'packages', icon: Package }, // Investment Packages
+                            { name: 'मेरे चालान', key: 'invoices', icon: FileText }, // My Invoices
                         ].map((item) => (
                             <li key={item.key}>
                                 <button
@@ -1130,7 +1316,7 @@ const App = () => {
                             </li>
                         ))}
 
-                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mt-4 mb-2">Authentication</li>
+                        <li className="menu-title text-gray-400 text-xs uppercase tracking-wider mt-4 mb-2">प्रमाणीकरण</li> {/* Authentication */}
                         {userId && auth?.currentUser?.isAnonymous ? (
                             // Show only login/signup if anonymous
                             <>
@@ -1140,8 +1326,8 @@ const App = () => {
                                         className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200
                                             ${activeMenuItem === 'login' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
                                     >
-                                        <User className="w-5 h-5 mr-3" /> Login
-                                    </button>
+                                        <User className="w-5 h-5 mr-3" /> लॉगिन
+                                    </button> {/* Login */}
                                 </li>
                                 <li>
                                     <button
@@ -1149,8 +1335,8 @@ const App = () => {
                                         className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200
                                             ${activeMenuItem === 'signup' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
                                     >
-                                        <UserPlus className="w-5 h-5 mr-3" /> Sign Up
-                                    </button>
+                                        <UserPlus className="w-5 h-5 mr-3" /> साइन अप
+                                    </button> {/* Sign Up */}
                                 </li>
                             </>
                         ) : (
@@ -1161,8 +1347,8 @@ const App = () => {
                                     className="flex items-center w-full p-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors duration-200 shadow-md"
                                 >
                                     <LogOut className="w-5 h-5 mr-3" />
-                                    Logout
-                                </button>
+                                    लॉगआउट
+                                </button> {/* Logout */}
                             </li>
                         )}
                     </ul>
@@ -1170,18 +1356,18 @@ const App = () => {
 
                 {/* Recent Transactions in Footer */}
                 <div className="mt-auto pt-4 border-t border-gray-700 text-sm text-gray-400">
-                    <h4 className="font-semibold mb-2">Recent Transactions</h4>
+                    <h4 className="font-semibold mb-2">हाल के लेनदेन</h4> {/* Recent Transactions */}
                     <ul id="sideMenuTransactions" className="space-y-1">
                         {transactionHistory.length > 0 ? (
                             transactionHistory.slice(0, 3).map(tx => (
                                 <li key={tx.id} className="flex justify-between items-center">
-                                    <span className="tx-type text-gray-300">{tx.type || 'Transfer'}</span>
+                                    <span className="tx-type text-gray-300">{tx.type || 'ट्रांसफर'}</span> {/* Transfer */}
                                     <span className="tx-amount text-green-300">₹{tx.amount?.toFixed(2) || '0.00'}</span>
                                     <span className="tx-date text-gray-400">{formatDateShort(tx.timestamp)}</span>
                                 </li>
                             ))
                         ) : (
-                            <li>No recent transactions</li>
+                            <li>कोई हालिया लेनदेन नहीं</li> {/* No recent transactions */}
                         )}
                     </ul>
                 </div>
