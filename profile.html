@@ -1,17 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <p>Name: <span id="profileName"></span></p>
-<p>Email: <span id="profileEmail"></span></p>
-<p>User ID: <span id="profileUserId"></span></p>
-<p>Referral Code: <span id="profileReferralCode"></span></p>
-<p>Current Balance: <span id="profileBalance"></span></p>
-<p>Join Date: <span id="profileJoinDate"></span></p>
-
-<form id="updateProfileForm">
-    <input type="text" id="inputName" placeholder="Update Name">
-    <button type="submit">Update Profile</button>
-</form>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - My Profile</title>
@@ -211,15 +200,14 @@
         .copy-btn {
             position: absolute;
             right: 0;
-            top: 50%;
-            transform: translateY(50%);
+            top: 0;
+            height: 100%;
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.5rem;
+            padding: 0 1rem;
             border-radius: 0 5px 5px 0;
             cursor: pointer;
-            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -436,8 +424,18 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="accountCreated">Account Created</label>
-                    <input type="text" id="accountCreated" class="form-control" disabled>
+                    <label for="profileReferralCode">Referral Code</label>
+                    <input type="text" id="profileReferralCode" class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profileBalance">Current Balance</label>
+                    <input type="text" id="profileBalance" class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profileJoinDate">Account Created</label>
+                    <input type="text" id="profileJoinDate" class="form-control" disabled>
                 </div>
                 
                 <h2 class="section-title" style="margin-top: 2rem;">Change Password</h2>
@@ -495,236 +493,89 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app.js"></script>
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
-            authDomain: "mywebsite-600d3.firebaseapp.com",
-            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.firebasestorage.app",
-            messagingSenderId: "584485288598",
-            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
-            measurementId: "G-GQ9J9QH42J"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-
-        // Global variables
-        let currentUser = null;
-        let userData = {};
-        let editingField = '';
-
-        // Show toast notification
-        function showToast(message, type) {
-            const toastContainer = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${message}</span>
-                <button class="toast-close">&times;</button>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
-            
-            // Close button
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
-            });
-        }
-
-        // Load user data from Firebase
-        function loadUserData(userId) {
-            database.ref('users/' + userId).on('value', (snapshot) => {
-                if (!snapshot.exists()) {
-                    // Create user data if it doesn't exist
-                    const newUserData = {
-                        fullName: currentUser.displayName || "New User",
-                        email: currentUser.email,
-                        mobileNumber: "",
-                        balance: 0,
-                        joinDate: new Date().toISOString(),
-                        referralId: userId // Store the user ID as referral ID
-                    };
-                    database.ref('users/' + userId).set(newUserData);
-                    userData = newUserData;
-                } else {
-                    userData = snapshot.val();
-                    // Ensure referralId exists in user data
-                    if (!userData.referralId) {
-                        database.ref('users/' + userId).update({ referralId: userId });
-                    }
-                }
-                
-                // Update profile information
-                document.getElementById('fullName').value = userData.fullName || '';
-                document.getElementById('userEmail').value = currentUser.email || '';
-                document.getElementById('mobileNumber').value = userData.mobileNumber || '';
-                document.getElementById('userId').value = userId;
-                document.getElementById('profileName').textContent = userData.fullName || 'User';
-                document.getElementById('profileEmail').textContent = currentUser.email || '';
-                
-                // Format balance display
-                const balance = userData.balance || 0;
-                document.getElementById('headerBalance').textContent = balance.toFixed(2);
-                
-                // Set account creation date
-                if (userData.joinDate) {
-                    const createdDate = new Date(userData.joinDate);
-                    document.getElementById('accountCreated').value = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
-                } else if (currentUser.metadata?.creationTime) {
-                    const createdDate = new Date(currentUser.metadata.creationTime);
-                    document.getElementById('accountCreated').value = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
-                }
-                
-                // Set referral link
-                const websiteUrl = "https://tradworld7.github.io/mony/";
-                const referralUrl = `${websiteUrl}signup.html?ref=${userData.referralId || userId}`;
-                document.getElementById('referralLink').value = referralUrl;
-                
-                // Set avatar initials
-                if (userData.fullName) {
-                    const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
-                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
-                }
-            }, (error) => {
-                showToast('Error loading user data: ' + error.message, 'error');
-            });
-        }
-
-        // Change password function
-        function changePassword() {
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                showToast('Please fill in all password fields', 'error');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                showToast('New passwords do not match', 'error');
-                return;
-            }
-            
-            if (newPassword.length < 8) {
-                showToast('Password must be at least 8 characters', 'error');
-                return;
-            }
-            
-            // Show loading state
-            document.getElementById('changePassText').style.display = 'none';
-            document.getElementById('changePassSpinner').style.display = 'inline-block';
-            document.getElementById('changePasswordBtn').disabled = true;
-            
-            // Create credentials with the user's email
-            const credential = firebase.auth.EmailAuthProvider.credential(
-                currentUser.email, 
-                currentPassword
-            );
-            
-            // Reauthenticate and update password
-            currentUser.reauthenticateWithCredential(credential)
-                .then(() => {
-                    return currentUser.updatePassword(newPassword);
-                })
-                .then(() => {
-                    showToast('Password changed successfully!', 'success');
-                    // Clear password fields
-                    document.getElementById('currentPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmPassword').value = '';
-                })
-                .catch(error => {
-                    console.error('Password change error:', error);
-                    let errorMessage = 'Password change failed.';
-                    if (error.code === 'auth/wrong-password') {
-                        errorMessage = 'Current password is incorrect';
-                    } else if (error.code === 'auth/weak-password') {
-                        errorMessage = 'New password is too weak';
-                    }
-                    showToast(errorMessage, 'error');
-                })
-                .finally(() => {
-                    // Reset button state
-                    document.getElementById('changePassText').style.display = 'inline-block';
-                    document.getElementById('changePassSpinner').style.display = 'none';
-                    document.getElementById('changePasswordBtn').disabled = false;
-                });
-        }
-
-        // Update profile field
-        function updateProfileField(field, value) {
-            if (!field || !value) {
-                showToast('Invalid field or value', 'error');
-                return;
-            }
-            
-            document.getElementById('saveEditText').style.display = 'none';
-            document.getElementById('saveEditSpinner').style.display = 'inline-block';
-            document.getElementById('saveEditBtn').disabled = true;
-            
-            const updates = {};
-            updates[field] = value;
-            
-            database.ref('users/' + currentUser.uid).update(updates)
-                .then(() => {
-                    showToast('Profile updated successfully!', 'success');
-                    document.getElementById('editModal').classList.remove('open');
-                    
-                    // Update the displayed value immediately
-                    if (field === 'fullName') {
-                        document.getElementById('fullName').value = value;
-                        document.getElementById('profileName').textContent = value;
-                        // Update avatar initials
-                        const initials = value.split(' ').map(n => n[0]).join('').toUpperCase();
-                        document.getElementById('userAvatar').textContent = initials.substring(0, 2);
-                    } else if (field === 'mobileNumber') {
-                        document.getElementById('mobileNumber').value = value;
-                    } else if (field === 'email') {
-                        // Email requires special handling with Firebase Auth
-                        currentUser.updateEmail(value)
-                            .then(() => {
-                                document.getElementById('userEmail').value = value;
-                                document.getElementById('profileEmail').textContent = value;
-                                showToast('Email updated successfully!', 'success');
-                            })
-                            .catch(error => {
-                                console.error('Email update error:', error);
-                                showToast('Error updating email: ' + error.message, 'error');
-                            });
-                    }
-                })
-                .catch(error => {
-                    console.error('Update error:', error);
-                    showToast('Error updating profile: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    document.getElementById('saveEditText').style.display = 'inline-block';
-                    document.getElementById('saveEditSpinner').style.display = 'none';
-                    document.getElementById('saveEditBtn').disabled = false;
-                });
-        }
-
-        // Initialize the page
+        // Load profile data when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize auth state
-            auth.onAuthStateChanged(user => {
-                currentUser = user;
-                if (!user) {
-                    window.location.href = 'login.html';
-                } else {
-                    loadUserData(user.uid);
+            // Check auth state and load data
+            checkAuthState();
+            
+            // Copy user ID button
+            document.getElementById('copyUserIdBtn').addEventListener('click', function() {
+                const userIdInput = document.getElementById('userId');
+                userIdInput.select();
+                document.execCommand('copy');
+                showToast('User ID copied to clipboard!', 'success');
+            });
+            
+            // Copy referral link button
+            document.getElementById('copyReferralBtn').addEventListener('click', function() {
+                const referralInput = document.getElementById('referralLink');
+                referralInput.select();
+                document.execCommand('copy');
+                showToast('Referral link copied to clipboard!', 'success');
+            });
+            
+            // Change password button
+            document.getElementById('changePasswordBtn').addEventListener('click', function() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showToast('Please fill in all password fields', 'error');
+                    return;
                 }
+                
+                if (newPassword !== confirmPassword) {
+                    showToast('New passwords do not match', 'error');
+                    return;
+                }
+                
+                if (newPassword.length < 8) {
+                    showToast('Password must be at least 8 characters', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                document.getElementById('changePassText').style.display = 'none';
+                document.getElementById('changePassSpinner').style.display = 'inline-block';
+                document.getElementById('changePasswordBtn').disabled = true;
+                
+                // Create credentials with the user's email
+                const credential = firebase.auth.EmailAuthProvider.credential(
+                    currentUser.email, 
+                    currentPassword
+                );
+                
+                // Reauthenticate and update password
+                currentUser.reauthenticateWithCredential(credential)
+                    .then(() => {
+                        return currentUser.updatePassword(newPassword);
+                    })
+                    .then(() => {
+                        showToast('Password changed successfully!', 'success');
+                        // Clear password fields
+                        document.getElementById('currentPassword').value = '';
+                        document.getElementById('newPassword').value = '';
+                        document.getElementById('confirmPassword').value = '';
+                    })
+                    .catch(error => {
+                        console.error('Password change error:', error);
+                        let errorMessage = 'Password change failed.';
+                        if (error.code === 'auth/wrong-password') {
+                            errorMessage = 'Current password is incorrect';
+                        } else if (error.code === 'auth/weak-password') {
+                            errorMessage = 'New password is too weak';
+                        }
+                        showToast(errorMessage, 'error');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        document.getElementById('changePassText').style.display = 'inline-block';
+                        document.getElementById('changePassSpinner').style.display = 'none';
+                        document.getElementById('changePasswordBtn').disabled = false;
+                    });
             });
             
             // Edit buttons
@@ -746,11 +597,42 @@
             // Save edit button
             document.getElementById('saveEditBtn').addEventListener('click', function() {
                 const newValue = document.getElementById('modalFieldInput').value.trim();
-                if (newValue) {
-                    updateProfileField(editingField, newValue);
-                } else {
+                if (!newValue) {
                     showToast('Please enter a valid value', 'error');
+                    return;
                 }
+                
+                document.getElementById('saveEditText').style.display = 'none';
+                document.getElementById('saveEditSpinner').style.display = 'inline-block';
+                document.getElementById('saveEditBtn').disabled = true;
+                
+                const updates = {};
+                updates[editingField] = newValue;
+                
+                database.ref('users/' + currentUser.uid).update(updates)
+                    .then(() => {
+                        showToast('Profile updated successfully!', 'success');
+                        document.getElementById('editModal').classList.remove('open');
+                        
+                        // Update the displayed value immediately
+                        document.getElementById(editingField).value = newValue;
+                        
+                        if (editingField === 'fullName') {
+                            document.getElementById('profileName').textContent = newValue;
+                            // Update avatar initials
+                            const initials = newValue.split(' ').map(n => n[0]).join('').toUpperCase();
+                            document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Update error:', error);
+                        showToast('Error updating profile: ' + error.message, 'error');
+                    })
+                    .finally(() => {
+                        document.getElementById('saveEditText').style.display = 'inline-block';
+                        document.getElementById('saveEditSpinner').style.display = 'none';
+                        document.getElementById('saveEditBtn').disabled = false;
+                    });
             });
             
             // Cancel edit button
@@ -761,25 +643,6 @@
             // Modal close button
             document.getElementById('modalClose').addEventListener('click', function() {
                 document.getElementById('editModal').classList.remove('open');
-            });
-            
-            // Change password button
-            document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
-            
-            // Copy referral link button
-            document.getElementById('copyReferralBtn').addEventListener('click', function() {
-                const referralInput = document.getElementById('referralLink');
-                referralInput.select();
-                document.execCommand('copy');
-                showToast('Referral link copied to clipboard!', 'success');
-            });
-            
-            // Copy user ID button
-            document.getElementById('copyUserIdBtn').addEventListener('click', function() {
-                const userIdInput = document.getElementById('userId');
-                userIdInput.select();
-                document.execCommand('copy');
-                showToast('User ID copied to clipboard!', 'success');
             });
             
             // Close modal when clicking outside
