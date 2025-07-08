@@ -6,7 +6,338 @@
     <title>Trade World - Referral Program</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        :root {
+            --primary-color: #2962ff;
+            --secondary-color: #448aff;
+            --accent-color: #82b1ff;
+            --text-color: #333;
+            --light-text: #777;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: var(--card-bg);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 70px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 99;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        /* Form Container Styles */
+        .form-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background-color: #e8f5e9;
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            background-color: #ffebee;
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .form-container {
+                padding: 1rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Status Badges */
+        .status-active, .status-completed {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .status-pending {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+
+        .status-cancelled {
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--light-text);
+        }
+
+        /* Flex Helpers */
+        .d-flex {
+            display: flex;
+        }
+
+        .gap-1 {
+            gap: 0.5rem;
+        }
+
+        /* Text Helpers */
+        .text-center {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -41,18 +372,26 @@
         <div class="form-container">
             <div class="form-group">
                 <label class="form-label">Your Referral Link</label>
-                <div style="display: flex; gap: 0.5rem;">
+                <div class="d-flex gap-1">
                     <input type="text" class="form-control" id="referralLink" readonly>
-                    <button class="btn btn-primary" id="copyReferralLink">Copy</button>
+                    <button class="btn btn-primary" id="copyReferralLink">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
                 </div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Share Via</label>
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                    <button class="btn" style="background-color: #25D366; color: white;"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-                    <button class="btn" style="background-color: #0088cc; color: white;"><i class="fab fa-telegram"></i> Telegram</button>
-                    <button class="btn" style="background-color: #1DA1F2; color: white;"><i class="fab fa-twitter"></i> Twitter</button>
+                <div class="d-flex gap-1" style="margin-top: 0.5rem;">
+                    <button class="btn" style="background-color: #25D366; color: white;">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button class="btn" style="background-color: #0088cc; color: white;">
+                        <i class="fab fa-telegram"></i> Telegram
+                    </button>
+                    <button class="btn" style="background-color: #1DA1F2; color: white;">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
                 </div>
             </div>
             
@@ -82,7 +421,9 @@
                     </tr>
                 </thead>
                 <tbody id="referralList">
-                    <!-- Referral list will be populated by JavaScript -->
+                    <tr>
+                        <td colspan="5" class="empty-state">Loading referrals...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -95,40 +436,193 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/database.js"></script>
-    <script src="assets/js/main.js"></script>
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global variables
+        let currentUser = null;
+        let userData = null;
+
+        // Helper function for showing toasts
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
+        // Format timestamp
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        // Logout user
+        function logoutUser() {
+            auth.signOut().then(() => {
+                showToast('Successfully logged out.', 'success');
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                showToast('Error logging out: ' + error.message, 'error');
+            });
+        }
+
+        // Load user data from database
+        function loadUserData(userId) {
+            database.ref('users/' + userId).on('value', (snapshot) => {
+                userData = snapshot.val();
+                if (userData) {
+                    loadReferralData(userId);
+                }
+            }, (error) => {
+                showToast('Error loading user data: ' + error.message, 'error');
+            });
+        }
+
+        // Load referral data
+        function loadReferralData(userId) {
+            const referralList = document.getElementById('referralList');
+            if (!referralList) return;
+
+            database.ref('users').orderByChild('referredBy').equalTo(userId).on('value', (snapshot) => {
+                const referrals = snapshot.val();
+                
+                if (!referrals || Object.keys(referrals).length === 0) {
+                    referralList.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">You have no referrals yet. Share your link to grow your team!</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                referralList.innerHTML = '';
+                let totalEarnings = 0;
+                
+                Object.entries(referrals).forEach(([uid, user]) => {
+                    const earnings = userData.directReferrals?.[uid]?.earnings || 0;
+                    totalEarnings += earnings;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.name || 'User'}</td>
+                        <td>${formatDate(user.joinDate)}</td>
+                        <td class="status-active">Active</td>
+                        <td>$${(user.totalInvested || 0).toFixed(2)}</td>
+                        <td>$${earnings.toFixed(2)}</td>
+                    `;
+                    referralList.appendChild(row);
+                });
+
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.style.fontWeight = 'bold';
+                totalRow.innerHTML = `
+                    <td colspan="4">Total Earnings</td>
+                    <td>$${totalEarnings.toFixed(2)}</td>
+                `;
+                referralList.appendChild(totalRow);
+            });
+        }
+
         // Initialize the referral page
         document.addEventListener('DOMContentLoaded', function() {
-            // Check auth state
-            checkAuthState();
+            // Menu toggle functionality
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
             
-            // Load user data if logged in
-            if (currentUser) {
-                loadUserData(currentUser.uid);
-                updateReferralLink();
-            } else {
-                window.location.href = 'login.html';
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
             }
+
+            // Check auth state
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    updateReferralLink();
+                    loadUserData(user.uid);
+                    
+                    // Set up logout
+                    document.getElementById('logoutLink').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        logoutUser();
+                    });
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
             
             // Set up copy referral link
             document.getElementById('copyReferralLink').addEventListener('click', copyReferralLinkToClipboard);
             
-            // Set up logout
-            document.getElementById('logoutLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                logoutUser();
-            });
+            // Set up social share buttons
+            setupShareButtons();
             
             function updateReferralLink() {
-                document.getElementById('referralLink').value = `https://tradworld7.github.io/mony/?ref=${currentUser.uid}`;
+                const referralLink = `https://tradworld7.github.io/mony/?ref=${currentUser?.uid || ''}`;
+                document.getElementById('referralLink').value = referralLink;
             }
             
             function copyReferralLinkToClipboard() {
-                document.getElementById('referralLink').select();
+                const referralInput = document.getElementById('referralLink');
+                referralInput.select();
                 document.execCommand('copy');
                 showToast('Referral link copied to clipboard!', 'success');
+            }
+            
+            function setupShareButtons() {
+                const referralLink = `https://tradworld7.github.io/mony/?ref=${currentUser?.uid || ''}`;
+                const shareMessage = `Join Trade World using my referral link and earn together! ${referralLink}`;
+                
+                // WhatsApp
+                document.querySelector('.btn[style*="background-color: #25D366"]').addEventListener('click', () => {
+                    window.open(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`, '_blank');
+                });
+                
+                // Telegram
+                document.querySelector('.btn[style*="background-color: #0088cc"]').addEventListener('click', () => {
+                    window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join Trade World with my referral link!')}`, '_blank');
+                });
+                
+                // Twitter
+                document.querySelector('.btn[style*="background-color: #1DA1F2"]').addEventListener('click', () => {
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`, '_blank');
+                });
             }
         });
     </script>
