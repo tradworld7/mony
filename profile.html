@@ -490,92 +490,132 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app.js"></script>
-    <script>
-        // Load profile data when page loads
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateEmail } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Global variables
+        let currentUser = null;
+        let userData = {};
+        let editingField = '';
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
+        // Format date
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Load user data from Firebase
+        function loadUserData(userId) {
+            const userRef = ref(database, 'users/' + userId);
+            
+            onValue(userRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    // Create user data if it doesn't exist
+                    const newUserData = {
+                        fullName: currentUser.displayName || "New User",
+                        email: currentUser.email,
+                        mobileNumber: "",
+                        balance: 0,
+                        joinDate: new Date().toISOString(),
+                        referralId: userId
+                    };
+                    update(ref(database, 'users/' + userId), newUserData);
+                    userData = newUserData;
+                } else {
+                    userData = snapshot.val();
+                    // Ensure referralId exists in user data
+                    if (!userData.referralId) {
+                        update(ref(database, 'users/' + userId), { referralId: userId });
+                    }
+                }
+                
+                // Update profile information
+                document.getElementById('fullName').value = userData.fullName || '';
+                document.getElementById('userEmail').value = currentUser.email || '';
+                document.getElementById('mobileNumber').value = userData.mobileNumber || '';
+                document.getElementById('userId').value = userId;
+                document.getElementById('profileName').textContent = userData.fullName || 'User';
+                document.getElementById('profileEmail').textContent = currentUser.email || '';
+                document.getElementById('profileReferralCode').value = userData.referralId || userId;
+                document.getElementById('profileBalance').value = `$${(userData.balance || 0).toFixed(2)}`;
+                document.getElementById('headerBalance').textContent = (userData.balance || 0).toFixed(2);
+                
+                // Set account creation date
+                if (userData.joinDate) {
+                    document.getElementById('profileJoinDate').value = formatDate(userData.joinDate);
+                } else if (currentUser.metadata?.creationTime) {
+                    document.getElementById('profileJoinDate').value = formatDate(currentUser.metadata.creationTime);
+                }
+                
+                // Set referral link
+                const websiteUrl = window.location.origin;
+                const referralUrl = `${websiteUrl}/signup.html?ref=${userData.referralId || userId}`;
+                document.getElementById('referralLink').value = referralUrl;
+                
+                // Set avatar initials
+                if (userData.fullName) {
+                    const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                }
+            }, (error) => {
+                showToast('Error loading user data: ' + error.message, 'error');
+            });
+        }
+
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
-            // Check auth state and load data
-            checkAuthState();
-            
-            // Copy user ID button
-            document.getElementById('copyUserIdBtn').addEventListener('click', function() {
-                const userIdInput = document.getElementById('userId');
-                userIdInput.select();
-                document.execCommand('copy');
-                showToast('User ID copied to clipboard!', 'success');
-            });
-            
-            // Copy referral link button
-            document.getElementById('copyReferralBtn').addEventListener('click', function() {
-                const referralInput = document.getElementById('referralLink');
-                referralInput.select();
-                document.execCommand('copy');
-                showToast('Referral link copied to clipboard!', 'success');
-            });
-            
-            // Change password button
-            document.getElementById('changePasswordBtn').addEventListener('click', function() {
-                const currentPassword = document.getElementById('currentPassword').value;
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (!currentPassword || !newPassword || !confirmPassword) {
-                    showToast('Please fill in all password fields', 'error');
-                    return;
+            // Initialize auth state
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    loadUserData(user.uid);
                 }
-                
-                if (newPassword !== confirmPassword) {
-                    showToast('New passwords do not match', 'error');
-                    return;
-                }
-                
-                if (newPassword.length < 8) {
-                    showToast('Password must be at least 8 characters', 'error');
-                    return;
-                }
-                
-                // Show loading state
-                document.getElementById('changePassText').style.display = 'none';
-                document.getElementById('changePassSpinner').style.display = 'inline-block';
-                document.getElementById('changePasswordBtn').disabled = true;
-                
-                // Create credentials with the user's email
-                const credential = firebase.auth.EmailAuthProvider.credential(
-                    currentUser.email, 
-                    currentPassword
-                );
-                
-                // Reauthenticate and update password
-                currentUser.reauthenticateWithCredential(credential)
-                    .then(() => {
-                        return currentUser.updatePassword(newPassword);
-                    })
-                    .then(() => {
-                        showToast('Password changed successfully!', 'success');
-                        // Clear password fields
-                        document.getElementById('currentPassword').value = '';
-                        document.getElementById('newPassword').value = '';
-                        document.getElementById('confirmPassword').value = '';
-                    })
-                    .catch(error => {
-                        console.error('Password change error:', error);
-                        let errorMessage = 'Password change failed.';
-                        if (error.code === 'auth/wrong-password') {
-                            errorMessage = 'Current password is incorrect';
-                        } else if (error.code === 'auth/weak-password') {
-                            errorMessage = 'New password is too weak';
-                        }
-                        showToast(errorMessage, 'error');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        document.getElementById('changePassText').style.display = 'inline-block';
-                        document.getElementById('changePassSpinner').style.display = 'none';
-                        document.getElementById('changePasswordBtn').disabled = false;
-                    });
             });
             
             // Edit buttons
@@ -597,42 +637,11 @@
             // Save edit button
             document.getElementById('saveEditBtn').addEventListener('click', function() {
                 const newValue = document.getElementById('modalFieldInput').value.trim();
-                if (!newValue) {
+                if (newValue) {
+                    updateProfileField(editingField, newValue);
+                } else {
                     showToast('Please enter a valid value', 'error');
-                    return;
                 }
-                
-                document.getElementById('saveEditText').style.display = 'none';
-                document.getElementById('saveEditSpinner').style.display = 'inline-block';
-                document.getElementById('saveEditBtn').disabled = true;
-                
-                const updates = {};
-                updates[editingField] = newValue;
-                
-                database.ref('users/' + currentUser.uid).update(updates)
-                    .then(() => {
-                        showToast('Profile updated successfully!', 'success');
-                        document.getElementById('editModal').classList.remove('open');
-                        
-                        // Update the displayed value immediately
-                        document.getElementById(editingField).value = newValue;
-                        
-                        if (editingField === 'fullName') {
-                            document.getElementById('profileName').textContent = newValue;
-                            // Update avatar initials
-                            const initials = newValue.split(' ').map(n => n[0]).join('').toUpperCase();
-                            document.getElementById('userAvatar').textContent = initials.substring(0, 2);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Update error:', error);
-                        showToast('Error updating profile: ' + error.message, 'error');
-                    })
-                    .finally(() => {
-                        document.getElementById('saveEditText').style.display = 'inline-block';
-                        document.getElementById('saveEditSpinner').style.display = 'none';
-                        document.getElementById('saveEditBtn').disabled = false;
-                    });
             });
             
             // Cancel edit button
@@ -645,6 +654,25 @@
                 document.getElementById('editModal').classList.remove('open');
             });
             
+            // Change password button
+            document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+            
+            // Copy referral link button
+            document.getElementById('copyReferralBtn').addEventListener('click', function() {
+                const referralInput = document.getElementById('referralLink');
+                referralInput.select();
+                document.execCommand('copy');
+                showToast('Referral link copied to clipboard!', 'success');
+            });
+            
+            // Copy user ID button
+            document.getElementById('copyUserIdBtn').addEventListener('click', function() {
+                const userIdInput = document.getElementById('userId');
+                userIdInput.select();
+                document.execCommand('copy');
+                showToast('User ID copied to clipboard!', 'success');
+            });
+            
             // Close modal when clicking outside
             document.getElementById('editModal').addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -652,6 +680,110 @@
                 }
             });
         });
+
+        // Change password function
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Please fill in all password fields', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showToast('Password must be at least 8 characters', 'error');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('changePassText').style.display = 'none';
+            document.getElementById('changePassSpinner').style.display = 'inline-block';
+            document.getElementById('changePasswordBtn').disabled = true;
+            
+            try {
+                // Create credentials with the user's email
+                const credential = EmailAuthProvider.credential(
+                    currentUser.email, 
+                    currentPassword
+                );
+                
+                // Reauthenticate and update password
+                await reauthenticateWithCredential(currentUser, credential);
+                await updatePassword(currentUser, newPassword);
+                
+                showToast('Password changed successfully!', 'success');
+                // Clear password fields
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch (error) {
+                console.error('Password change error:', error);
+                let errorMessage = 'Password change failed.';
+                if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Current password is incorrect';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'New password is too weak';
+                }
+                showToast(errorMessage, 'error');
+            } finally {
+                // Reset button state
+                document.getElementById('changePassText').style.display = 'inline-block';
+                document.getElementById('changePassSpinner').style.display = 'none';
+                document.getElementById('changePasswordBtn').disabled = false;
+            }
+        }
+
+        // Update profile field
+        async function updateProfileField(field, value) {
+            if (!field || !value) {
+                showToast('Invalid field or value', 'error');
+                return;
+            }
+            
+            document.getElementById('saveEditText').style.display = 'none';
+            document.getElementById('saveEditSpinner').style.display = 'inline-block';
+            document.getElementById('saveEditBtn').disabled = true;
+            
+            try {
+                if (field === 'userEmail') {
+                    // Special handling for email update
+                    await updateEmail(currentUser, value);
+                    await update(ref(database, 'users/' + currentUser.uid), { email: value });
+                } else {
+                    // Update other fields in database
+                    await update(ref(database, 'users/' + currentUser.uid), { [field]: value });
+                }
+                
+                showToast('Profile updated successfully!', 'success');
+                document.getElementById('editModal').classList.remove('open');
+                
+                // Update the displayed value immediately
+                document.getElementById(field).value = value;
+                
+                if (field === 'fullName') {
+                    document.getElementById('profileName').textContent = value;
+                    // Update avatar initials
+                    const initials = value.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                } else if (field === 'userEmail') {
+                    document.getElementById('profileEmail').textContent = value;
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                showToast('Error updating profile: ' + error.message, 'error');
+            } finally {
+                document.getElementById('saveEditText').style.display = 'inline-block';
+                document.getElementById('saveEditSpinner').style.display = 'none';
+                document.getElementById('saveEditBtn').disabled = false;
+            }
+        }
     </script>
 </body>
 </html>
