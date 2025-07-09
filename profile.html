@@ -592,9 +592,8 @@
                 }
                 
                 // Set referral link
-                const websiteUrl = window.location.origin;
-                const referralUrl = `${https://tradworld7.github.io/mony}/signup.html?ref=${userData.referralId || userId}`;
-                document.getElementById('referralId').value = referralUrl;
+                const referralUrl = `https://tradworld7.github.io/mony/signup.html?ref=${userData.referralId || userId}`;
+                document.getElementById('referralLink').value = referralUrl;
                 
                 // Set avatar initials
                 if (userData.fullName) {
