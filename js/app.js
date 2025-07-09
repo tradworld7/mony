@@ -4,862 +4,208 @@ const firebaseConfig = {
     authDomain: "mywebsite-600d3.firebaseapp.com",
     databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "mywebsite-600d3",
-    storageBucket: "mywebsite-600d3.firebasestorage.app",
+    storageBucket: "mywebsite-600d3.appspot.com",
     messagingSenderId: "584485288598",
     appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
     measurementId: "G-GQ9J9QH42J"
 };
 
-// Admin configuration
 const ADMIN_USER_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
-const ADMIN_NAME = "Ramesh Kumar Verma";
-
-// Commission rates
-const COMMISSION_RATES = {
-    admin: 0.10,       // 10% to admin
-    referral: 0.10,    // 10% to referral chain (distributed across 5 levels)
-    trading: 0.70,     // 70% to trading pool
-    userProfit: 0.10   // 10% immediate profit to user
-};
-
-// Level commission rates (2% per level for 5 levels)
-const LEVEL_COMMISSIONS = [0.02, 0.02, 0.02, 0.02, 0.02];
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
-// Firebase services
 const auth = firebase.auth();
 const database = firebase.database();
 
-// Global variables
 let currentUser = null;
 let userData = null;
 
-// Initialize the dashboard page
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize navigation menu
-    initializeNavigationMenu();
-    
-    // Check auth state
-    checkAuthState();
-    
-    // Load transaction history
-    loadTransactionHistory();
-    
-    // Set up event listeners
-    setupDashboardEventListeners();
-    
-    // Transfer button handler
-    const transferBtn = document.getElementById('submitTransfer');
-    if (transferBtn) {
-        transferBtn.addEventListener('click', transferFunds);
+// Auth State Check
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        currentUser = user;
+        loadUserData(user.uid);
+    } else {
+        window.location.href = "login.html";
     }
-    
-    // Load side menu data
-    loadSideMenuData();
-    
-    // Initialize local storage sync
-    initializeLocalStorageSync();
 });
 
-// Initialize navigation menu
-function initializeNavigationMenu() {
-    const menuContainer = document.getElementById('sideMenu');
-    if (!menuContainer) return;
-
-    // Create menu HTML structure
-    menuContainer.innerHTML = `
-        <div class="menu-header">
-            <div class="user-info">
-                <h3 id="sideMenuUserName">Loading...</h3>
-                <span id="sideMenuUserEmail">user@example.com</span>
-                <span id="sideMenuUserId" class="user-id"></span>
-            </div>
-            <div class="balance-info">
-                <span>Balance</span>
-                <h2 id="sideMenuUserBalance">$0.00</h2>
-            </div>
-        </div>
-        
-        <div class="menu-divider"></div>
-        
-        <ul class="menu-items">
-            <li class="menu-title">Dashboard</li>
-            <li><a href="index.html"><i class="fas fa-home"></i> Overview</a></li>
-            <li><a href="#" class="dashboard-submenu"><i class="fas fa-users"></i> Direct Referrals <span id="sideMenuDirectRef" class="menu-badge">0</span></a></li>
-            <li><a href="#" class="dashboard-submenu"><i class="fas fa-money-bill-wave"></i> Team Earnings <span id="sideMenuTeamEarnings" class="menu-badge">$0.00</span></a></li>
-            <li><a href="#" class="dashboard-submenu"><i class="fas fa-coins"></i> Level Earnings <span id="sideMenuLevelEarnings" class="menu-badge">$0.00</span></a></li>
-            
-            <li class="menu-title">Transactions</li>
-            <li><a href="deposit.html"><i class="fas fa-money-bill-alt"></i> Deposit</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdrawal</a></li>
-            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-chart-line"></i> Trading History</a></li>
-            
-            <li class="menu-title">Account</li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-            <li><a href="referral.html"><i class="fas fa-user-plus"></i> Referral Program</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
-            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> Invoices</a></li>
-            
-            <li class="menu-title">Authentication</li>
-            <li><a href="login.html" id="loginLink"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-            <li><a href="signup.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
-            <li><a href="#" id="logoutLink" style="display:none"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-        
-        <div class="menu-footer">
-            <div class="recent-transactions">
-                <h4>Recent Transactions</h4>
-                <ul id="sideMenuTransactions">
-                    <li>No recent transactions</li>
-                </ul>
-            </div>
-            <div class="referral-info">
-                <h4>Your Referral Code</h4>
-                <div class="referral-code" id="sideMenuReferralCode">Loading...</div>
-            </div>
-        </div>
-    `;
-}
-
-// Initialize local storage sync
-function initializeLocalStorageSync() {
-    // Sync user data
-    database.ref('users/' + currentUser?.uid).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            localStorage.setItem('userData', JSON.stringify(data));
-        }
-    });
-    
-    // Sync transactions
-    database.ref('transactions/' + currentUser?.uid).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            localStorage.setItem('transactions', JSON.stringify(data));
-        }
-    });
-}
-
-// Load data for side menu
-function loadSideMenuData() {
-    if (!currentUser) return;
-    
-    // Try to load from local storage first
-    const localUserData = localStorage.getItem('userData');
-    if (localUserData) {
-        updateSideMenu(JSON.parse(localUserData));
-    }
-    
-    // Then update from Firebase
-    database.ref('users/' + currentUser.uid).once('value').then((snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            updateSideMenu(data);
-            
-            // Store locally
-            localStorage.setItem('userData', JSON.stringify(data));
-        }
-    });
-}
-
-// Update side menu with user data
-function updateSideMenu(data) {
-    // Update profile info
-    document.getElementById('sideMenuUserName').textContent = data.name || 'User';
-    document.getElementById('sideMenuUserEmail').textContent = currentUser.email;
-    document.getElementById('sideMenuUserBalance').textContent = `$${(data.balance || 0).toFixed(2)}`;
-    document.getElementById('sideMenuUserId').textContent = `ID: ${currentUser.uid.substring(0, 8)}...`;
-    
-    // Update referral info
-    const directRefCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
-    document.getElementById('sideMenuDirectRef').textContent = directRefCount;
-    
-    // Update earnings info
-    document.getElementById('sideMenuTeamEarnings').textContent = `$${(data.teamEarnings || 0).toFixed(2)}`;
-    
-    // Calculate level earnings (sum of all level commissions)
-    const levelEarnings = (data.levelEarnings || {});
-    const totalLevelEarnings = Object.values(levelEarnings).reduce((sum, val) => sum + val, 0);
-    document.getElementById('sideMenuLevelEarnings').textContent = `$${totalLevelEarnings.toFixed(2)}`;
-    
-    // Update referral code
-    document.getElementById('sideMenuReferralCode').textContent = currentUser.uid;
-    
-    // Update investment count if element exists
-    const investmentsElement = document.getElementById('sideMenuInvestments');
-    if (investmentsElement) {
-        const investmentCount = data.investments ? Object.keys(data.investments).length : 0;
-        investmentsElement.textContent = investmentCount;
-    }
-}
-
-// Check user authentication state
-function checkAuthState() {
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // User is signed in
-            currentUser = user;
-            updateUIForLoggedInUser();
-            loadUserData(user.uid);
-            
-            // Special handling for admin dashboard
-            if (user.uid === ADMIN_USER_ID) {
-                setupAdminDashboard();
-            }
-            
-            // Update last active timestamp
-            updateLastActive();
-        } else {
-            // User is signed out
-            currentUser = null;
-            updateUIForLoggedOutUser();
-            
-            // Redirect to login if not on auth pages
-            if (!window.location.pathname.includes('login.html') && 
-                !window.location.pathname.includes('signup.html')) {
-                window.location.href = 'login.html';
-            }
-        }
-    });
-}
-
-// Update user's last active timestamp
-function updateLastActive() {
-    if (!currentUser) return;
-    
-    const updates = {};
-    updates[`users/${currentUser.uid}/lastActive`] = firebase.database.ServerValue.TIMESTAMP;
-    
-    database.ref().update(updates).catch(error => {
-        console.error('Error updating last active:', error);
-    });
-}
-
-// Special setup for admin dashboard
-function setupAdminDashboard() {
-    // Add admin-specific UI elements if needed
-    const pageTitle = document.querySelector('.page-title');
-    if (pageTitle) {
-        pageTitle.textContent += ' (Admin)';
-    }
-    
-    // Load admin-specific data
-    loadAdminStats();
-}
-
-// Load admin statistics
-function loadAdminStats() {
-    database.ref('system/adminEarnings').on('value', (snapshot) => {
-        const adminEarnings = snapshot.val() || 0;
-        // Display somewhere in admin dashboard
-        console.log(`Admin total earnings: $${adminEarnings.toFixed(2)}`);
-    });
-}
-
-// Load user data from database
-function loadUserData(userId) {
-    database.ref('users/' + userId).on('value', (snapshot) => {
+// Load user data from Firebase
+function loadUserData(uid) {
+    database.ref('users/' + uid).on('value', snapshot => {
         userData = snapshot.val();
-        if (userData) {
-            // Update dashboard cards
-            updateDashboardCards(userData);
-            
-            // Also update the team structure data
-            if (userData.directReferrals) {
-                updateTeamStructure(userData.directReferrals);
-            }
-            
-            // Store user data locally
-            localStorage.setItem('userData', JSON.stringify(userData));
-            
-            // Update side menu
-            loadSideMenuData();
-        }
-    }, (error) => {
-        showToast('Error loading user data', 'error');
-        console.error('Error loading user data:', error);
+        updateUI(userData);
     });
 }
 
-// Update dashboard cards with user data
-function updateDashboardCards(data) {
-    const balanceElement = document.getElementById('userBalance');
-    const profitElement = document.getElementById('tradingProfit');
-    const referralsElement = document.getElementById('directReferrals');
-    const referralProfitElement = document.getElementById('referralProfit');
-    const teamEarningsElement = document.getElementById('teamEarnings');
-    
-    if (balanceElement) balanceElement.textContent = `$${(data.balance || 0).toFixed(2)}`;
-    if (profitElement) profitElement.textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
-    
-    // Calculate direct referrals count
-    if (referralsElement) {
-        const directRefCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
-        referralsElement.textContent = directRefCount;
-    }
-    
-    // Update referral earnings
-    if (referralProfitElement) {
-        referralProfitElement.textContent = `Earnings: $${(data.referralEarnings || 0).toFixed(2)}`;
-    }
-    
-    // Update team earnings (sum of all levels)
-    if (teamEarningsElement) {
-        teamEarningsElement.textContent = `$${(data.teamEarnings || 0).toFixed(2)}`;
-    }
+function updateUI(data) {
+    if (!data) return;
+    document.getElementById('userBalance').textContent = `$${(data.balance || 0).toFixed(2)}`;
+    document.getElementById('tradingProfit').textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
+    document.getElementById('directReferrals').textContent = Object.keys(data.directReferrals || {}).length;
+    document.getElementById('teamEarnings').textContent = `$${(data.teamEarnings || 0).toFixed(2)}`;
 }
-
-// Update team structure display
-function updateTeamStructure(directReferrals) {
-    const teamList = document.getElementById('teamStructureList');
-    if (!teamList) return;
-    
-    teamList.innerHTML = '';
-    
-    if (!directReferrals || Object.keys(directReferrals).length === 0) {
-        teamList.innerHTML = '<li>No team members yet</li>';
-        return;
-    }
-    
-    Object.entries(directReferrals).forEach(([userId, refData]) => {
-        const memberItem = document.createElement('li');
-        memberItem.innerHTML = `
-            <div class="team-member">
-                <span class="member-id">${userId.substring(0, 8)}...</span>
-                <span class="member-name">${refData.name || 'No name'}</span>
-                <span class="member-join-date">${formatDate(refData.joinDate)}</span>
-                <span class="member-earning">Earnings: $${(refData.earnings || 0).toFixed(2)}</span>
-                <span class="member-level">Level 1</span>
-            </div>
-        `;
-        teamList.appendChild(memberItem);
-    });
-}
-
-// Load transaction history
-function loadTransactionHistory() {
-    if (!currentUser) return;
-    
-    // Check local storage first
-    const localTransactions = localStorage.getItem('transactions');
-    if (localTransactions) {
-        displayTransactions(JSON.parse(localTransactions));
-    }
-    
-    database.ref('transactions/' + currentUser.uid).orderByChild('timestamp').limitToLast(5).once('value').then((snapshot) => {
-        const transactions = snapshot.val();
-        
-        if (transactions) {
-            // Store transactions locally
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            displayTransactions(transactions);
-            
-            // Also update the transaction history in side menu
-            updateSideMenuTransactions(transactions);
-        } else if (!localTransactions) {
-            const tbody = document.getElementById('transactionHistory');
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
-            }
-        }
-        
-        const lastUpdatedElement = document.getElementById('lastUpdated');
-        if (lastUpdatedElement) {
-            lastUpdatedElement.textContent = new Date().toLocaleTimeString();
-        }
-    }).catch((error) => {
-        console.error('Error loading transaction history:', error);
-        showToast('Error loading transactions', 'error');
-    });
-}
-
-// Update transactions in side menu
-function updateSideMenuTransactions(transactions) {
-    const sideMenuTxList = document.getElementById('sideMenuTransactions');
-    if (!sideMenuTxList) return;
-    
-    sideMenuTxList.innerHTML = '';
-    
-    if (!transactions || Object.keys(transactions).length === 0) {
-        sideMenuTxList.innerHTML = '<li>No transactions yet</li>';
-        return;
-    }
-    
-    // Convert to array and sort by timestamp
-    const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
-    transactionsArray.sort((a, b) => b.timestamp - a.timestamp);
-    
-    // Show only last 3 in side menu
-    transactionsArray.slice(0, 3).forEach(tx => {
-        const txItem = document.createElement('li');
-        txItem.innerHTML = `
-            <span class="tx-type">${tx.type || 'Transfer'}</span>
-            <span class="tx-amount">$${tx.amount?.toFixed(2) || '0.00'}</span>
-            <span class="tx-date">${formatDateShort(tx.timestamp)}</span>
-        `;
-        sideMenuTxList.appendChild(txItem);
-    });
-}
-
-// Display transactions in the table
-function displayTransactions(transactions) {
-    const tbody = document.getElementById('transactionHistory');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    if (!transactions || Object.keys(transactions).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions yet</td></tr>';
-        return;
-    }
-    
-    // Convert to array and sort by timestamp
-    const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
-    transactionsArray.sort((a, b) => b.timestamp - a.timestamp);
-    
-    transactionsArray.forEach(tx => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${formatDate(tx.timestamp)}</td>
-            <td>${tx.type || 'Transfer'}</td>
-            <td>$${tx.amount?.toFixed(2) || '0.00'}</td>
-            <td class="status-${tx.status || 'completed'}">${formatStatus(tx.status)}</td>
-            <td>${tx.details || (tx.type === 'sent' ? 'To: ' + (tx.to || '') : 'From: ' + (tx.from || ''))}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-// Format timestamp
-function formatDate(timestamp) {
-    if (!timestamp) return 'N/A';
-    const date = new Date(timestamp);
-    return date.toLocaleString();
-}
-
-// Format short date for side menu
-function formatDateShort(timestamp) {
-    if (!timestamp) return 'N/A';
-    const date = new Date(timestamp);
-    return date.toLocaleDateString();
-}
-
-// Format status
-function formatStatus(status) {
-    if (!status) return 'Completed';
-    return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-// Transfer funds function
-async function transferFunds() {
-    const recipientId = document.getElementById('recipientId').value.trim();
-    const amount = parseFloat(document.getElementById('transferAmount').value);
-    const currentBalance = parseFloat(userData?.balance || 0);
-    
-    // Validation
-    if (!recipientId) {
-        showToast('Please enter recipient ID', 'error');
-        return;
-    }
-    
-    if (isNaN(amount) || amount <= 0) {
-        showToast('Please enter valid amount', 'error');
-        return;
-    }
-    
-    if (amount > currentBalance) {
-        showToast('Insufficient balance', 'error');
-        return;
-    }
-    
-    if (recipientId === currentUser?.uid) {
-        showToast('Cannot transfer to yourself', 'error');
-        return;
-    }
-    
-    try {
-        // Check if recipient exists
-        const recipientRef = database.ref('users/' + recipientId);
-        const snapshot = await recipientRef.once('value');
-        
-        if (!snapshot.exists()) {
-            showToast('Recipient not found', 'error');
-            return;
-        }
-        
-        // Start transaction
-        const updates = {};
-        const timestamp = firebase.database.ServerValue.TIMESTAMP;
-        const transactionId = database.ref().child('transactions').push().key;
-        
-        // Update sender balance
-        updates[`users/${currentUser.uid}/balance`] = currentBalance - amount;
-        
-        // Update recipient balance
-        const recipientBalance = parseFloat(snapshot.val().balance || 0);
-        updates[`users/${recipientId}/balance`] = recipientBalance + amount;
-        
-        // Record transaction
-        updates[`transactions/${transactionId}`] = {
-            userId: currentUser.uid,
-            type: 'transfer',
-            amount: amount,
-            status: 'completed',
-            timestamp: timestamp,
-            details: `Transfer to ${recipientId}`
-        };
-        
-        // Save sender transaction history
-        updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
-            type: 'sent',
-            to: recipientId,
-            amount: amount,
-            timestamp: timestamp,
-            status: 'completed'
-        };
-        
-        // Save recipient transaction history
-        updates[`users/${recipientId}/transactions/${transactionId}`] = {
-            type: 'received',
-            from: currentUser.uid,
-            amount: amount,
-            timestamp: timestamp,
-            status: 'completed'
-        };
-        
-        // Execute all updates atomically
-        await database.ref().update(updates);
-        
-        showToast(`Successfully transferred $${amount.toFixed(2)}`, 'success');
-        
-        // Refresh data
-        loadUserData(currentUser.uid);
-        loadTransactionHistory();
-        document.getElementById('transferAmount').value = '';
-        document.getElementById('recipientId').value = '';
-        
-    } catch (error) {
-        console.error('Transfer error:', error);
-        showToast('Transfer failed: ' + error.message, 'error');
-    }
-}
-
-// Purchase investment package
+// Purchase Investment Package
 async function purchasePackage(amount) {
-    if (!currentUser) {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    const currentBalance = parseFloat(userData?.balance || 0);
-    
-    if (amount > currentBalance) {
-        showToast('Insufficient balance for this package', 'error');
-        return;
-    }
-    
-    try {
-        const updates = {};
-        const timestamp = firebase.database.ServerValue.TIMESTAMP;
-        const packageId = database.ref().child('investments').push().key;
-        
-        // Calculate profit distribution
-        const adminCommission = amount * COMMISSION_RATES.admin;
-        const referralCommissions = amount * COMMISSION_RATES.referral;
-        const tradingProfit = amount * COMMISSION_RATES.trading;
-        const userProfit = amount * COMMISSION_RATES.userProfit;
-        
-        // Update user balance (subtract investment, add immediate profit)
-        updates[`users/${currentUser.uid}/balance`] = currentBalance - amount + userProfit;
-        updates[`users/${currentUser.uid}/tradingProfit`] = (userData.tradingProfit || 0) + userProfit;
-        
-        // Add investment record
-        updates[`users/${currentUser.uid}/investments/${packageId}`] = {
-            amount: amount,
-            purchaseDate: timestamp,
-            status: 'active',
-            expectedReturn: amount * 2,
-            maturityDate: timestamp + (30 * 24 * 60 * 60 * 1000) // 30 days from now
-        };
-        
-        // Add transaction records
-        updates[`transactions/${packageId}`] = {
-            userId: currentUser.uid,
-            type: 'investment',
-            amount: amount,
-            status: 'completed',
-            timestamp: timestamp
-        };
-        
-        updates[`users/${currentUser.uid}/transactions/${packageId}`] = {
-            type: 'investment',
-            amount: amount,
-            status: 'completed',
-            timestamp: timestamp,
-            details: `Purchased $${amount} package`
-        };
-        
-        // Add profit transaction
-        const profitTxId = database.ref().child('transactions').push().key;
-        updates[`users/${currentUser.uid}/transactions/${profitTxId}`] = {
-            type: 'profit',
-            amount: userProfit,
-            status: 'completed',
-            timestamp: timestamp,
-            details: `Immediate profit from $${amount} package`
-        };
-        
-        // Distribute commissions to referral chain (5 levels)
-        if (userData.referredBy) {
-            await distributeReferralCommissions(userData.referredBy, amount, 1, updates);
-        }
-        
-        // Add trading profit to pool (will be distributed equally among all active users)
-        const tradingPoolRef = await database.ref('system/tradingPool').once('value');
-        const currentPool = parseFloat(tradingPoolRef.val()) || 0;
-        updates[`system/tradingPool`] = currentPool + tradingProfit;
-        
-        // Credit admin commission directly to admin's wallet
-        const adminRef = await database.ref(`users/${ADMIN_USER_ID}`).once('value');
-        const adminData = adminRef.val();
-        const adminCurrentBalance = parseFloat(adminData?.balance || 0);
-        const adminCurrentProfit = parseFloat(adminData?.tradingProfit || 0);
-        
-        updates[`users/${ADMIN_USER_ID}/balance`] = adminCurrentBalance + adminCommission;
-        updates[`users/${ADMIN_USER_ID}/tradingProfit`] = adminCurrentProfit + adminCommission;
-        
-        // Add transaction record for admin
-        const adminTxId = database.ref().child('transactions').push().key;
-        updates[`transactions/${adminTxId}`] = {
-            userId: ADMIN_USER_ID,
-            type: 'admin_commission',
-            amount: adminCommission,
-            status: 'completed',
-            timestamp: timestamp,
-            details: `Commission from ${currentUser.email}'s package purchase`
-        };
-        
-        updates[`users/${ADMIN_USER_ID}/transactions/${adminTxId}`] = {
-            type: 'commission',
-            amount: adminCommission,
-            status: 'completed',
-            timestamp: timestamp,
-            details: `Commission from ${currentUser.email}'s package purchase`
-        };
-        
-        // Update system admin earnings
-        const adminEarningsRef = await database.ref('system/adminEarnings').once('value');
-        const currentAdminEarnings = parseFloat(adminEarningsRef.val()) || 0;
-        updates[`system/adminEarnings`] = currentAdminEarnings + adminCommission;
-        
-        // Execute all updates
-        await database.ref().update(updates);
-        
-        // Distribute trading profit to all active users (including admin)
-        await distributeTradingProfit(tradingProfit);
-        
-        showToast(`Successfully purchased $${amount} package. You received $${userProfit.toFixed(2)} immediate profit!`, 'success');
-        loadUserData(currentUser.uid);
-        loadTransactionHistory();
-        
-    } catch (error) {
-        console.error('Package purchase error:', error);
-        showToast('Failed to purchase package', 'error');
-    }
-}
+    if (!currentUser || !userData) return;
 
-// Distribute trading profit equally among all active users (including admin)
-async function distributeTradingProfit(totalProfit) {
-    try {
-        // Get all active users (including admin)
-        const usersSnapshot = await database.ref('users').once('value');
-        const users = usersSnapshot.val();
-        
-        if (!users) return;
-        
-        // Filter active users (active within 30 days) including admin
-        const activeUsers = Object.keys(users).filter(uid => {
-            return users[uid].lastActive && (Date.now() - users[uid].lastActive) < (30 * 24 * 60 * 60 * 1000);
-        });
-        
-        if (activeUsers.length === 0) return;
-        
-        const profitPerUser = totalProfit / activeUsers.length;
-        const updates = {};
-        
-        activeUsers.forEach(uid => {
-            updates[`users/${uid}/tradingProfit`] = (users[uid].tradingProfit || 0) + profitPerUser;
-            
-            // Record profit transaction
-            const txId = database.ref().child('transactions').push().key;
-            updates[`users/${uid}/transactions/${txId}`] = {
-                type: 'profit',
-                amount: profitPerUser,
-                status: 'completed',
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                details: `Trading profit from pool`
-            };
-        });
-        
-        // Clear the trading pool
-        updates['system/tradingPool'] = 0;
-        
-        await database.ref().update(updates);
-        
-    } catch (error) {
-        console.error('Error distributing trading profit:', error);
-    }
-}
+    const balance = parseFloat(userData.balance || 0);
+    if (amount > balance) return showToast('Insufficient balance', 'error');
 
-// Distribute referral commissions (recursive function for 5 levels)
-async function distributeReferralCommissions(referrerId, amount, currentLevel, updates) {
-    if (currentLevel > 5) return;
-    
-    // Get referrer data
-    const referrerSnapshot = await database.ref(`users/${referrerId}`).once('value');
-    const referrerData = referrerSnapshot.val();
-    
-    if (!referrerData) return;
-    
-    // Calculate commission (2% per level)
-    const commission = amount * LEVEL_COMMISSIONS[currentLevel - 1];
-    
-    // Update referrer's earnings
-    updates[`users/${referrerId}/balance`] = (referrerData.balance || 0) + commission;
-    updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
-    updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
-    
-    // Track level earnings separately
-    updates[`users/${referrerId}/levelEarnings/level${currentLevel}`] = (referrerData.levelEarnings?.[`level${currentLevel}`] || 0) + commission;
-    
-    // Add transaction record for referrer
-    const transactionId = database.ref().child('transactions').push().key;
-    updates[`users/${referrerId}/transactions/${transactionId}`] = {
+    const updates = {};
+    const timestamp = Date.now();
+    const investmentId = database.ref().child('investments').push().key;
+
+    const adminCommission = amount * 0.10;
+    const userProfit = amount * 0.10;
+    const referralPool = amount * 0.10;
+    const tradingPool = amount * 0.70;
+
+    // Update User
+    updates[`users/${currentUser.uid}/balance`] = balance - amount + userProfit;
+    updates[`users/${currentUser.uid}/tradingProfit`] = (userData.tradingProfit || 0) + userProfit;
+
+    // Record Investment
+    updates[`users/${currentUser.uid}/investments/${investmentId}`] = {
+        amount,
+        purchaseDate: timestamp,
+        expectedReturn: amount * 2,
+        status: "active",
+        maturityDate: timestamp + (30 * 24 * 60 * 60 * 1000)
+    };
+
+    updates[`users/${currentUser.uid}/transactions/${investmentId}`] = {
+        type: "investment",
+        amount,
+        status: "completed",
+        timestamp,
+        details: `Purchased package of $${amount}`
+    };
+
+    const profitTxId = database.ref().child('transactions').push().key;
+    updates[`users/${currentUser.uid}/transactions/${profitTxId}`] = {
+        type: "profit",
+        amount: userProfit,
+        status: "completed",
+        timestamp,
+        details: `Immediate profit from $${amount} package`
+    };
+
+    // Admin
+    const adminSnap = await database.ref(`users/${ADMIN_USER_ID}`).once('value');
+    const admin = adminSnap.val() || {};
+    updates[`users/${ADMIN_USER_ID}/balance`] = (admin.balance || 0) + adminCommission;
+    updates[`users/${ADMIN_USER_ID}/tradingProfit`] = (admin.tradingProfit || 0) + adminCommission;
+
+    const adminTxId = database.ref().child('transactions').push().key;
+    updates[`users/${ADMIN_USER_ID}/transactions/${adminTxId}`] = {
+        type: "admin_commission",
+        amount: adminCommission,
+        status: "completed",
+        timestamp,
+        details: `Commission from ${currentUser.email}`
+    };
+
+    // Admin Earnings
+    const sysAdminSnap = await database.ref('system/adminEarnings').once('value');
+    updates[`system/adminEarnings`] = (sysAdminSnap.val() || 0) + adminCommission;
+
+    // Referral Commissions
+    if (userData.referredBy) {
+        await distributeReferral(userData.referredBy, amount, 1, updates);
+    }
+
+    // Trading Pool
+    const poolSnap = await database.ref('system/tradingPool').once('value');
+    updates[`system/tradingPool`] = (poolSnap.val() || 0) + tradingPool;
+
+    await database.ref().update(updates);
+    await distributeTradingProfit(tradingPool);
+
+    showToast(`Package of $${amount} purchased successfully!`, "success");
+    loadUserData(currentUser.uid);
+}
+// Distribute 2% referral commission up to 5 levels
+async function distributeReferral(referrerId, amount, level, updates) {
+    if (level > 5) return;
+
+    const snapshot = await database.ref(`users/${referrerId}`).once('value');
+    const referrer = snapshot.val();
+    if (!referrer) return;
+
+    const commission = amount * 0.02;
+
+    updates[`users/${referrerId}/referralEarnings`] = (referrer.referralEarnings || 0) + commission;
+    updates[`users/${referrerId}/teamEarnings`] = (referrer.teamEarnings || 0) + commission;
+
+    // Track earnings per level
+    const levelPath = `referralEarningsByLevel/level${level}`;
+    updates[`users/${referrerId}/${levelPath}`] = (referrer.referralEarningsByLevel?.[`level${level}`] || 0) + commission;
+
+    // Save transaction
+    const txId = database.ref().child('transactions').push().key;
+    updates[`users/${referrerId}/transactions/${txId}`] = {
         type: 'referral',
         amount: commission,
         status: 'completed',
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        details: `Level ${currentLevel} referral commission`
+        timestamp: Date.now(),
+        details: `Level ${level} referral commission from ${currentUser.email}`
     };
-    
-    // Continue to next level if available
-    if (referrerData.referredBy && currentLevel < 5) {
-        await distributeReferralCommissions(referrerData.referredBy, amount, currentLevel + 1, updates);
+
+    if (referrer.referredBy) {
+        await distributeReferral(referrer.referredBy, amount, level + 1, updates);
     }
 }
 
-// Set up event listeners
-function setupDashboardEventListeners() {
-    // Package purchase buttons
-    document.querySelectorAll('[data-package]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const packageAmount = parseFloat(btn.getAttribute('data-package'));
-            purchasePackage(packageAmount);
-        });
+// Distribute trading profit to all active users
+async function distributeTradingProfit(totalProfit) {
+    const snapshot = await database.ref('users').once('value');
+    const users = snapshot.val();
+    if (!users) return;
+
+    const now = Date.now();
+    const activeUsers = Object.entries(users).filter(([uid, data]) => {
+        return data.lastActive && (now - data.lastActive) <= (30 * 24 * 60 * 60 * 1000);
     });
-    
-    // Logout
-    const logoutLink = document.getElementById('logoutLink');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            logoutUser();
-        });
-    }
-    
-    // Menu toggle for mobile
-    const menuToggle = document.getElementById('menuToggle');
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) {
-                sidebar.classList.toggle('open');
-            }
-        });
-    }
-    
-    // Navigation links
-    const sideMenuLinks = document.querySelectorAll('.side-menu a');
-    if (sideMenuLinks) {
-        sideMenuLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                // Close mobile menu when a link is clicked
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar) {
-                    sidebar.classList.remove('open');
-                }
-            });
-        });
-    }
-    
-    // Copy referral code
-    const referralCodeElement = document.getElementById('sideMenuReferralCode');
-    if (referralCodeElement) {
-        referralCodeElement.addEventListener('click', () => {
-            navigator.clipboard.writeText(currentUser?.uid).then(() => {
-                showToast('Referral code copied!', 'success');
-            }).catch(err => {
-                console.error('Failed to copy referral code:', err);
-            });
-        });
-    }
-}
 
-// Logout user
-function logoutUser() {
-    auth.signOut().then(() => {
-        showToast('Successfully logged out', 'success');
-        window.location.href = 'login.html';
-    }).catch((error) => {
-        showToast('Error logging out', 'error');
-        console.error('Logout error:', error);
+    if (activeUsers.length === 0) return;
+
+    const perUser = totalProfit / activeUsers.length;
+    const updates = {};
+
+    activeUsers.forEach(([uid, data]) => {
+        updates[`users/${uid}/tradingProfit`] = (data.tradingProfit || 0) + perUser;
+
+        const txId = database.ref().child('transactions').push().key;
+        updates[`users/${uid}/transactions/${txId}`] = {
+            type: "profit",
+            amount: perUser,
+            status: "completed",
+            timestamp: Date.now(),
+            details: "Trading profit share"
+        };
     });
-}
 
-// Show toast notification
-function showToast(message, type) {
-    const toastContainer = document.getElementById('toastContainer');
-    if (!toastContainer) return;
-    
+    updates['system/tradingPool'] = 0;
+    await database.ref().update(updates);
+}
+function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <span>${message}</span>
-        <button class="toast-close">&times;</button>
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#e74c3c' : '#2ecc71'};
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        z-index: 9999;
+        font-family: sans-serif;
+        font-size: 14px;
     `;
-    
-    toastContainer.appendChild(toast);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        toast.remove();
-    }, 5000);
-    
-    // Close button
-    toast.querySelector('.toast-close').addEventListener('click', () => {
-        toast.remove();
-    });
-}
-
-// Update UI for logged in user
-function updateUIForLoggedInUser() {
-    const logoutLink = document.getElementById('logoutLink');
-    const loginLink = document.getElementById('loginLink');
-    
-    if (logoutLink) logoutLink.style.display = 'block';
-    if (loginLink) loginLink.style.display = 'none';
-}
-
-// Update UI for logged out user
-function updateUIForLoggedOutUser() {
-    const logoutLink = document.getElementById('logoutLink');
-    const loginLink = document.getElementById('loginLink');
-    
-    if (logoutLink) logoutLink.style.display = 'none';
-    if (loginLink) loginLink.style.display = 'block';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
 }
