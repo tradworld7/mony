@@ -609,7 +609,9 @@
                     </div>
                 </div>
                 <div class="card-value" id="tradingProfit">$0.00</div>
-                <div class="card-footer">Total profit from your investments</div>
+                <div class="card-footer">
+                    Total profit from your investments
+                </div>
             </div>
             
             <div class="card">
@@ -620,7 +622,9 @@
                     </div>
                 </div>
                 <div class="card-value" id="directReferrals">0</div>
-                <div class="card-footer">Earnings: <span id="referralProfit">$0.00</span></div>
+                <div class="card-footer">
+                    Earnings: <span id="referralProfit">$0.00</span>
+                </div>
             </div>
             
             <div class="card">
@@ -631,7 +635,9 @@
                     </div>
                 </div>
                 <div class="card-value" id="teamEarnings">$0.00</div>
-                <div class="card-footer">From all 5 levels</div>
+                <div class="card-footer">
+                    From all 5 levels
+                </div>
             </div>
         </div>
         
@@ -669,7 +675,8 @@
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
-                                   <button class="btn btn-primary" data-package="10">Buy Now</button>
+                </ul>
+                <button class="btn btn-primary" data-package="10">Buy Now</button>
             </div>
             
             <div class="package-card">
@@ -677,10 +684,11 @@
                 <div class="package-price">$30</div>
                 <div class="package-return">Returns $60 (100% Profit)</div>
                 <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i>100% Return on Investment</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Exclusive Market Insights</li>
-                                    <button class="btn btn-primary" data-package="30">Buy Now</button>
+                </ul>
+                <button class="btn btn-primary" data-package="30">Buy Now</button>
             </div>
             
             <div class="package-card">
@@ -690,8 +698,8 @@
                 <ul class="package-features">
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i>Priority Customer Support</li>
-                   
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Priority Customer Support</li>
+                </ul>
                 <button class="btn btn-primary" data-package="100">Buy Now</button>
             </div>
         </div>
@@ -794,7 +802,8 @@
             set, 
             update, 
             push, 
-            get 
+            get,
+            child
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -1282,6 +1291,11 @@
                     timestamp: Date.now(),
                     details: `Level ${currentLevel} referral commission from ${userData.name}`
                 };
+                
+                // Show toast to referrer if they're currently logged in
+                if (currentUser && currentUser.uid === referrerId) {
+                    showToast(`You earned $${commission.toFixed(2)} referral commission from level ${currentLevel}`, 'success');
+                }
                 
                 // If referrer has an upline, continue recursively
                 if (referrerData.referredBy && currentLevel < 5) {
