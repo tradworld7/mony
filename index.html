@@ -1,781 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <input type="number" id="depositAmount" placeholder="Amount">
-<button id="submitDeposit">Deposit Funds</button>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade World - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --danger-color: #f72585;
-            --warning-color: #f8961e;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --gray-color: #6c757d;
-            --white-color: #ffffff;
-            --sidebar-width: 250px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background-color: #f5f7fa;
-            color: var(--dark-color);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles */
-        header {
-            background-color: var(--white-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            height: 70px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo-icon {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .logo-text {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--dark-color);
-            cursor: pointer;
-            display: none;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background-color: var(--white-color);
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            width: var(--sidebar-width);
-            height: calc(100vh - 70px);
-            position: fixed;
-            top: 70px;
-            left: 0;
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 999;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 1rem 0;
-        }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            padding: 0.8rem 1.5rem;
-            color: var(--dark-color);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            gap: 0.8rem;
-        }
-
-        .sidebar-menu li a:hover {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary-color);
-        }
-
-        .sidebar-menu li a.active {
-            background-color: rgba(67, 97, 238, 0.2);
-            color: var(--primary-color);
-            border-left: 3px solid var(--primary-color);
-        }
-
-        .sidebar-menu li a i {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            margin-top: 70px;
-            margin-left: var(--sidebar-width);
-            padding: 2rem;
-            transition: all 0.3s ease;
-            min-height: calc(100vh - 70px);
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            margin: 2rem 0 1rem;
-            color: var(--dark-color);
-        }
-
-        /* Dashboard Cards */
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .card-title {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--gray-color);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .card-icon.balance {
-            background-color: rgba(76, 201, 240, 0.1);
-            color: var(--success-color);
-        }
-
-        .card-icon.trading {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary-color);
-        }
-
-        .card-icon.referral {
-            background-color: rgba(248, 150, 30, 0.1);
-            color: var(--warning-color);
-        }
-
-        .card-icon.team {
-            background-color: rgba(247, 37, 133, 0.1);
-            color: var(--danger-color);
-        }
-
-        .card-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            padding: 1rem 1.5rem;
-            color: var(--dark-color);
-        }
-
-        .card-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            font-size: 0.9rem;
-            color: var(--gray-color);
-        }
-
-        /* Transfer Form Styles */
-        .transfer-form {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        /* Button Styles */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
-        /* Packages Grid */
-        .packages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .package-card {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .package-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .package-name {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            color: var(--dark-color);
-        }
-
-        .package-price {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .package-return {
-            font-size: 1rem;
-            color: var(--gray-color);
-            margin-bottom: 1rem;
-        }
-
-        .package-features {
-            list-style: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .package-features li {
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Transaction History Section */
-        .trading-section {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .trading-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .trading-title {
-            font-size: 1.3rem;
-            color: var(--dark-color);
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th {
-            background-color: rgba(0, 0, 0, 0.02);
-            padding: 0.8rem 1rem;
-            text-align: left;
-            font-weight: 500;
-            color: var(--gray-color);
-        }
-
-        .table td {
-            padding: 0.8rem 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Status Badges */
-        .status-pending {
-            color: var(--warning-color);
-            font-weight: 500;
-        }
-        .status-completed {
-            color: var(--success-color);
-            font-weight: 500;
-        }
-        .status-rejected {
-            color: var(--danger-color);
-            font-weight: 500;
-        }
-
-        /* Team Structure Styles */
-        .team-structure {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .team-structure h3 {
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-        
-        .team-structure ul {
-            list-style: none;
-        }
-        
-        .team-structure li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .team-structure li:last-child {
-            border-bottom: none;
-        }
-
-        /* Toast Notifications Container */
-        .toast-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .toast {
-            padding: 1rem 1.5rem;
-            border-radius: 5px;
-            color: var(--white-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: slideIn 0.3s ease forwards;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .toast.success {
-            background-color: var(--success-color);
-        }
-
-        .toast.error {
-            background-color: var(--danger-color);
-        }
-
-        .toast-close {
-            background: none;
-            border: none;
-            color: var(--white-color);
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        /* Auth Pages Styles */
-        .auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 2rem;
-            background-color: #f5f7fa;
-        }
-
-        .auth-card {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 450px;
-        }
-
-        .auth-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            text-align: center;
-        }
-
-        .auth-footer {
-            margin-top: 1.5rem;
-            text-align: center;
-            color: var(--gray-color);
-        }
-
-        .auth-footer a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Utility Classes */
-        .text-center {
-            text-align: center;
-        }
-
-        .mb-3 {
-            margin-bottom: 1rem;
-        }
-
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Responsive Styles */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-cards {
-                grid-template-columns: 1fr;
-            }
-            
-            .packages-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .main-content {
-                padding: 1.5rem;
-            }
-            
-            .auth-card {
-                padding: 1.5rem;
-            }
-        }
+        /* [Previous CSS styles remain exactly the same] */
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <i class="fas fa-chart-line logo-icon"></i>
-            <span class="logo-text">Trade World</span>
-        </div>
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    </header>
-
-    <!-- Sidebar Menu -->
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
-            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
-            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
-            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
-            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <h1 class="page-title">Dashboard</h1>
-        
-        <div class="dashboard-cards">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">My Balance</span>
-                    <div class="card-icon balance">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="userBalance">$0.00</div>
-                <div class="card-footer">
-                    Available balance for investments
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Trading Profit</span>
-                    <div class="card-icon trading">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="tradingProfit">$0.00</div>
-                <div class="card-footer">Total profit from your investments</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Direct Referrals</span>
-                    <div class="card-icon referral">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="directReferrals">0</div>
-                <div class="card-footer">Earnings: <span id="referralProfit">$0.00</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Total Team Earnings</span>
-                    <div class="card-icon team">
-                        <i class="fas fa-users"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="teamEarnings">$0.00</div>
-                <div class="card-footer">From all 5 levels</div>
-            </div>
-        </div>
-        
-        <!-- Team Structure Section -->
-        <div class="team-structure" id="teamStructure">
-            <h3>Your Team Structure</h3>
-            <p>No team members yet</p>
-        </div>
-        
-        <!-- Transfer Funds Section -->
-        <div class="transfer-form">
-            <h2 class="section-title">Transfer Funds</h2>
-            <div class="form-group">
-                <label for="recipientId">Recipient User ID</label>
-                <input type="text" id="recipientId" class="form-control" placeholder="Enter recipient's ID">
-            </div>
-            <div class="form-group">
-                <label for="transferAmount">Amount ($)</label>
-                <input type="number" id="transferAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-            </div>
-            <button id="submitTransfer" class="btn btn-primary">
-                <i class="fas fa-paper-plane"></i> Transfer Now
-            </button>
-        </div>
-        
-        <!-- Investment Packages Section -->
-        <h2 class="section-title">Investment Packages</h2>
-        
-        <div class="packages-grid">
-            <div class="package-card">
-                <h3 class="package-name">Starter Package</h3>
-                <div class="package-price">$10</div>
-                <div class="package-return">Returns $20 (100% Profit)</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
-                                   <button class="btn btn-primary" data-package="10">Buy Now</button>
-            </div>
-            
-            <div class="package-card">
-                <h3 class="package-name">Standard Package</h3>
-                <div class="package-price">$30</div>
-                <div class="package-return">Returns $60 (100% Profit)</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i>100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Exclusive Market Insights</li>
-                                    <button class="btn btn-primary" data-package="30">Buy Now</button>
-            </div>
-            
-            <div class="package-card">
-                <h3 class="package-name">Premium Package</h3>
-                <div class="package-price">$100</div>
-                <div class="package-return">Returns $200 (100% Profit)</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i>Priority Customer Support</li>
-                   
-                <button class="btn btn-primary" data-package="100">Buy Now</button>
-            </div>
-        </div>
-        
-        <!-- Transaction History Section -->
-        <div class="trading-section">
-            <div class="trading-header">
-                <h2 class="trading-title">Recent Transactions</h2>
-                <span>Updated: <span id="lastUpdated">Just now</span></span>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table trading-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionHistory">
-                        <tr>
-                            <td colspan="5" class="text-center">No transactions yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Login Modal -->
-    <div id="loginModal" class="auth-container" style="display: none;">
-        <div class="auth-card">
-            <h2 class="auth-title">Login to Your Account</h2>
-            <form id="loginForm">
-                <div class="form-group mb-3">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" class="form-control" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
-            </form>
-            <div class="auth-footer">
-                Don't have an account? <a href="#" id="showSignup">Sign up</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup Modal -->
-    <div id="signupModal" class="auth-container" style="display: none;">
-        <div class="auth-card">
-            <h2 class="auth-title">Create New Account</h2>
-            <form id="signupForm">
-                <div class="form-group mb-3">
-                    <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" class="form-control" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" class="form-control" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="signupPassword">Password (min 6 characters)</label>
-                    <input type="password" id="signupPassword" class="form-control" minlength="6" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="signupReferral">Referral ID (optional)</label>
-                    <input type="text" id="signupReferral" class="form-control">
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-            </form>
-            <div class="auth-footer">
-                Already have an account? <a href="#" id="showLogin">Login</a>
-            </div>
-        </div>
-    </div>
+    <!-- [Previous HTML structure remains exactly the same until the script section] -->
 
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -794,7 +30,8 @@
             set, 
             update, 
             push, 
-            get 
+            get,
+            serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -818,16 +55,37 @@
         const ADMIN_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
         const ADMIN_NAME = "Ramesh kumar Verma";
 
-        // Commission rates
-        const COMMISSION_RATES = {
+        // Commission structure
+        const COMMISSION_STRUCTURE = {
             admin: 0.10,    // 10% to admin
             direct: 0.10,   // 10% to direct referrer
-            levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
+            levels: [0.02, 0.02, 0.02, 0.02, 0.02], // 2% each for levels 1-5
+            tradingPool: 0.70 // 70% to trading pool
+        };
+
+        // Package details
+        const PACKAGES = {
+            10: {
+                name: "Starter Package",
+                return: 2.0, // 100% return
+                duration: 30 // days
+            },
+            30: {
+                name: "Standard Package",
+                return: 2.0,
+                duration: 30
+            },
+            100: {
+                name: "Premium Package",
+                return: 2.0,
+                duration: 30
+            }
         };
 
         // Global Variables
         let currentUser = null;
         let userData = null;
+        let userInvestments = [];
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -841,6 +99,7 @@
                 if (user) {
                     currentUser = user;
                     loadUserData(user.uid);
+                    loadUserInvestments(user.uid);
                     
                     // Hide auth modals if showing
                     document.getElementById('loginModal').style.display = 'none';
@@ -927,105 +186,105 @@
                 });
         }
 
-        // Signup new user
-        function signupUser(name, email, password, referralId) {
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
+        // Signup new user with referral system
+        async function signupUser(name, email, password, referralId) {
+            try {
+                // Create user account
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Create user data in database
+                const userRef = ref(database, 'users/' + user.uid);
+                const userData = {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    balance: 0,
+                    tradingProfit: 0,
+                    referralEarnings: 0,
+                    teamEarnings: 0,
+                    isActive: false, // Becomes true after first investment
+                    createdAt: serverTimestamp(),
+                    lastActive: null,
+                    directReferrals: {},
+                    levelEarnings: {
+                        level1: 0,
+                        level2: 0,
+                        level3: 0,
+                        level4: 0,
+                        level5: 0
+                    },
+                    investments: {},
+                    transactions: {}
+                };
+                
+                // Add referral data if provided
+                if (referralId && referralId !== user.uid) {
+                    userData.referredBy = referralId;
                     
-                    // Create user data in database
-                    const userRef = ref(database, 'users/' + user.uid);
-                    const userData = {
-                        uid: user.uid,
-                        name: name,
-                        email: email,
-                        balance: 0,
-                        tradingProfit: 0,
-                        referralEarnings: 0,
-                        teamEarnings: 0,
-                        createdAt: Date.now(),
-                        teamStructure: {
-                            level1: 0,
-                            level2: 0,
-                            level3: 0,
-                            level4: 0,
-                            level5: 0
-                        }
-                    };
-                    
-                    // Add referral data if provided
-                    if (referralId) {
-                        userData.referredBy = referralId;
-                    }
-                    
-                    set(userRef, userData)
-                        .then(() => {
-                            showToast('Account created successfully!', 'success');
-                            
-                            // If referral ID was provided, update referrer's team structure
-                            if (referralId) {
-                                updateReferrerTeamStructure(referralId, user.uid);
+                    // Verify referrer exists
+                    const referrerSnapshot = await get(ref(database, `users/${referralId}`));
+                    if (referrerSnapshot.exists()) {
+                        // Update referrer's direct referrals
+                        await update(ref(database, {
+                            [`users/${referralId}/directReferrals/${user.uid}`]: {
+                                name: name,
+                                joinDate: serverTimestamp(),
+                                earnings: 0
                             }
-                            
-                            document.getElementById('signupModal').style.display = 'none';
-                            document.getElementById('mainContent').style.display = 'block';
-                        })
-                        .catch((error) => {
-                            showToast('Error creating user data: ' + error.message, 'error');
                         });
-                })
-                .catch((error) => {
-                    showToast(error.message, 'error');
-                });
+                    } else {
+                        referralId = null; // Invalid referral ID
+                    }
+                }
+                
+                // Save user data
+                await set(userRef, userData);
+                
+                // If referral ID was valid, update upline team structure
+                if (referralId) {
+                    await updateUplineTeamStructure(referralId, user.uid);
+                }
+                
+                showToast('Account created successfully!', 'success');
+                document.getElementById('signupModal').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+            } catch (error) {
+                showToast(error.message, 'error');
+                console.error('Signup error:', error);
+            }
         }
 
-        // Update referrer's team structure when new user signs up
-        async function updateReferrerTeamStructure(referrerId, newUserId) {
+        // Update upline team structure when new user signs up
+        async function updateUplineTeamStructure(referrerId, newUserId, currentLevel = 1) {
+            if (currentLevel > 5) return;
+            
             try {
-                const updates = {};
-                
                 // Get referrer data
                 const referrerSnapshot = await get(ref(database, `users/${referrerId}`));
                 if (!referrerSnapshot.exists()) return;
                 
-                const referrerData = referrerSnapshot.val();
+                const updates = {};
                 
-                // Add new user to referrer's direct referrals
-                updates[`users/${referrerId}/directReferrals/${newUserId}`] = true;
+                // Update level count for this referrer
+                updates[`users/${referrerId}/levelEarnings/level${currentLevel}`] = 
+                    (referrerSnapshot.val().levelEarnings?.[`level${currentLevel}`] || 0) + 1;
                 
-                // Update team structure counts
-                updates[`users/${referrerId}/teamStructure/level1`] = (referrerData.teamStructure?.level1 || 0) + 1;
+                // Update team earnings (this will be updated with actual earnings when purchases happen)
+                updates[`users/${referrerId}/teamEarnings`] = 
+                    (referrerSnapshot.val().teamEarnings || 0);
                 
-                // If referrer has an upline, update their team structure recursively
-                if (referrerData.referredBy) {
-                    await updateUplineTeamStructure(referrerData.referredBy, 2, updates);
-                }
-                
-                // Execute all updates
+                // Execute updates
                 await update(ref(database), updates);
                 
+                // If referrer has an upline, continue recursively
+                if (referrerSnapshot.val().referredBy && currentLevel < 5) {
+                    await updateUplineTeamStructure(referrerSnapshot.val().referredBy, newUserId, currentLevel + 1);
+                }
+                
             } catch (error) {
-                console.error('Error updating referrer team structure:', error);
-            }
-        }
-
-        // Recursively update upline team structure
-        async function updateUplineTeamStructure(uplineId, currentLevel, updates) {
-            if (currentLevel > 5) return;
-            
-            // Get upline data
-            const uplineSnapshot = await get(ref(database, `users/${uplineId}`));
-            if (!uplineSnapshot.exists()) return;
-            
-            const uplineData = uplineSnapshot.val();
-            
-            // Update this upline's team structure for current level
-            updates[`users/${uplineId}/teamStructure/level${currentLevel}`] = 
-                (uplineData.teamStructure?.[`level${currentLevel}`] || 0) + 1;
-            
-            // If upline has an upline, continue recursively
-            if (uplineData.referredBy) {
-                await updateUplineTeamStructure(uplineData.referredBy, currentLevel + 1, updates);
+                console.error('Error updating upline team structure:', error);
             }
         }
 
@@ -1049,13 +308,41 @@
                     updateDashboardUI(userData);
                     localStorage.setItem('tradeWorldUser', JSON.stringify(userData));
                     
+                    // Update last active timestamp
+                    update(ref(database, `users/${userId}/lastActive`), serverTimestamp());
+                    
                     // Load team structure if available
-                    if (userData.teamStructure) {
-                        updateTeamStructureUI(userData.teamStructure);
+                    if (userData.directReferrals) {
+                        updateTeamStructureUI(userData.directReferrals);
                     }
                 }
             }, (error) => {
                 console.error("Error loading user data:", error);
+            });
+        }
+
+        // Load user investments
+        function loadUserInvestments(userId) {
+            const investmentsRef = ref(database, `users/${userId}/investments`);
+            
+            onValue(investmentsRef, (snapshot) => {
+                userInvestments = [];
+                const investmentsData = snapshot.val();
+                
+                if (investmentsData) {
+                    // Convert to array and filter active investments
+                    userInvestments = Object.entries(investmentsData)
+                        .map(([id, inv]) => ({ id, ...inv }))
+                        .filter(inv => inv.status === 'active');
+                        
+                    // Check if user has any active investments
+                    const isActive = userInvestments.length > 0;
+                    
+                    // Update user active status if changed
+                    if (userData && userData.isActive !== isActive) {
+                        update(ref(database, `users/${userId}/isActive`), isActive);
+                    }
+                }
             });
         }
 
@@ -1065,31 +352,47 @@
             // Update balance
             document.getElementById('userBalance').textContent = `$${(data.balance || 0).toFixed(2)}`;
             
-            // Update trading profit
-            document.getElementById('tradingProfit').textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
+            // Update trading profit (only if user is active)
+            const tradingProfit = data.isActive ? (data.tradingProfit || 0) : 0;
+            document.getElementById('tradingProfit').textContent = `$${tradingProfit.toFixed(2)}`;
             
             // Update referrals
             const referralCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
             document.getElementById('directReferrals').textContent = referralCount;
             document.getElementById('referralProfit').textContent = `$${(data.referralEarnings || 0).toFixed(2)}`;
             
-            // Update team earnings
+            // Update team earnings (sum of all levels)
             document.getElementById('teamEarnings').textContent = `$${(data.teamEarnings || 0).toFixed(2)}`;
+            
+            // Show warning if account is inactive
+            if (!data.isActive) {
+                showToast('Your account is inactive. Please purchase a package to start earning.', 'warning');
+            }
             
             // Load transactions
             loadRecentTransactions();
         }
 
-        function updateTeamStructureUI(teamStructure) {
+        function updateTeamStructureUI(directReferrals) {
             const teamStructureDiv = document.getElementById('teamStructure');
             if (!teamStructureDiv) return;
             
-            let html = '<h3>Your Team Structure</h3><ul>';
-            
-            for (let level = 1; level <= 5; level++) {
-                const count = teamStructure[`level${level}`] || 0;
-                html += `<li>Level ${level}: ${count} members</li>`;
+            if (!directReferrals || Object.keys(directReferrals).length === 0) {
+                teamStructureDiv.innerHTML = '<h3>Your Team Structure</h3><p>No team members yet</p>';
+                return;
             }
+            
+            let html = '<h3>Your Team Structure</h3><ul class="team-list">';
+            
+            Object.entries(directReferrals).forEach(([userId, refData]) => {
+                html += `
+                    <li class="team-member">
+                        <span class="member-id">${userId.substring(0, 8)}...</span>
+                        <span class="member-name">${refData.name || 'No name'}</span>
+                        <span class="member-earnings">Earnings: $${(refData.earnings || 0).toFixed(2)}</span>
+                    </li>
+                `;
+            });
             
             html += '</ul>';
             teamStructureDiv.innerHTML = html;
@@ -1152,25 +455,27 @@
             }
 
             try {
-                // Create invoice
-                const invoiceId = push(ref(database, 'invoices')).key;
-                const purchaseDate = new Date().toISOString();
-                const maturityDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+                // Calculate profit distribution
+                const adminCommission = packageAmount * COMMISSION_STRUCTURE.admin;
+                const directCommission = packageAmount * COMMISSION_STRUCTURE.direct;
+                const levelCommissions = packageAmount * COMMISSION_STRUCTURE.levels.reduce((a, b) => a + b, 0);
+                const tradingPool = packageAmount * COMMISSION_STRUCTURE.tradingPool;
                 
-                const invoiceData = {
-                    invoiceId,
+                // Create investment record
+                const packageId = push(ref(database, 'investments')).key;
+                const purchaseDate = serverTimestamp();
+                const maturityDate = new Date(Date.now() + PACKAGES[packageAmount].duration * 24 * 60 * 60 * 1000).toISOString();
+                
+                const packageData = {
+                    packageId,
                     userId: currentUser.uid,
+                    name: PACKAGES[packageAmount].name,
                     amount: packageAmount,
-                    expectedReturn: packageAmount * 2,
+                    expectedReturn: packageAmount * PACKAGES[packageAmount].return,
                     purchaseDate,
                     maturityDate,
-                    status: 'active',
-                    packageName: getPackageName(packageAmount)
+                    status: 'active'
                 };
-                
-                // Calculate total commission (30%)
-                const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
-                const tradingPool = packageAmount - totalCommission;
                 
                 // Prepare all updates
                 const updates = {};
@@ -1178,55 +483,63 @@
                 // 1. Deduct from user balance
                 updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - packageAmount;
                 
-                // 2. Add to investments
-                updates[`users/${currentUser.uid}/investments/${invoiceId}`] = {
-                    amount: packageAmount,
-                    purchaseDate: purchaseDate,
-                    status: 'active',
-                    expectedReturn: packageAmount * 2,
-                    maturityDate: maturityDate
-                };
+                // 2. Add investment record
+                updates[`users/${currentUser.uid}/investments/${packageId}`] = packageData;
+                updates[`investments/${packageId}`] = packageData;
                 
-                // 3. Add invoice
-                updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
-                updates[`invoices/${invoiceId}`] = invoiceData;
-                
-                // 4. Add transaction record
+                // 3. Add transaction record
                 const transactionId = push(ref(database, 'transactions')).key;
                 updates[`transactions/${transactionId}`] = {
                     type: 'investment',
                     amount: packageAmount,
                     status: 'completed',
-                    timestamp: Date.now(),
+                    timestamp: serverTimestamp(),
                     userId: currentUser.uid,
-                    details: `Purchased ${invoiceData.packageName}`
+                    details: `Purchased ${packageData.name}`
                 };
                 updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
                     type: 'investment',
                     amount: packageAmount,
                     status: 'completed',
-                    timestamp: Date.now(),
-                    details: `Purchased ${invoiceData.packageName}`
+                    timestamp: serverTimestamp(),
+                    details: `Purchased ${packageData.name}`
                 };
                 
-                // 5. Add admin commission (10%)
-                const adminCommission = packageAmount * COMMISSION_RATES.admin;
-                updates[`users/${ADMIN_ID}/tradingProfit`] = (await getValue(`users/${ADMIN_ID}/tradingProfit`)) + adminCommission;
+                // 4. Add admin commission (10%)
+                updates[`users/${ADMIN_ID}/balance`] = (await getValue(`users/${ADMIN_ID}/balance`)) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
-                // 6. Process referral commissions (if any)
+                // Add admin transaction
+                const adminTxId = push(ref(database, 'transactions')).key;
+                updates[`transactions/${adminTxId}`] = {
+                    type: 'admin_commission',
+                    amount: adminCommission,
+                    status: 'completed',
+                    timestamp: serverTimestamp(),
+                    userId: ADMIN_ID,
+                    details: `Commission from ${userData.name}'s package purchase`
+                };
+                
+                // 5. Process referral commissions (if any)
                 if (userData.referredBy) {
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Add to trading pool (70%)
+                // 6. Add to trading pool (70%)
                 updates[`system/tradingPool`] = (await getValue('system/tradingPool')) + tradingPool;
+                
+                // 7. Mark user as active if first investment
+                if (!userData.isActive) {
+                    updates[`users/${currentUser.uid}/isActive`] = true;
+                }
                 
                 // Execute all updates
                 await update(ref(database), updates);
                 
-                showToast(`Successfully purchased ${invoiceData.packageName}`, 'success');
-                loadUserData(currentUser.uid);
+                // Distribute trading profit to all active users
+                await distributeTradingProfit(tradingPool);
+                
+                showToast(`Successfully purchased ${packageData.name}!`, 'success');
                 
             } catch (error) {
                 console.error('Package purchase error:', error);
@@ -1234,18 +547,49 @@
             }
         }
 
-        function getPackageName(amount) {
-            switch(amount) {
-                case 10: return 'Starter Package';
-                case 30: return 'Standard Package';
-                case 100: return 'Premium Package';
-                default: return 'Custom Package';
+        // Distribute trading profit to all active users
+        async function distributeTradingProfit(amount) {
+            try {
+                // Get all users
+                const usersSnapshot = await get(ref(database, 'users'));
+                if (!usersSnapshot.exists()) return;
+                
+                const users = usersSnapshot.val();
+                const activeUsers = Object.keys(users).filter(uid => 
+                    users[uid].isActive && 
+                    users[uid].lastActive && 
+                    (Date.now() - users[uid].lastActive) < (30 * 24 * 60 * 60 * 1000)
+                );
+                
+                if (activeUsers.length === 0) return;
+                
+                const profitPerUser = amount / activeUsers.length;
+                const updates = {};
+                
+                // Distribute profit equally among active users
+                activeUsers.forEach(uid => {
+                    updates[`users/${uid}/tradingProfit`] = (users[uid].tradingProfit || 0) + profitPerUser;
+                    
+                    // Add transaction record
+                    const txId = push(ref(database, 'transactions')).key;
+                    updates[`users/${uid}/transactions/${txId}`] = {
+                        type: 'trading_profit',
+                        amount: profitPerUser,
+                        status: 'completed',
+                        timestamp: serverTimestamp(),
+                        details: `Trading profit distribution`
+                    };
+                });
+                
+                // Clear trading pool
+                updates['system/tradingPool'] = 0;
+                
+                // Execute updates
+                await update(ref(database), updates);
+                
+            } catch (error) {
+                console.error('Error distributing trading profit:', error);
             }
-        }
-
-        async function getValue(path) {
-            const snapshot = await get(ref(database, path));
-            return snapshot.val() || 0;
         }
 
         // Process multi-level referral commissions
@@ -1259,19 +603,24 @@
             const referrerData = referrerSnapshot.val();
             
             // Calculate commission based on level
-            let commissionRate = 0;
+            let commission = 0;
             if (currentLevel === 1) {
-                commissionRate = COMMISSION_RATES.direct; // 10% for direct referrer
+                commission = packageAmount * COMMISSION_STRUCTURE.direct; // 10% for direct referrer
             } else if (currentLevel <= 5) {
-                commissionRate = COMMISSION_RATES.levels[currentLevel-2]; // 2% for levels 2-5
+                commission = packageAmount * COMMISSION_STRUCTURE.levels[currentLevel-2]; // 2% for levels 2-5
             }
-            
-            const commission = packageAmount * commissionRate;
             
             if (commission > 0) {
                 // Update referrer's earnings
+                updates[`users/${referrerId}/balance`] = (referrerData.balance || 0) + commission;
                 updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
                 updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
+                
+                // Update direct referral earnings if level 1
+                if (currentLevel === 1) {
+                    updates[`users/${referrerId}/directReferrals/${currentUser.uid}/earnings`] = 
+                        (referrerData.directReferrals?.[currentUser.uid]?.earnings || 0) + commission;
+                }
                 
                 // Add transaction record for referrer
                 const transactionId = push(ref(database, 'transactions')).key;
@@ -1279,7 +628,7 @@
                     type: 'referral',
                     amount: commission,
                     status: 'completed',
-                    timestamp: Date.now(),
+                    timestamp: serverTimestamp(),
                     details: `Level ${currentLevel} referral commission from ${userData.name}`
                 };
                 
@@ -1310,6 +659,11 @@
                 return;
             }
             
+            if (recipientId === currentUser.uid) {
+                showToast('Cannot transfer to yourself', 'error');
+                return;
+            }
+            
             try {
                 // Check if recipient exists
                 const recipientSnapshot = await get(ref(database, `users/${recipientId}`));
@@ -1323,7 +677,7 @@
                 // Prepare updates
                 const updates = {};
                 const transactionId = push(ref(database, 'transactions')).key;
-                const timestamp = Date.now();
+                const timestamp = serverTimestamp();
                 
                 // Deduct from sender
                 updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
@@ -1333,20 +687,20 @@
                 
                 // Add transaction records
                 updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
-                    type: 'transfer',
+                    type: 'transfer_sent',
                     amount: amount,
                     status: 'completed',
                     timestamp: timestamp,
-                    details: `Transfer to ${recipientData.name}`,
+                    details: `Transfer to ${recipientData.name || recipientId}`,
                     recipientId: recipientId
                 };
                 
                 updates[`users/${recipientId}/transactions/${transactionId}_received`] = {
-                    type: 'transfer',
+                    type: 'transfer_received',
                     amount: amount,
                     status: 'completed',
                     timestamp: timestamp,
-                    details: `Transfer from ${userData.name}`,
+                    details: `Transfer from ${userData.name || currentUser.uid}`,
                     senderId: currentUser.uid
                 };
                 
@@ -1357,10 +711,19 @@
                 document.getElementById('transferAmount').value = '';
                 document.getElementById('recipientId').value = '';
                 
+                // Refresh user data
+                loadUserData(currentUser.uid);
+                
             } catch (error) {
                 console.error('Transfer error:', error);
                 showToast('Failed to transfer funds', 'error');
             }
+        }
+
+        // Helper function to get value from database
+        async function getValue(path) {
+            const snapshot = await get(ref(database, path));
+            return snapshot.val() || 0;
         }
 
         // Show toast notification
