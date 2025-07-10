@@ -1,23 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- [Previous head content remains exactly the same] -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade World - My Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .header-balance {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .profile-container {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .profile-sidebar {
+            width: 300px;
+            background: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-email {
+            color: var(--gray-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .referral-box {
+            background-color: var(--light-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .referral-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .referral-input {
+            display: flex;
+            margin-top: 1rem;
+        }
+
+        .referral-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 0.9rem;
+        }
+
+        .referral-input button {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border: none;
+            padding: 0 1rem;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .profile-main {
+            flex: 1;
+            background: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-control:disabled {
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .edit-btn {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border: none;
+            padding: 0 1rem;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copyable-field {
+            position: relative;
+        }
+        
+        .copyable-field input {
+            padding-right: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                flex-direction: column;
+            }
+            
+            .profile-sidebar {
+                width: 100%;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .profile-sidebar,
+            .profile-main {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- [Previous header and main content structure remains the same] -->
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="header-balance">
+            Balance: $<span id="headerBalance">0.00</span>
+        </div>
+    </header>
 
-    <!-- Firebase and App Scripts -->
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="profile-container">
+            <!-- Profile Sidebar -->
+            <div class="profile-sidebar">
+                <div class="profile-avatar" id="userAvatar">TW</div>
+                <h2 class="profile-name" id="profileName">Loading...</h2>
+                <p class="profile-email" id="profileEmail">Loading...</p>
+                
+                <div class="referral-box">
+                    <h3 class="referral-title">Your Referral Link</h3>
+                    <div class="referral-input">
+                        <input type="text" id="referralLink" readonly>
+                        <button id="copyReferralBtn"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Main Content -->
+            <div class="profile-main">
+                <h2 class="section-title">Profile Information</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="fullName" class="form-control" disabled>
+                    <button class="edit-btn" data-field="name">Edit</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="userEmail" class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" id="mobileNumber" class="form-control" disabled>
+                    <button class="edit-btn" data-field="phoneNumber">Edit</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">User ID</label>
+                    <div class="copyable-field">
+                        <input type="text" id="userId" class="form-control" disabled>
+                        <button class="copy-btn" id="copyUserIdBtn"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Referral Code</label>
+                    <div class="copyable-field">
+                        <input type="text" id="profileReferralCode" class="form-control" disabled>
+                        <button class="copy-btn" id="copyReferralCodeBtn"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Current Balance</label>
+                    <input type="text" id="profileBalance" class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Account Created</label>
+                    <input type="text" id="profileJoinDate" class="form-control" disabled>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Firebase configuration (same as app.js)
+        // Firebase configuration (must match your app.js)
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            storageBucket: "mywebsite-600d3.appspot.com",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
@@ -27,32 +356,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-
-        // Global variables
-        let currentUser = null;
-        let userData = null;
-        let editingField = '';
-
-        // Show toast notification
-        function showToast(message, type) {
-            const toastContainer = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${message}</span>
-                <button class="toast-close">&times;</button>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
-            
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
-            });
-        }
 
         // Format date
         function formatDate(timestamp) {
@@ -67,40 +370,36 @@
             
             userRef.on('value', (snapshot) => {
                 if (snapshot.exists()) {
-                    userData = snapshot.val();
-                    updateProfileUI(userId);
+                    const userData = snapshot.val();
+                    updateProfileUI(userId, userData);
                 } else {
-                    // Initialize user data if not exists (should already exist from auth.js)
-                    initializeUserData(userId);
+                    console.log("No user data found");
                 }
             }, (error) => {
-                showToast('Error loading user data', 'error');
                 console.error("Database error:", error);
             });
         }
 
         // Update profile UI with user data
-        function updateProfileUI(userId) {
-            if (!userData) return;
-
+        function updateProfileUI(userId, userData) {
             // Basic info
             document.getElementById('fullName').value = userData.name || 'No Name';
-            document.getElementById('userEmail').value = currentUser.email || '';
+            document.getElementById('userEmail').value = userData.email || '';
             document.getElementById('mobileNumber').value = userData.phoneNumber || '';
             document.getElementById('userId').value = userId;
             document.getElementById('profileName').textContent = userData.name || 'User';
-            document.getElementById('profileEmail').textContent = currentUser.email || '';
+            document.getElementById('profileEmail').textContent = userData.email || '';
             document.getElementById('profileBalance').value = `$${(userData.balance || 0).toFixed(2)}`;
             document.getElementById('headerBalance').textContent = (userData.balance || 0).toFixed(2);
             
             // Set account creation date
-            document.getElementById('profileJoinDate').value = formatDate(userData.createdAt || currentUser.metadata.creationTime);
+            document.getElementById('profileJoinDate').value = formatDate(userData.createdAt);
             
             // Set referral code (using user's UID if no referralId exists)
-            const referralCode = userData.referralId || userId;
+            const referralCode = userId; // Using UID as referral code
             document.getElementById('profileReferralCode').value = referralCode;
             
-            // Set referral link (using your domain)
+            // Set referral link
             const referralUrl = `${window.location.origin}/signup.html?ref=${referralCode}`;
             document.getElementById('referralLink').value = referralUrl;
             
@@ -111,163 +410,40 @@
             }
         }
 
-        // Update profile field in Firebase
-        async function updateProfileField(field, value) {
-            if (!field || !value) {
-                showToast('Please enter a valid value', 'error');
-                return;
-            }
-            
-            // Show loading state
-            document.getElementById('saveEditText').style.display = 'none';
-            document.getElementById('saveEditSpinner').style.display = 'inline-block';
-            document.getElementById('saveEditBtn').disabled = true;
-            
-            try {
-                const updates = {};
-                
-                if (field === 'mobileNumber') {
-                    // Basic phone validation
-                    if (!/^[\d\s\+\-\(\)]{8,15}$/.test(value)) {
-                        throw new Error('Please enter a valid mobile number');
-                    }
-                    updates['phoneNumber'] = value;
-                } 
-                else if (field === 'fullName') {
-                    updates['name'] = value;
-                }
-                
-                // Update in Firebase
-                await database.ref('users/' + currentUser.uid).update(updates);
-                
-                showToast('Profile updated successfully!', 'success');
-                document.getElementById('editModal').classList.remove('open');
-                
-                // Update UI immediately
-                document.getElementById(field).value = value;
-                if (field === 'fullName') {
-                    document.getElementById('profileName').textContent = value;
-                    const initials = value.split(' ').map(n => n[0]).join('').toUpperCase();
-                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
-                }
-            } catch (error) {
-                console.error('Update error:', error);
-                showToast('Error updating profile: ' + error.message, 'error');
-            } finally {
-                document.getElementById('saveEditText').style.display = 'inline-block';
-                document.getElementById('saveEditSpinner').style.display = 'none';
-                document.getElementById('saveEditBtn').disabled = false;
-            }
-        }
-
-        // Change password function
-        async function changePassword() {
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                showToast('Please fill in all password fields', 'error');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                showToast('New passwords do not match', 'error');
-                return;
-            }
-            
-            if (newPassword.length < 8) {
-                showToast('Password must be at least 8 characters', 'error');
-                return;
-            }
-            
-            // Show loading state
-            document.getElementById('changePassText').style.display = 'none';
-            document.getElementById('changePassSpinner').style.display = 'inline-block';
-            document.getElementById('changePasswordBtn').disabled = true;
-            
-            try {
-                // Create credentials with the user's email
-                const credential = firebase.auth.EmailAuthProvider.credential(
-                    currentUser.email, 
-                    currentPassword
-                );
-                
-                // Reauthenticate and update password
-                await currentUser.reauthenticateWithCredential(credential);
-                await currentUser.updatePassword(newPassword);
-                
-                showToast('Password changed successfully!', 'success');
-                // Clear password fields
-                document.getElementById('currentPassword').value = '';
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-            } catch (error) {
-                console.error('Password change error:', error);
-                let errorMessage = 'Password change failed.';
-                if (error.code === 'auth/wrong-password') {
-                    errorMessage = 'Current password is incorrect';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'New password is too weak';
-                }
-                showToast(errorMessage, 'error');
-            } finally {
-                // Reset button state
-                document.getElementById('changePassText').style.display = 'inline-block';
-                document.getElementById('changePassSpinner').style.display = 'none';
-                document.getElementById('changePasswordBtn').disabled = false;
-            }
-        }
-
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize auth state
             auth.onAuthStateChanged((user) => {
-                currentUser = user;
-                if (!user) {
-                    window.location.href = 'login.html';
-                } else {
+                if (user) {
+                    // User is signed in
                     loadUserData(user.uid);
-                }
-            });
-            
-            // Edit buttons
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const field = this.getAttribute('data-field');
-                    const currentValue = document.getElementById(field).value;
                     
-                    editingField = field;
-                    document.getElementById('modalTitle').textContent = `Edit ${field === 'fullName' ? 'Full Name' : 'Mobile Number'}`;
-                    document.getElementById('modalFieldLabel').textContent = field === 'fullName' ? 'Full Name' : 'Mobile Number';
-                    document.getElementById('modalFieldInput').value = currentValue;
-                    document.getElementById('modalFieldInput').focus();
+                    // Copy buttons functionality
+                    document.getElementById('copyReferralBtn').addEventListener('click', function() {
+                        const referralInput = document.getElementById('referralLink');
+                        referralInput.select();
+                        document.execCommand('copy');
+                        alert('Referral link copied to clipboard!');
+                    });
                     
-                    document.getElementById('editModal').classList.add('open');
-                });
-            });
-            
-            // Save edit button
-            document.getElementById('saveEditBtn').addEventListener('click', function() {
-                const newValue = document.getElementById('modalFieldInput').value.trim();
-                if (newValue) {
-                    updateProfileField(editingField, newValue);
+                    document.getElementById('copyUserIdBtn').addEventListener('click', function() {
+                        const userIdInput = document.getElementById('userId');
+                        userIdInput.select();
+                        document.execCommand('copy');
+                        alert('User ID copied to clipboard!');
+                    });
+                    
+                    document.getElementById('copyReferralCodeBtn').addEventListener('click', function() {
+                        const referralCodeInput = document.getElementById('profileReferralCode');
+                        referralCodeInput.select();
+                        document.execCommand('copy');
+                        alert('Referral code copied to clipboard!');
+                    });
                 } else {
-                    showToast('Please enter a valid value', 'error');
+                    // No user is signed in
+                    window.location.href = 'login.html';
                 }
             });
-            
-            // [Rest of the event listeners remain the same as before]
-            
-            // Copy referral link button
-            document.getElementById('copyReferralBtn').addEventListener('click', function() {
-                const referralInput = document.getElementById('referralLink');
-                referralInput.select();
-                document.execCommand('copy');
-                showToast('Referral link copied to clipboard!', 'success');
-            });
-            
-            // [Rest of the initialization code remains the same]
         });
     </script>
 </body>
