@@ -11,7 +11,7 @@ const firebaseConfig = {
   measurementId: "G-GQ9J9QH42J"
 };
 
-const ADMIN_USER_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
+const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
