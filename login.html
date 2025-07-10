@@ -7,19 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Base Styles */
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --danger-color: #f72585;
-            --warning-color: #f8961e;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --gray-color: #6c757d;
-            --white-color: #ffffff;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -28,254 +15,317 @@
         }
 
         body {
-            background-color: #f5f7fa;
-            color: var(--dark-color);
-            line-height: 1.6;
+            background-color: #f5f5f5;
+            color: #333;
         }
 
-        /* Header Styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
         header {
-            background-color: var(--white-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+            padding: 20px 0;
         }
 
         .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
 
-        .logo-icon {
-            font-size: 1.5rem;
-            color: var(--primary-color);
+        .logo i {
+            color: #3498db;
         }
 
-        .logo-text {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--dark-color);
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
         }
 
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--dark-color);
-            cursor: pointer;
-            display: none;
-        }
-
-        /* Button Styles */
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 10px 20px;
             border-radius: 5px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 2px solid transparent;
             text-decoration: none;
             display: inline-block;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
         .btn-outline {
-            background-color: transparent;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+            border: 1px solid #3498db;
+            color: #3498db;
+            background: transparent;
         }
 
         .btn-outline:hover {
-            background-color: var(--primary-color);
-            color: var(--white-color);
+            background: #3498db;
+            color: white;
         }
 
-        .btn-block {
-            display: block;
-            width: 100%;
+        .btn-primary {
+            background: #3498db;
+            color: white;
+            border: none;
         }
 
-        /* Auth Page Styles */
-        .auth-page {
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        #menuToggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #2c3e50;
+        }
+
+        .login-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 2rem;
+            min-height: calc(100vh - 100px);
+            padding: 40px 0;
         }
 
-        .form-container {
-            background-color: var(--white-color);
+        .login-form {
+            background: white;
+            padding: 40px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
         }
 
-        .page-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
+        .login-form h2 {
+            margin-bottom: 20px;
             text-align: center;
+            color: #2c3e50;
         }
 
-        /* Form Styles */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
 
-        .form-label {
+        .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 8px;
             font-weight: 500;
-            color: var(--dark-color);
         }
 
-        .form-control {
+        .form-group input {
             width: 100%;
-            padding: 0.8rem 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 12px 15px;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
+            font-size: 16px;
+            transition: border 0.3s ease;
         }
 
-        .form-control:focus {
+        .form-group input:focus {
+            border-color: #3498db;
             outline: none;
-            border-color: var(--primary-color);
         }
 
-        .text-center {
+        .password-field {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        #loginBtn {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .signup-link {
             text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
         }
 
-        /* Toast Notifications Container */
-        .toast-container {
+        .signup-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        #toastContainer {
             position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
         }
 
         .toast {
-            padding: 1rem 1.5rem;
+            padding: 15px 20px;
+            margin-bottom: 10px;
             border-radius: 5px;
-            color: var(--white-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: slideIn 0.3s ease forwards;
+            color: white;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 1rem;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         .toast.success {
-            background-color: var(--success-color);
+            background: #27ae60;
         }
 
         .toast.error {
-            background-color: var(--danger-color);
+            background: #e74c3c;
         }
 
         .toast-close {
-            background: none;
+            background: transparent;
             border: none;
-            color: var(--white-color);
+            color: white;
+            font-size: 18px;
             cursor: pointer;
-            font-size: 1rem;
+            margin-left: 15px;
         }
 
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Responsive Styles */
         @media (max-width: 768px) {
-            .auth-page {
-                padding: 1rem;
+            .auth-buttons {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                right: 20px;
+                background: white;
+                padding: 15px;
+                border-radius: 5px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                width: 200px;
             }
-            
-            .form-container {
-                padding: 1.5rem;
+
+            .auth-buttons.show {
+                display: flex;
             }
-            
-            .menu-toggle {
+
+            #menuToggle {
                 display: block;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <i class="fas fa-chart-line logo-icon"></i>
-            <span class="logo-text">Trade World</span>
-        </div>
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    </header>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>Trade World</span>
+            </a>
+            <div class="auth-buttons" id="authButtons">
+                <a href="login.html" class="btn btn-primary">Login</a>
+                <a href="signup.html" class="btn btn-outline">Sign Up</a>
+            </div>
+            <button id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main-content auth-page">
-        <div class="form-container">
-            <h1 class="page-title">Login to Your Account</h1>
-            
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email" required>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
-            </div>
-            
-            <button class="btn btn-primary btn-block" id="loginBtn">Login</button>
-            
-            <div class="form-group text-center" style="margin-top: 1.5rem;">
-                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+    <div class="login-container">
+        <div class="login-form">
+            <h2>Login to Your Account</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email address" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <div class="password-field">
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                        <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                    </div>
+                </div>
+                <div class="forgot-password">
+                    <a href="forgot-password.html">Forgot Password?</a>
+                </div>
+                <button type="button" class="btn btn-primary" id="loginBtn">
+                    <span id="loginBtnText">Login</span>
+                    <div class="spinner" id="loginBtnSpinner"></div>
+                </button>
+            </form>
+            <div class="signup-link">
+                Don't have an account? <a href="signup.html">Sign up here</a>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div id="toastContainer"></div>
 
     <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script>
-        // Firebase Config
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -286,83 +336,11 @@
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
         };
-        
+
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        
-        // Initialize the login page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up login button
-            document.getElementById('loginBtn').addEventListener('click', loginUser);
-            
-            // Also allow login on Enter key press
-            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    loginUser();
-                }
-            });
-        });
-        
-        // Login user function
-        function loginUser() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            // Validate inputs
-            if (!email || !password) {
-                showToast('Please fill in all fields', 'error');
-                return;
-            }
-            
-            // Show loading state
-            const loginBtn = document.getElementById('loginBtn');
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-            
-            // Sign in with email and password
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in successfully
-                    showToast('Login successful! Redirecting...', 'success');
-                    
-                    // Redirect to dashboard after short delay
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1500);
-                })
-                .catch((error) => {
-                    // Handle errors
-                    let errorMessage = 'Login failed';
-                    
-                    switch(error.code) {
-                        case 'auth/user-not-found':
-                            errorMessage = 'No account found with this email';
-                            break;
-                        case 'auth/wrong-password':
-                            errorMessage = 'Incorrect password';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage = 'Invalid email address';
-                            break;
-                        case 'auth/user-disabled':
-                            errorMessage = 'This account has been disabled';
-                            break;
-                        case 'auth/too-many-requests':
-                            errorMessage = 'Too many attempts. Try again later';
-                            break;
-                        default:
-                            errorMessage = error.message;
-                    }
-                    
-                    showToast(errorMessage, 'error');
-                    
-                    // Reset login button
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Login';
-                });
-        }
-        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
         // Show toast notification
         function showToast(message, type) {
             const toastContainer = document.getElementById('toastContainer');
@@ -385,6 +363,94 @@
                 toast.remove();
             });
         }
+
+        // Toggle password visibility
+        function setupPasswordToggle() {
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('loginPassword');
+            
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+
+        // Login user function
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            // Validation
+            if (!email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('loginBtnText').style.display = 'none';
+            document.getElementById('loginBtnSpinner').style.display = 'inline-block';
+            document.getElementById('loginBtn').disabled = true;
+            
+            try {
+                // Sign in with email and password
+                await signInWithEmailAndPassword(auth, email, password);
+                
+                showToast('Login successful! Redirecting...', 'success');
+                
+                // Redirect to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                let errorMessage = 'Login failed. Please try again.';
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'No account found with this email';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Incorrect password';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Too many attempts. Try again later';
+                }
+                
+                showToast(errorMessage, 'error');
+            } finally {
+                // Reset button state
+                document.getElementById('loginBtnText').style.display = 'inline-block';
+                document.getElementById('loginBtnSpinner').style.display = 'none';
+                document.getElementById('loginBtn').disabled = false;
+            }
+        }
+
+        // Initialize the login page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up password toggle
+            setupPasswordToggle();
+            
+            // Set up login button
+            document.getElementById('loginBtn').addEventListener('click', loginUser);
+            
+            // Allow login on Enter key press
+            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loginUser();
+                }
+            });
+            
+            // Set up menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                const authButtons = document.getElementById('authButtons');
+                authButtons.classList.toggle('show');
+            });
+            
+            // Prevent form submission on enter
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+            });
+        });
     </script>
 </body>
 </html>
