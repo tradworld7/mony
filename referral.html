@@ -133,6 +133,33 @@
             color: var(--primary-color);
         }
 
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 1rem;
+            color: var(--light-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
         /* Form Container Styles */
         .form-container {
             background-color: var(--card-bg);
@@ -302,7 +329,7 @@
         }
 
         /* Status Badges */
-        .status-active, .status-completed {
+        .status-active {
             color: var(--success-color);
             font-weight: 500;
         }
@@ -312,7 +339,7 @@
             font-weight: 500;
         }
 
-        .status-cancelled {
+        .status-inactive {
             color: var(--error-color);
             font-weight: 500;
         }
@@ -322,6 +349,31 @@
             text-align: center;
             padding: 2rem;
             color: var(--light-text);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 1.5rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            transition: width 0.3s ease;
         }
 
         /* Flex Helpers */
@@ -369,6 +421,26 @@
     <main class="main-content" id="mainContent">
         <h1 class="page-title">Referral Program</h1>
         
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Referrals</h3>
+                <div class="value" id="totalReferrals">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Referrals</h3>
+                <div class="value" id="activeReferrals">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Earnings</h3>
+                <div class="value" id="totalEarnings">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Available for Withdrawal</h3>
+                <div class="value" id="availableEarnings">$0.00</div>
+            </div>
+        </div>
+        
         <div class="form-container">
             <div class="form-group">
                 <label class="form-label">Your Referral Link</label>
@@ -405,6 +477,16 @@
                     <li><strong>Level 5:</strong> 2% commission</li>
                 </ul>
             </div>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Referral Progress</span>
+                    <span id="referralProgressText">0/10 referrals</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="referralProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
         
         <h2 class="page-title" style="margin-top: 2rem;">Your Referrals</h2>
@@ -418,11 +500,12 @@
                         <th>Status</th>
                         <th>Total Investment</th>
                         <th>Your Earnings</th>
+                        <th>Level</th>
                     </tr>
                 </thead>
                 <tbody id="referralList">
                     <tr>
-                        <td colspan="5" class="empty-state">Loading referrals...</td>
+                        <td colspan="6" class="empty-state">Loading referrals...</td>
                     </tr>
                 </tbody>
             </table>
@@ -433,10 +516,22 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            onValue,
+            query,
+            orderByChild,
+            equalTo
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
@@ -450,9 +545,9 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
 
         // Global variables
         let currentUser = null;
@@ -487,29 +582,66 @@
         function formatDate(timestamp) {
             if (!timestamp) return 'N/A';
             const date = new Date(timestamp);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            return date.toLocaleDateString();
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount || 0);
         }
 
         // Logout user
-        function logoutUser() {
-            auth.signOut().then(() => {
+        async function logoutUser() {
+            try {
+                await signOut(auth);
                 showToast('Successfully logged out.', 'success');
                 window.location.href = 'login.html';
-            }).catch((error) => {
+            } catch (error) {
                 showToast('Error logging out: ' + error.message, 'error');
-            });
+            }
         }
 
         // Load user data from database
         function loadUserData(userId) {
-            database.ref('users/' + userId).on('value', (snapshot) => {
+            const userRef = ref(database, 'users/' + userId);
+            
+            onValue(userRef, (snapshot) => {
                 userData = snapshot.val();
                 if (userData) {
+                    updateStats(userData);
                     loadReferralData(userId);
                 }
-            }, (error) => {
-                showToast('Error loading user data: ' + error.message, 'error');
+            }, {
+                onlyOnce: false
             });
+        }
+
+        // Update stats cards
+        function updateStats(userData) {
+            // Total referrals
+            const totalRefs = userData.referrals ? Object.keys(userData.referrals).length : 0;
+            document.getElementById('totalReferrals').textContent = totalRefs;
+            
+            // Active referrals (assuming all are active for this example)
+            document.getElementById('activeReferrals').textContent = totalRefs;
+            
+            // Total earnings (sum of all referral earnings)
+            let totalEarnings = 0;
+            if (userData.referralEarnings) {
+                totalEarnings = Object.values(userData.referralEarnings).reduce((sum, val) => sum + val, 0);
+            }
+            document.getElementById('totalEarnings').textContent = formatCurrency(totalEarnings);
+            
+            // Available for withdrawal (assuming all earnings are available)
+            document.getElementById('availableEarnings').textContent = formatCurrency(totalEarnings);
+            
+            // Update progress bar
+            const progressPercent = Math.min(100, (totalRefs / 10) * 100);
+            document.getElementById('referralProgressBar').style.width = `${progressPercent}%`;
+            document.getElementById('referralProgressText').textContent = `${totalRefs}/10 referrals`;
         }
 
         // Load referral data
@@ -517,13 +649,19 @@
             const referralList = document.getElementById('referralList');
             if (!referralList) return;
 
-            database.ref('users').orderByChild('referredBy').equalTo(userId).on('value', (snapshot) => {
+            const referralsQuery = query(
+                ref(database, 'users'),
+                orderByChild('referredBy'),
+                equalTo(userId)
+            );
+
+            onValue(referralsQuery, (snapshot) => {
                 const referrals = snapshot.val();
                 
                 if (!referrals || Object.keys(referrals).length === 0) {
                     referralList.innerHTML = `
                         <tr>
-                            <td colspan="5" class="empty-state">You have no referrals yet. Share your link to grow your team!</td>
+                            <td colspan="6" class="empty-state">You have no referrals yet. Share your link to grow your team!</td>
                         </tr>
                     `;
                     return;
@@ -533,16 +671,17 @@
                 let totalEarnings = 0;
                 
                 Object.entries(referrals).forEach(([uid, user]) => {
-                    const earnings = userData.directReferrals?.[uid]?.earnings || 0;
+                    const earnings = userData.referralEarnings?.[uid] || 0;
                     totalEarnings += earnings;
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${user.name || 'User'}</td>
+                        <td>${user.fullName || user.email || 'User'}</td>
                         <td>${formatDate(user.joinDate)}</td>
                         <td class="status-active">Active</td>
-                        <td>$${(user.totalInvested || 0).toFixed(2)}</td>
-                        <td>$${earnings.toFixed(2)}</td>
+                        <td>${formatCurrency(user.totalInvestment || 0)}</td>
+                        <td>${formatCurrency(earnings)}</td>
+                        <td>Level 1</td>
                     `;
                     referralList.appendChild(row);
                 });
@@ -550,9 +689,11 @@
                 // Add total row
                 const totalRow = document.createElement('tr');
                 totalRow.style.fontWeight = 'bold';
+                totalRow.style.backgroundColor = 'var(--bg-color)';
                 totalRow.innerHTML = `
-                    <td colspan="4">Total Earnings</td>
-                    <td>$${totalEarnings.toFixed(2)}</td>
+                    <td colspan="4">Total</td>
+                    <td>${formatCurrency(totalEarnings)}</td>
+                    <td></td>
                 `;
                 referralList.appendChild(totalRow);
             });
@@ -594,7 +735,8 @@
             setupShareButtons();
             
             function updateReferralLink() {
-                const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser?.uid || ''}`;
+                if (!currentUser) return;
+                const referralLink = `${window.location.origin}/signup.html?ref=${currentUser.uid}`;
                 document.getElementById('referralLink').value = referralLink;
             }
             
@@ -606,7 +748,8 @@
             }
             
             function setupShareButtons() {
-                const referralLink = `https://tradworld7.github.io/mony/?ref=${currentUser?.uid || ''}`;
+                if (!currentUser) return;
+                const referralLink = `${window.location.origin}/signup.html?ref=${currentUser.uid}`;
                 const shareMessage = `Join Trade World using my referral link and earn together! ${referralLink}`;
                 
                 // WhatsApp
