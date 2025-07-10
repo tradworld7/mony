@@ -249,6 +249,14 @@
             justify-content: center;
         }
 
+        .copyable-field {
+            position: relative;
+        }
+        
+        .copyable-field input {
+            padding-right: 40px;
+        }
+
         .text-center {
             text-align: center;
         }
@@ -441,7 +449,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">User ID</label>
-                    <div style="position: relative;">
+                    <div class="copyable-field">
                         <input type="text" id="userId" class="form-control" disabled>
                         <button class="copy-btn" id="copyUserIdBtn"><i class="fas fa-copy"></i></button>
                     </div>
@@ -449,7 +457,10 @@
                 
                 <div class="form-group">
                     <label class="form-label">Referral Code</label>
-                    <input type="text" id="profileReferralCode" class="form-control" disabled>
+                    <div class="copyable-field">
+                        <input type="text" id="profileReferralCode" class="form-control" disabled>
+                        <button class="copy-btn" id="copyReferralCodeBtn"><i class="fas fa-copy"></i></button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -570,61 +581,166 @@
             return date.toLocaleString();
         }
 
+        // Generate a random referral ID
+        function generateReferralId() {
+            return 'TW' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
         // Load user data from Firebase
         function loadUserData(userId) {
             const userRef = database.ref('users/' + userId);
             
             userRef.on('value', (snapshot) => {
                 if (!snapshot.exists()) {
-                    // Create user data if it doesn't exist
+                    // Create comprehensive user data if it doesn't exist
                     const newUserData = {
                         fullName: currentUser.displayName || "New User",
                         email: currentUser.email,
                         mobileNumber: "",
                         balance: 0,
                         joinDate: new Date().toISOString(),
-                        referralId: userId
+                        referralId: generateReferralId(),
+                        lastUpdated: new Date().toISOString()
                     };
                     database.ref('users/' + userId).set(newUserData);
                     userData = newUserData;
                 } else {
                     userData = snapshot.val();
-                    // Ensure referralId exists in user data
+                    // Ensure all required fields exist
                     if (!userData.referralId) {
-                        database.ref('users/' + userId).update({ referralId: userId });
+                        userData.referralId = generateReferralId();
+                        database.ref('users/' + userId).update({ referralId: userData.referralId });
+                    }
+                    if (!userData.fullName) {
+                        userData.fullName = currentUser.displayName || "New User";
+                        database.ref('users/' + userId).update({ fullName: userData.fullName });
+                    }
+                    if (!userData.mobileNumber) {
+                        userData.mobileNumber = "";
                     }
                 }
                 
-                // Update profile information
-                document.getElementById('fullName').value = userData.fullName || '';
-                document.getElementById('userEmail').value = currentUser.email || '';
-                document.getElementById('mobileNumber').value = userData.mobileNumber || '';
-                document.getElementById('userId').value = userId;
-                document.getElementById('profileName').textContent = userData.fullName || 'User';
-                document.getElementById('profileEmail').textContent = currentUser.email || '';
-                document.getElementById('profileReferralCode').value = userData.referralId || userId;
-                document.getElementById('profileBalance').value = `$${(userData.balance || 0).toFixed(2)}`;
-                document.getElementById('headerBalance').textContent = (userData.balance || 0).toFixed(2);
+                // Update all profile fields
+                updateProfileFields(userId);
                 
-                // Set account creation date
-                if (userData.joinDate) {
-                    document.getElementById('profileJoinDate').value = formatDate(userData.joinDate);
-                } else if (currentUser.metadata?.creationTime) {
-                    document.getElementById('profileJoinDate').value = formatDate(currentUser.metadata.creationTime);
-                }
-                
-                // Set referral link
-                const referralUrl = `https://tradworld7.github.io/mony/signup.html?ref=${userData.referralId || userId}`;
-                document.getElementById('referralLink').value = referralUrl;
-                
-                // Set avatar initials
-                if (userData.fullName) {
-                    const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
-                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
-                }
             }, (error) => {
                 showToast('Error loading user data: ' + error.message, 'error');
+                console.error("Database error:", error);
             });
+        }
+
+        // Update all profile fields
+        function updateProfileFields(userId) {
+            document.getElementById('fullName').value = userData.fullName || '';
+            document.getElementById('userEmail').value = currentUser.email || '';
+            document.getElementById('mobileNumber').value = userData.mobileNumber || '';
+            document.getElementById('userId').value = userId;
+            document.getElementById('profileName').textContent = userData.fullName || 'User';
+            document.getElementById('profileEmail').textContent = currentUser.email || '';
+            document.getElementById('profileReferralCode').value = userData.referralId || userId;
+            document.getElementById('profileBalance').value = `$${(userData.balance || 0).toFixed(2)}`;
+            document.getElementById('headerBalance').textContent = (userData.balance || 0).toFixed(2);
+            
+            // Set account creation date
+            if (userData.joinDate) {
+                document.getElementById('profileJoinDate').value = formatDate(userData.joinDate);
+            } else if (currentUser.metadata?.creationTime) {
+                document.getElementById('profileJoinDate').value = formatDate(currentUser.metadata.creationTime);
+            }
+            
+            // Set referral link
+            const referralUrl = `https://tradworld7.github.io/mony/signup.html?ref=${userData.referralId || userId}`;
+            document.getElementById('referralLink').value = referralUrl;
+            
+            // Set avatar initials
+            if (userData.fullName) {
+                const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+            }
+        }
+
+        // Update profile field
+        async function updateProfileField(field, value) {
+            if (!field || value === undefined || value === null) {
+                showToast('Invalid field or value', 'error');
+                return;
+            }
+            
+            // Trim string values
+            if (typeof value === 'string') {
+                value = value.trim();
+                if (!value) {
+                    showToast('Please enter a valid value', 'error');
+                    return;
+                }
+            }
+            
+            document.getElementById('saveEditText').style.display = 'none';
+            document.getElementById('saveEditSpinner').style.display = 'inline-block';
+            document.getElementById('saveEditBtn').disabled = true;
+            
+            try {
+                if (field === 'userEmail') {
+                    // Verify email format
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                        throw new Error('Please enter a valid email address');
+                    }
+                    
+                    // Update email in Firebase Auth
+                    await currentUser.updateEmail(value);
+                    
+                    // Update email in database
+                    await database.ref('users/' + currentUser.uid).update({ 
+                        email: value,
+                        lastUpdated: new Date().toISOString()
+                    });
+                } 
+                else if (field === 'mobileNumber') {
+                    // Basic mobile number validation
+                    if (!/^[\d\s\+\-\(\)]{8,15}$/.test(value)) {
+                        throw new Error('Please enter a valid mobile number');
+                    }
+                    
+                    await database.ref('users/' + currentUser.uid).update({ 
+                        [field]: value,
+                        lastUpdated: new Date().toISOString()
+                    });
+                }
+                else {
+                    // Update other fields in database
+                    await database.ref('users/' + currentUser.uid).update({ 
+                        [field]: value,
+                        lastUpdated: new Date().toISOString()
+                    });
+                }
+                
+                showToast('Profile updated successfully!', 'success');
+                document.getElementById('editModal').classList.remove('open');
+                
+                // Update the displayed value immediately
+                document.getElementById(field).value = value;
+                
+                if (field === 'fullName') {
+                    document.getElementById('profileName').textContent = value;
+                    // Update avatar initials
+                    const initials = value.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                } else if (field === 'userEmail') {
+                    document.getElementById('profileEmail').textContent = value;
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                showToast('Error updating profile: ' + error.message, 'error');
+                
+                // Reload data to ensure consistency
+                if (currentUser) {
+                    loadUserData(currentUser.uid);
+                }
+            } finally {
+                document.getElementById('saveEditText').style.display = 'inline-block';
+                document.getElementById('saveEditSpinner').style.display = 'none';
+                document.getElementById('saveEditBtn').disabled = false;
+            }
         }
 
         // Change password function
@@ -683,51 +799,6 @@
                 document.getElementById('changePassText').style.display = 'inline-block';
                 document.getElementById('changePassSpinner').style.display = 'none';
                 document.getElementById('changePasswordBtn').disabled = false;
-            }
-        }
-
-        // Update profile field
-        async function updateProfileField(field, value) {
-            if (!field || !value) {
-                showToast('Invalid field or value', 'error');
-                return;
-            }
-            
-            document.getElementById('saveEditText').style.display = 'none';
-            document.getElementById('saveEditSpinner').style.display = 'inline-block';
-            document.getElementById('saveEditBtn').disabled = true;
-            
-            try {
-                if (field === 'userEmail') {
-                    // Special handling for email update
-                    await currentUser.updateEmail(value);
-                    await database.ref('users/' + currentUser.uid).update({ email: value });
-                } else {
-                    // Update other fields in database
-                    await database.ref('users/' + currentUser.uid).update({ [field]: value });
-                }
-                
-                showToast('Profile updated successfully!', 'success');
-                document.getElementById('editModal').classList.remove('open');
-                
-                // Update the displayed value immediately
-                document.getElementById(field).value = value;
-                
-                if (field === 'fullName') {
-                    document.getElementById('profileName').textContent = value;
-                    // Update avatar initials
-                    const initials = value.split(' ').map(n => n[0]).join('').toUpperCase();
-                    document.getElementById('userAvatar').textContent = initials.substring(0, 2);
-                } else if (field === 'userEmail') {
-                    document.getElementById('profileEmail').textContent = value;
-                }
-            } catch (error) {
-                console.error('Update error:', error);
-                showToast('Error updating profile: ' + error.message, 'error');
-            } finally {
-                document.getElementById('saveEditText').style.display = 'inline-block';
-                document.getElementById('saveEditSpinner').style.display = 'none';
-                document.getElementById('saveEditBtn').disabled = false;
             }
         }
 
@@ -796,6 +867,14 @@
                 userIdInput.select();
                 document.execCommand('copy');
                 showToast('User ID copied to clipboard!', 'success');
+            });
+            
+            // Copy referral code button
+            document.getElementById('copyReferralCodeBtn').addEventListener('click', function() {
+                const referralCodeInput = document.getElementById('profileReferralCode');
+                referralCodeInput.select();
+                document.execCommand('copy');
+                showToast('Referral code copied to clipboard!', 'success');
             });
             
             // Close modal when clicking outside
