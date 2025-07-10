@@ -736,7 +736,7 @@
             
             function updateReferralLink() {
                 if (!currentUser) return;
-                const referralLink = `${window.location.origin}/signup.html?ref=${currentUser.uid}`;
+                const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser.uid}`;
                 document.getElementById('referralLink').value = referralLink;
             }
             
@@ -749,7 +749,7 @@
             
             function setupShareButtons() {
                 if (!currentUser) return;
-                const referralLink = `${window.location.origin}/signup.html?ref=${currentUser.uid}`;
+                const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser.uid}`;
                 const shareMessage = `Join Trade World using my referral link and earn together! ${referralLink}`;
                 
                 // WhatsApp
