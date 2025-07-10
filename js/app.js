@@ -112,8 +112,7 @@ async function purchasePackage(amount) {
     const directReferral = amount * 0.10;
     const uplineCommission = amount * 0.10; // 2% × 5 levels
     const tradingPool = amount * 0.70;
-    const userProfit = amount * 0.10;
-
+    
     // Prepare all updates in a single object
     const updates = {};
 
