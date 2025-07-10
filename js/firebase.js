@@ -23,7 +23,7 @@ const functions = firebase.functions();
 const analytics = firebase.analytics();
 
 // Constants
-const ADMIN_USER_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
+const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
 const COMMISSION_RATES = {
   admin: 0.10,
   directReferral: 0.10,
