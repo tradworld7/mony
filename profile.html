@@ -10,6 +10,8 @@
         :root {
             --primary-color: #4361ee;
             --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --gray-color: #6c757d;
@@ -161,6 +163,7 @@
 
         .form-group {
             margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .form-label {
@@ -201,6 +204,16 @@
             background-color: var(--secondary-color);
         }
 
+        .btn-success {
+            background-color: var(--success-color);
+            color: var(--white-color);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: var(--white-color);
+        }
+
         .edit-btn {
             background-color: var(--primary-color);
             color: var(--white-color);
@@ -233,6 +246,62 @@
         
         .copyable-field input {
             padding-right: 40px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Toast Notifications Container */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @media (max-width: 768px) {
@@ -292,18 +361,31 @@
                 <div class="form-group">
                     <label class="form-label">Full Name</label>
                     <input type="text" id="fullName" class="form-control" disabled>
-                    <button class="edit-btn" data-field="name">Edit</button>
+                    <div class="action-buttons" id="nameActions" style="display: none;">
+                        <button class="btn btn-success" id="saveNameBtn">Save</button>
+                        <button class="btn btn-danger" id="cancelNameBtn">Cancel</button>
+                    </div>
+                    <button class="edit-btn" id="editNameBtn">Edit</button>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
                     <input type="email" id="userEmail" class="form-control" disabled>
+                    <div class="action-buttons" id="emailActions" style="display: none;">
+                        <button class="btn btn-success" id="saveEmailBtn">Save</button>
+                        <button class="btn btn-danger" id="cancelEmailBtn">Cancel</button>
+                    </div>
+                    <button class="edit-btn" id="editEmailBtn">Edit</button>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Mobile Number</label>
                     <input type="tel" id="mobileNumber" class="form-control" disabled>
-                    <button class="edit-btn" data-field="phoneNumber">Edit</button>
+                    <div class="action-buttons" id="mobileActions" style="display: none;">
+                        <button class="btn btn-success" id="saveMobileBtn">Save</button>
+                        <button class="btn btn-danger" id="cancelMobileBtn">Cancel</button>
+                    </div>
+                    <button class="edit-btn" id="editMobileBtn">Edit</button>
                 </div>
                 
                 <div class="form-group">
@@ -312,6 +394,11 @@
                         <input type="text" id="userId" class="form-control" disabled>
                         <button class="copy-btn" id="copyUserIdBtn"><i class="fas fa-copy"></i></button>
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Sponsor ID</label>
+                    <input type="text" id="sponsorId" class="form-control" disabled>
                 </div>
                 
                 <div class="form-group">
@@ -335,6 +422,9 @@
         </div>
     </main>
 
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -356,6 +446,29 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
 
         // Format date
         function formatDate(timestamp) {
@@ -383,17 +496,18 @@
         // Update profile UI with user data
         function updateProfileUI(userId, userData) {
             // Basic info
-            document.getElementById('fullName').value = userData.name || 'No Name';
+            document.getElementById('fullName').value = userData.fullName || 'No Name';
             document.getElementById('userEmail').value = userData.email || '';
-            document.getElementById('mobileNumber').value = userData.phoneNumber || '';
+            document.getElementById('mobileNumber').value = userData.mobileNumber || '';
             document.getElementById('userId').value = userId;
-            document.getElementById('profileName').textContent = userData.name || 'User';
+            document.getElementById('sponsorId').value = userData.sponsorId || 'N/A';
+            document.getElementById('profileName').textContent = userData.fullName || 'User';
             document.getElementById('profileEmail').textContent = userData.email || '';
             document.getElementById('profileBalance').value = `$${(userData.balance || 0).toFixed(2)}`;
             document.getElementById('headerBalance').textContent = (userData.balance || 0).toFixed(2);
             
             // Set account creation date
-            document.getElementById('profileJoinDate').value = formatDate(userData.createdAt);
+            document.getElementById('profileJoinDate').value = formatDate(userData.joinDate);
             
             // Set referral code (using user's UID if no referralId exists)
             const referralCode = userId; // Using UID as referral code
@@ -404,9 +518,67 @@
             document.getElementById('referralLink').value = referralUrl;
             
             // Set avatar initials
-            if (userData.name) {
-                const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            if (userData.fullName) {
+                const initials = userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
                 document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+            }
+        }
+
+        // Toggle edit mode for a field
+        function toggleEditMode(fieldId, editBtnId, actionsId) {
+            const field = document.getElementById(fieldId);
+            const editBtn = document.getElementById(editBtnId);
+            const actions = document.getElementById(actionsId);
+            
+            if (field.disabled) {
+                // Enable editing
+                field.disabled = false;
+                field.focus();
+                editBtn.style.display = 'none';
+                actions.style.display = 'flex';
+            } else {
+                // Disable editing
+                field.disabled = true;
+                editBtn.style.display = 'block';
+                actions.style.display = 'none';
+            }
+        }
+
+        // Save user data to Firebase
+        async function saveUserData(userId, field, value) {
+            try {
+                await database.ref('users/' + userId).update({
+                    [field]: value
+                });
+                showToast('Profile updated successfully!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showToast('Failed to update profile', 'error');
+                return false;
+            }
+        }
+
+        // Update email in Firebase Auth
+        async function updateUserEmail(newEmail) {
+            try {
+                await auth.currentUser.updateEmail(newEmail);
+                showToast('Email updated successfully!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Error updating email:', error);
+                
+                let errorMessage = 'Failed to update email';
+                if (error.code === 'auth/requires-recent-login') {
+                    errorMessage = 'Please reauthenticate to update your email';
+                } else if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Email is already in use';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address';
+                }
+                
+                showToast(errorMessage, 'error');
+                return false;
             }
         }
 
@@ -423,22 +595,118 @@
                         const referralInput = document.getElementById('referralLink');
                         referralInput.select();
                         document.execCommand('copy');
-                        alert('Referral link copied to clipboard!');
+                        showToast('Referral link copied to clipboard!', 'success');
                     });
                     
                     document.getElementById('copyUserIdBtn').addEventListener('click', function() {
                         const userIdInput = document.getElementById('userId');
                         userIdInput.select();
                         document.execCommand('copy');
-                        alert('User ID copied to clipboard!');
+                        showToast('User ID copied to clipboard!', 'success');
                     });
                     
                     document.getElementById('copyReferralCodeBtn').addEventListener('click', function() {
                         const referralCodeInput = document.getElementById('profileReferralCode');
                         referralCodeInput.select();
                         document.execCommand('copy');
-                        alert('Referral code copied to clipboard!');
+                        showToast('Referral code copied to clipboard!', 'success');
                     });
+
+                    // Edit name functionality
+                    document.getElementById('editNameBtn').addEventListener('click', function() {
+                        toggleEditMode('fullName', 'editNameBtn', 'nameActions');
+                    });
+
+                    document.getElementById('cancelNameBtn').addEventListener('click', function() {
+                        // Reload original value
+                        database.ref('users/' + user.uid).once('value').then((snapshot) => {
+                            if (snapshot.exists()) {
+                                document.getElementById('fullName').value = snapshot.val().fullName || '';
+                            }
+                        });
+                        toggleEditMode('fullName', 'editNameBtn', 'nameActions');
+                    });
+
+                    document.getElementById('saveNameBtn').addEventListener('click', async function() {
+                        const newName = document.getElementById('fullName').value.trim();
+                        if (!newName) {
+                            showToast('Name cannot be empty', 'error');
+                            return;
+                        }
+
+                        const success = await saveUserData(user.uid, 'fullName', newName);
+                        if (success) {
+                            document.getElementById('profileName').textContent = newName;
+                            // Update avatar initials
+                            const initials = newName.split(' ').map(n => n[0]).join('').toUpperCase();
+                            document.getElementById('userAvatar').textContent = initials.substring(0, 2);
+                            toggleEditMode('fullName', 'editNameBtn', 'nameActions');
+                        }
+                    });
+
+                    // Edit email functionality
+                    document.getElementById('editEmailBtn').addEventListener('click', function() {
+                        toggleEditMode('userEmail', 'editEmailBtn', 'emailActions');
+                    });
+
+                    document.getElementById('cancelEmailBtn').addEventListener('click', function() {
+                        // Reload original value
+                        document.getElementById('userEmail').value = user.email || '';
+                        toggleEditMode('userEmail', 'editEmailBtn', 'emailActions');
+                    });
+
+                    document.getElementById('saveEmailBtn').addEventListener('click', async function() {
+                        const newEmail = document.getElementById('userEmail').value.trim();
+                        if (!newEmail) {
+                            showToast('Email cannot be empty', 'error');
+                            return;
+                        }
+
+                        if (newEmail === user.email) {
+                            showToast('No changes made', 'success');
+                            toggleEditMode('userEmail', 'editEmailBtn', 'emailActions');
+                            return;
+                        }
+
+                        // Update email in both Auth and Database
+                        const authSuccess = await updateUserEmail(newEmail);
+                        if (authSuccess) {
+                            const dbSuccess = await saveUserData(user.uid, 'email', newEmail);
+                            if (dbSuccess) {
+                                document.getElementById('profileEmail').textContent = newEmail;
+                                toggleEditMode('userEmail', 'editEmailBtn', 'emailActions');
+                            }
+                        }
+                    });
+
+                    // Edit mobile functionality
+                    document.getElementById('editMobileBtn').addEventListener('click', function() {
+                        toggleEditMode('mobileNumber', 'editMobileBtn', 'mobileActions');
+                    });
+
+                    document.getElementById('cancelMobileBtn').addEventListener('click', function() {
+                        // Reload original value
+                        database.ref('users/' + user.uid).once('value').then((snapshot) => {
+                            if (snapshot.exists()) {
+                                document.getElementById('mobileNumber').value = snapshot.val().mobileNumber || '';
+                            }
+                        });
+                        toggleEditMode('mobileNumber', 'editMobileBtn', 'mobileActions');
+                    });
+
+                    document.getElementById('saveMobileBtn').addEventListener('click', async function() {
+                        const newMobile = document.getElementById('mobileNumber').value.trim();
+                        if (!newMobile) {
+                            showToast('Mobile number cannot be empty', 'error');
+                            return;
+                        }
+
+                        const success = await saveUserData(user.uid, 'mobileNumber', newMobile);
+                        if (success) {
+                            toggleEditMode('mobileNumber', 'editMobileBtn', 'mobileActions');
+                        }
+                    });
+
                 } else {
                     // No user is signed in
                     window.location.href = 'login.html';
