@@ -209,6 +209,11 @@
             color: var(--danger-color);
         }
 
+        .card-icon.pool {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--secondary-color);
+        }
+
         .card-value {
             font-size: 1.8rem;
             font-weight: 600;
@@ -635,6 +640,19 @@
                     From all 5 levels
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Trading Pool</span>
+                    <div class="card-icon pool">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="tradingPoolEarnings">$0.00</div>
+                <div class="card-footer">
+                    Earnings from trading pool
+                </div>
+            </div>
         </div>
         
         <!-- Team Structure Section -->
@@ -669,22 +687,6 @@
             </div>
         </div>
         
-        <!-- Transfer Funds Section -->
-        <div class="transfer-form">
-            <h2 class="section-title">Transfer Funds</h2>
-            <div class="form-group">
-                <label for="recipientId">Recipient User ID</label>
-                <input type="text" id="recipientId" class="form-control" placeholder="Enter recipient's ID">
-            </div>
-            <div class="form-group">
-                <label for="transferAmount">Amount ($)</label>
-                <input type="number" id="transferAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-            </div>
-            <button id="submitTransfer" class="btn btn-primary">
-                <i class="fas fa-paper-plane"></i> Transfer Now
-            </button>
-        </div>
-        
         <!-- Investment Packages Section -->
         <h2 class="section-title">Investment Packages</h2>
         
@@ -697,6 +699,8 @@
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% Direct Referral Bonus</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% Team Commission (Levels 2-5)</li>
                 </ul>
                 <button class="btn btn-primary" data-package="10">Buy Now</button>
             </div>
@@ -709,6 +713,8 @@
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Exclusive Market Insights</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% Direct Referral Bonus</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% Team Commission (Levels 2-5)</li>
                 </ul>
                 <button class="btn btn-primary" data-package="30">Buy Now</button>
             </div>
@@ -721,6 +727,8 @@
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
                     <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Priority Customer Support</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% Direct Referral Bonus</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% Team Commission (Levels 2-5)</li>
                 </ul>
                 <button class="btn btn-primary" data-package="100">Buy Now</button>
             </div>
