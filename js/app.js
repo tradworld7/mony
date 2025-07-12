@@ -1,5 +1,4 @@
-// ✅ Enhanced app.js — Improved Referral System, Secure Transactions, and Better Data Handling
-
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
   authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -15,12 +14,12 @@ const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
-const functions = firebase.functions(); // Initialize Cloud Functions
+const functions = firebase.functions();
 
 let currentUser = null;
 let userData = null;
 
-// Enhanced Auth check with error handling
+// Auth state listener
 auth.onAuthStateChanged((user) => {
   if (user) {
     currentUser = user;
@@ -30,6 +29,7 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
+// Initialize user data
 async function initializeUserData(uid) {
   try {
     const snapshot = await database.ref("users/" + uid).once("value");
@@ -47,6 +47,13 @@ async function initializeUserData(uid) {
         transactions: {},
         investments: {},
         directReferrals: {},
+        teamStructure: {
+          level1Count: 0,
+          level2Count: 0,
+          level3Count: 0,
+          level4Count: 0,
+          level5Count: 0
+        },
         lastActive: Date.now(),
         accountStatus: "active",
         kycVerified: false
@@ -57,66 +64,56 @@ async function initializeUserData(uid) {
     }
     
     loadUserData(uid);
-    updateLastActive(uid); // Track user activity
+    updateLastActive(uid);
     
   } catch (error) {
     console.error("Error initializing user data:", error);
-    alert("Error loading user data. Please refresh the page.");
+    showToast("Error loading user data. Please refresh the page.", "error");
   }
 }
 
+// Update last active time
 function updateLastActive(uid) {
-  // Update last active time every minute
   database.ref("users/" + uid + "/lastActive").set(Date.now());
   setInterval(() => {
     database.ref("users/" + uid + "/lastActive").set(Date.now());
   }, 60000);
 }
 
+// Purchase package function
 async function purchasePackage(amount) {
   if (!currentUser || !userData) {
-    return alert("Please wait, user data is loading...");
+    return showToast("Please wait, user data is loading...", "error");
   }
 
-  // Validate amount
   amount = parseFloat(amount);
   if (isNaN(amount) || amount <= 0) {
-    return alert("Invalid package amount");
+    return showToast("Invalid package amount", "error");
   }
 
-  // Check account status
   if (userData.accountStatus !== "active") {
-    return alert("Your account is not active for transactions");
+    return showToast("Your account is not active for transactions", "error");
   }
 
   const uid = currentUser.uid;
   const currentBalance = parseFloat(userData.balance || 0);
   
   if (amount > currentBalance) {
-    return alert("Insufficient balance");
-  }
-
-  // Show confirmation
-  if (!confirm(`Confirm purchase of $${amount.toFixed(2)} package?`)) {
-    return;
+    return showToast("Insufficient balance", "error");
   }
 
   try {
-    // Create transaction data
-    const timestamp = firebase.database.ServerValue.TIMESTAMP;
+    const updates = {};
+    const timestamp = Date.now();
     const packageId = database.ref().child("investments").push().key;
     const txId = database.ref().child("transactions").push().key;
 
-    // Calculate all commissions and distributions
+    // Calculate commissions
     const adminCommission = amount * 0.10;
-    const directReferral = amount * 0.10;
-    const uplineCommission = amount * 0.10; // 2% × 5 levels
     const tradingPool = amount * 0.70;
-    
-    // Prepare all updates in a single object
-    const updates = {};
+    const userProfit = amount * 0.10;
 
-    // User balance and profit updates
+    // User updates
     updates[`users/${uid}/balance`] = currentBalance - amount + userProfit;
     updates[`users/${uid}/tradingProfit`] = (userData.tradingProfit || 0) + userProfit;
 
@@ -126,7 +123,7 @@ async function purchasePackage(amount) {
       status: "active",
       purchaseDate: timestamp,
       expectedReturn: amount * 2,
-      maturityDate: Date.now() + 30 * 24 * 60 * 60 * 1000,
+      maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000,
       profitEarned: 0,
       lastProfitDate: null
     };
@@ -135,7 +132,7 @@ async function purchasePackage(amount) {
     updates[`transactions/${txId}`] = {
       userId: uid,
       type: "investment",
-      amount,
+      amount: -amount,
       status: "completed",
       timestamp,
       details: `Purchased package of $${amount}`,
@@ -145,7 +142,7 @@ async function purchasePackage(amount) {
 
     updates[`users/${uid}/transactions/${txId}`] = {
       type: "investment",
-      amount,
+      amount: -amount,
       status: "completed",
       timestamp,
       details: `Purchased package of $${amount}`,
@@ -153,11 +150,10 @@ async function purchasePackage(amount) {
       balanceAfter: currentBalance - amount + userProfit
     };
 
-    // Admin Commission (10%)
+    // Admin commission
     updates[`users/${ADMIN_USER_ID}/balance`] = firebase.database.ServerValue.increment(adminCommission);
     updates[`users/${ADMIN_USER_ID}/adminEarnings`] = firebase.database.ServerValue.increment(adminCommission);
     
-    // Admin transaction record
     const adminTxId = database.ref().child("transactions").push().key;
     updates[`users/${ADMIN_USER_ID}/transactions/${adminTxId}`] = {
       type: "admin_commission",
@@ -169,7 +165,7 @@ async function purchasePackage(amount) {
       balanceAfter: firebase.database.ServerValue.increment(adminCommission)
     };
 
-    // Trading Pool (70%)
+    // Trading pool
     updates[`system/tradingPool`] = firebase.database.ServerValue.increment(tradingPool);
     updates[`system/poolTransactions/${txId}`] = {
       userId: uid,
@@ -178,108 +174,70 @@ async function purchasePackage(amount) {
       details: `Contribution from ${uid} package purchase`
     };
 
-    // Direct referral (10%)
+    // Referral commissions
     if (userData.referredBy) {
-      await handleDirectReferral(userData.referredBy, uid, amount, directReferral, timestamp, updates);
+      await handleReferralCommissions(userData.referredBy, uid, amount, timestamp, updates);
     }
 
-    // Upline commissions (5 level × 2%)
-    if (userData.referredBy) {
-      await distributeUplineCommissions(userData.referredBy, uid, amount, 1, timestamp, updates);
-    }
-
-    // Execute all updates atomically
+    // Execute all updates
     await database.ref().update(updates);
     
-    // Refresh user data
+    // Refresh data
     await loadUserData(uid);
+    await loadTeamStructure(uid);
     
-    // Show success message with details
-    alert(`✅ Package of $${amount.toFixed(2)} purchased successfully!\n\n` +
-          `• $${userProfit.toFixed(2)} added to your balance\n` +
-          `• $${tradingPool.toFixed(2)} added to trading pool\n` +
-          `• Commissions distributed to your network`);
+    showToast(`✅ Package of $${amount.toFixed(2)} purchased successfully!`, "success");
     
   } catch (error) {
     console.error("Package purchase error:", error);
-    alert("Error processing package purchase. Please try again.");
+    showToast("Error processing package purchase. Please try again.", "error");
   }
 }
 
-async function handleDirectReferral(referrerId, userId, packageAmount, commission, timestamp, updates) {
+// Handle referral commissions
+async function handleReferralCommissions(referrerId, userId, packageAmount, timestamp, updates) {
   try {
-    const refSnapshot = await database.ref(`users/${referrerId}`).once("value");
-    if (!refSnapshot.exists()) return;
-
-    const refUser = refSnapshot.val();
-    const currentRefBalance = parseFloat(refUser.balance || 0);
+    let currentUpline = referrerId;
+    const commissionRates = [0.10, 0.05, 0.03, 0.02, 0.01]; // 5 levels
     
-    // Update referrer's balance and earnings
-    updates[`users/${referrerId}/referralEarnings`] = (refUser.referralEarnings || 0) + commission;
-    updates[`users/${referrerId}/balance`] = currentRefBalance + commission;
-    updates[`users/${referrerId}/directReferrals/${userId}`] = firebase.database.ServerValue.increment(1);
-
-    // Create transaction record for referrer
-    const refTxId = database.ref().child("transactions").push().key;
-    updates[`users/${referrerId}/transactions/${refTxId}`] = {
-      type: "referral",
-      amount: commission,
-      status: "completed",
-      timestamp,
-      details: `Direct referral commission from ${userId}`,
-      balanceBefore: currentRefBalance,
-      balanceAfter: currentRefBalance + commission,
-      packageAmount: packageAmount
-    };
-
-  } catch (error) {
-    console.error("Direct referral error:", error);
-    // Continue with purchase even if referral fails
-  }
-}
-
-async function distributeUplineCommissions(uplineId, userId, packageAmount, currentLevel, timestamp, updates) {
-  try {
-    // Stop at level 5 or if no upline
-    if (!uplineId || currentLevel > 5) return;
-
-    const uplineSnapshot = await database.ref(`users/${uplineId}`).once("value");
-    if (!uplineSnapshot.exists()) return;
-
-    const uplineUser = uplineSnapshot.val();
-    const currentUplineBalance = parseFloat(uplineUser.balance || 0);
-    const commission = packageAmount * 0.02; // 2% per level
-
-    // Update upline's balance and earnings
-    updates[`users/${uplineId}/teamEarnings`] = (uplineUser.teamEarnings || 0) + commission;
-    updates[`users/${uplineId}/balance`] = currentUplineBalance + commission;
-
-    // Create transaction record for upline
-    const uplineTxId = database.ref().child("transactions").push().key;
-    updates[`users/${uplineId}/transactions/${uplineTxId}`] = {
-      type: "team_commission",
-      amount: commission,
-      status: "completed",
-      timestamp,
-      details: `Level ${currentLevel} team commission from ${userId}`,
-      balanceBefore: currentUplineBalance,
-      balanceAfter: currentUplineBalance + commission,
-      packageAmount: packageAmount,
-      level: currentLevel
-    };
-
-    // Process next level if available
-    if (uplineUser.referredBy) {
-      await distributeUplineCommissions(uplineUser.referredBy, userId, packageAmount, currentLevel + 1, timestamp, updates);
+    for (let level = 0; level < 5 && currentUpline; level++) {
+      const commission = packageAmount * commissionRates[level];
+      const uplineTxId = database.ref().child("transactions").push().key;
+      
+      // Update upline balance
+      updates[`users/${currentUpline}/balance`] = firebase.database.ServerValue.increment(commission);
+      
+      // Update earnings based on level
+      if (level === 0) {
+        updates[`users/${currentUpline}/referralEarnings`] = firebase.database.ServerValue.increment(commission);
+      } else {
+        updates[`users/${currentUpline}/teamEarnings`] = firebase.database.ServerValue.increment(commission);
+      }
+      
+      // Create transaction record
+      updates[`users/${currentUpline}/transactions/${uplineTxId}`] = {
+        type: level === 0 ? "direct_referral" : `team_level_${level+1}`,
+        amount: commission,
+        status: "completed",
+        timestamp,
+        details: level === 0 
+          ? `Direct referral commission from ${userId}`
+          : `Level ${level+1} team commission from ${userId}`,
+        packageAmount,
+        level: level + 1
+      };
+      
+      // Get next upline
+      const uplineSnapshot = await database.ref(`users/${currentUpline}/referredBy`).once("value");
+      currentUpline = uplineSnapshot.val();
     }
-
+    
   } catch (error) {
-    console.error("Upline commission error:", error);
-    // Continue with purchase even if upline commission fails
+    console.error("Referral commission error:", error);
   }
 }
 
-// Enhanced user data loading with error handling
+// Load user data
 async function loadUserData(uid) {
   try {
     const snapshot = await database.ref("users/" + uid).once("value");
@@ -290,7 +248,7 @@ async function loadUserData(uid) {
       return;
     }
 
-    // Update UI elements
+    // Update UI
     document.getElementById("userBalance").textContent = `$${(userData.balance || 0).toFixed(2)}`;
     document.getElementById("tradingProfit").textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
     document.getElementById("referralEarnings").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
@@ -299,7 +257,7 @@ async function loadUserData(uid) {
     // Load transaction history
     await loadTransactionHistory(uid);
     
-    // Update referral link if available
+    // Update referral link
     if (document.getElementById("referralLink")) {
       document.getElementById("referralLink").value = 
         `${window.location.origin}/register.html?ref=${uid}`;
@@ -307,11 +265,59 @@ async function loadUserData(uid) {
 
   } catch (error) {
     console.error("Error loading user data:", error);
-    alert("Error loading data. Please refresh the page.");
+    showToast("Error loading data. Please refresh the page.", "error");
   }
 }
 
-// Enhanced transaction history with pagination
+// Load team structure
+async function loadTeamStructure(uid) {
+  try {
+    // Load direct referrals
+    const directRefsSnapshot = await database.ref(`users/${uid}/directReferrals`).once("value");
+    const directRefs = directRefsSnapshot.val() || {};
+    
+    document.getElementById("level1Members").innerHTML = 
+      Object.keys(directRefs).length > 0 
+        ? Object.keys(directRefs).map(id => `<div class="team-member">${id}</div>`).join("")
+        : '<div class="text-muted">No direct referrals</div>';
+    
+    // Load team counts and earnings for all levels
+    for (let level = 1; level <= 5; level++) {
+      const earnings = await calculateLevelEarnings(uid, level);
+      document.getElementById(`level${level}Earnings`).textContent = earnings.toFixed(2);
+      
+      if (level > 1) {
+        const count = await getLevelCount(uid, level);
+        document.getElementById(`level${level}Members`).innerHTML = 
+          count > 0 
+            ? `<div class="team-count">${count} members</div>`
+            : '<div class="text-muted">No members</div>';
+      }
+    }
+    
+  } catch (error) {
+    console.error("Error loading team structure:", error);
+  }
+}
+
+// Calculate earnings for a specific level
+async function calculateLevelEarnings(uid, level) {
+  const snapshot = await database.ref(`users/${uid}/transactions`)
+    .orderByChild("level")
+    .equalTo(level)
+    .once("value");
+  
+  const transactions = snapshot.val() || {};
+  return Object.values(transactions).reduce((sum, tx) => sum + (tx.amount || 0), 0);
+}
+
+// Get member count for a level
+async function getLevelCount(uid, level) {
+  const snapshot = await database.ref(`users/${uid}/teamStructure/level${level}Count`).once("value");
+  return snapshot.val() || 0;
+}
+
+// Load transaction history
 async function loadTransactionHistory(uid, limit = 10) {
   try {
     const snapshot = await database.ref(`users/${uid}/transactions`)
@@ -352,12 +358,35 @@ async function loadTransactionHistory(uid, limit = 10) {
   }
 }
 
+// Show toast notification
+function showToast(message, type) {
+  const toastContainer = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span>${message}</span>
+    <button class="toast-close">&times;</button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 5000);
+  
+  // Close button
+  toast.querySelector(".toast-close").addEventListener("click", () => {
+    toast.remove();
+  });
+}
+
 // Initialize package purchase buttons
 window.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-package]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const amount = parseFloat(btn.getAttribute("data-package"));
-      if (!isNaN(amount) {
+      if (!isNaN(amount)) {
         purchasePackage(amount);
       }
     });
