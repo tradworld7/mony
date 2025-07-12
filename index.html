@@ -372,23 +372,31 @@
         }
 
         /* Status Badges */
-        .text-success {
-            color: var(--success-color);
-        }
-        .text-danger {
-            color: var(--danger-color);
-        }
-        .status-pending {
-            color: var(--warning-color);
-            font-weight: 500;
-        }
         .status-completed {
             color: var(--success-color);
             font-weight: 500;
         }
+
+        .status-pending {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+
         .status-rejected {
             color: var(--danger-color);
             font-weight: 500;
+        }
+
+        .text-success {
+            color: var(--success-color);
+        }
+
+        .text-danger {
+            color: var(--danger-color);
+        }
+
+        .text-warning {
+            color: var(--warning-color);
         }
 
         /* Team Structure Styles */
@@ -447,6 +455,10 @@
 
         .toast.error {
             background-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            background-color: var(--warning-color);
         }
 
         .toast-close {
@@ -694,10 +706,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
-    <!-- App Script -->
-    <script src="app.js"></script>
-    
-    <!-- Custom Script for UI Interactions -->
     <script>
         // Initialize Firebase
         const firebaseConfig = {
@@ -806,12 +814,13 @@
                         // Add transactions to table
                         transactionsArray.forEach(tx => {
                             const row = document.createElement('tr');
+                            const amountClass = tx.amount >= 0 ? 'text-success' : 'text-danger';
+                            const amountSign = tx.amount >= 0 ? '+' : '';
+                            
                             row.innerHTML = `
-                                <td>${new Date(tx.timestamp).toLocaleDateString()}</td>
+                                <td>${new Date(tx.timestamp).toLocaleString()}</td>
                                 <td>${tx.type.replace(/_/g, ' ').toUpperCase()}</td>
-                                <td class="${tx.amount >= 0 ? 'text-success' : 'text-danger'}">
-                                    $${Math.abs(tx.amount).toFixed(2)}
-                                </td>
+                                <td class="${amountClass}">${amountSign}$${Math.abs(tx.amount).toFixed(2)}</td>
                                 <td class="status-${tx.status || 'completed'}">
                                     ${(tx.status || 'completed').toUpperCase()}
                                 </td>
@@ -862,65 +871,63 @@
                 return;
             }
             
-            if (userData.balance < amount) {
+            if ((userData.balance || 0) < amount) {
                 showToast('Insufficient balance', 'error');
                 return;
             }
             
             try {
-                const result = await database.ref().transaction(currentData => {
-                    if (!currentData) return currentData;
-                    
-                    // Deduct from user balance
-                    currentData.users[currentUser.uid].balance -= amount;
-                    
-                    // Create investment record
-                    const packageId = database.ref().child('investments').push().key;
-                    currentData.users[currentUser.uid].investments = currentData.users[currentUser.uid].investments || {};
-                    currentData.users[currentUser.uid].investments[packageId] = {
-                        amount,
-                        status: "active",
-                        purchaseDate: Date.now(),
-                        expectedReturn: amount * 2,
-                        maturityDate: Date.now() + 30 * 24 * 60 * 60 * 1000
-                    };
-                    
-                    // Add transaction record
-                    const txId = database.ref().child('transactions').push().key;
-                    currentData.transactions = currentData.transactions || {};
-                    currentData.transactions[txId] = {
-                        userId: currentUser.uid,
-                        type: "investment",
-                        amount: -amount,
-                        status: "completed",
-                        timestamp: Date.now(),
-                        details: `Purchased $${amount} package`,
-                        balanceBefore: userData.balance,
-                        balanceAfter: userData.balance - amount
-                    };
-                    
-                    currentData.users[currentUser.uid].transactions = currentData.users[currentUser.uid].transactions || {};
-                    currentData.users[currentUser.uid].transactions[txId] = {
-                        type: "investment",
-                        amount: -amount,
-                        status: "completed",
-                        timestamp: Date.now(),
-                        details: `Purchased $${amount} package`,
-                        balanceBefore: userData.balance,
-                        balanceAfter: userData.balance - amount
-                    };
-                    
-                    return currentData;
-                });
+                // Create transaction data
+                const timestamp = Date.now();
+                const packageId = database.ref().child('investments').push().key;
+                const txId = database.ref().child('transactions').push().key;
                 
-                if (result.committed) {
-                    showToast(`Successfully purchased $${amount} package`, 'success');
-                } else {
-                    showToast('Failed to purchase package', 'error');
-                }
+                // Prepare all updates
+                const updates = {};
+                
+                // 1. Deduct from user balance
+                updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
+                
+                // 2. Add to investments
+                updates[`users/${currentUser.uid}/investments/${packageId}`] = {
+                    amount: amount,
+                    status: "active",
+                    purchaseDate: timestamp,
+                    expectedReturn: amount * 2,
+                    maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000 // 30 days from now
+                };
+                
+                // 3. Add transaction record
+                updates[`users/${currentUser.uid}/transactions/${txId}`] = {
+                    type: "investment",
+                    amount: -amount,
+                    status: "completed",
+                    timestamp: timestamp,
+                    details: `Purchased $${amount} package`,
+                    balanceBefore: userData.balance || 0,
+                    balanceAfter: (userData.balance || 0) - amount
+                };
+                
+                updates[`transactions/${txId}`] = {
+                    userId: currentUser.uid,
+                    type: "investment",
+                    amount: -amount,
+                    status: "completed",
+                    timestamp: timestamp,
+                    details: `Purchased $${amount} package`,
+                    balanceBefore: userData.balance || 0,
+                    balanceAfter: (userData.balance || 0) - amount
+                };
+                
+                // Execute all updates
+                await database.ref().update(updates);
+                
+                showToast(`Successfully purchased $${amount} package`, 'success');
+                loadUserData(currentUser.uid); // Refresh user data
+                
             } catch (error) {
                 console.error('Package purchase error:', error);
-                showToast('Error processing package purchase', 'error');
+                showToast('Failed to purchase package: ' + error.message, 'error');
             }
         }
         
@@ -931,7 +938,7 @@
                 return;
             }
             
-            if (userData.balance < amount) {
+            if ((userData.balance || 0) < amount) {
                 showToast('Insufficient balance', 'error');
                 return;
             }
@@ -946,84 +953,78 @@
                 
                 const recipientData = recipientSnapshot.val();
                 
-                // Perform the transfer
-                const result = await database.ref().transaction(currentData => {
-                    if (!currentData) return currentData;
-                    
-                    // Deduct from sender
-                    currentData.users[currentUser.uid].balance -= amount;
-                    
-                    // Add to recipient
-                    currentData.users[recipientId].balance += amount;
-                    
-                    // Create transaction records
-                    const txId = database.ref().child('transactions').push().key;
-                    
-                    // Sender transaction
-                    currentData.transactions = currentData.transactions || {};
-                    currentData.transactions[txId] = {
-                        userId: currentUser.uid,
-                        type: "transfer",
-                        amount: -amount,
-                        status: "completed",
-                        timestamp: Date.now(),
-                        details: `Transfer to ${recipientData.name || recipientId}`,
-                        balanceBefore: userData.balance,
-                        balanceAfter: userData.balance - amount,
-                        recipientId
-                    };
-                    
-                    currentData.users[currentUser.uid].transactions = currentData.users[currentUser.uid].transactions || {};
-                    currentData.users[currentUser.uid].transactions[txId] = {
-                        type: "transfer",
-                        amount: -amount,
-                        status: "completed",
-                        timestamp: Date.now(),
-                        details: `Transfer to ${recipientData.name || recipientId}`,
-                        balanceBefore: userData.balance,
-                        balanceAfter: userData.balance - amount,
-                        recipientId
-                    };
-                    
-                    // Recipient transaction
-                    const recipientTxId = database.ref().child('transactions').push().key;
-                    currentData.transactions[recipientTxId] = {
-                        userId: recipientId,
-                        type: "transfer",
-                        amount: amount,
-                        status: "completed",
-                        timestamp: Date.now(),
-                        details: `Transfer from ${userData.name || currentUser.uid}`,
-                        balanceBefore: recipientData.balance,
-                        balanceAfter: recipientData.balance + amount,
-                        senderId: currentUser.uid
-                    };
-                    
-                    currentData.users[recipientId].transactions = currentData.users[recipientId].transactions || {};
-                    currentData.users[recipientId].transactions[recipientTxId] = {
-                        type: "transfer",
-                        amount: amount,
-                        status: "completed",
-                        timestamp: Date.now(),
-                        details: `Transfer from ${userData.name || currentUser.uid}`,
-                        balanceBefore: recipientData.balance,
-                        balanceAfter: recipientData.balance + amount,
-                        senderId: currentUser.uid
-                    };
-                    
-                    return currentData;
-                });
+                // Prepare all updates
+                const updates = {};
+                const timestamp = Date.now();
+                const txId = database.ref().child('transactions').push().key;
+                const recipientTxId = database.ref().child('transactions').push().key;
                 
-                if (result.committed) {
-                    showToast(`Successfully transferred $${amount.toFixed(2)}`, 'success');
-                    document.getElementById('transferAmount').value = '';
-                    document.getElementById('recipientId').value = '';
-                } else {
-                    showToast('Failed to transfer funds', 'error');
-                }
+                // 1. Deduct from sender
+                updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
+                
+                // 2. Add to recipient
+                updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
+                
+                // 3. Add transaction records
+                // Sender transaction
+                updates[`users/${currentUser.uid}/transactions/${txId}`] = {
+                    type: "transfer",
+                    amount: -amount,
+                    status: "completed",
+                    timestamp: timestamp,
+                    details: `Transfer to ${recipientData.name || recipientId}`,
+                    balanceBefore: userData.balance || 0,
+                    balanceAfter: (userData.balance || 0) - amount,
+                    recipientId: recipientId
+                };
+                
+                updates[`transactions/${txId}`] = {
+                    userId: currentUser.uid,
+                    type: "transfer",
+                    amount: -amount,
+                    status: "completed",
+                    timestamp: timestamp,
+                    details: `Transfer to ${recipientData.name || recipientId}`,
+                    balanceBefore: userData.balance || 0,
+                    balanceAfter: (userData.balance || 0) - amount,
+                    recipientId: recipientId
+                };
+                
+                // Recipient transaction
+                updates[`users/${recipientId}/transactions/${recipientTxId}`] = {
+                    type: "transfer",
+                    amount: amount,
+                    status: "completed",
+                    timestamp: timestamp,
+                    details: `Transfer from ${userData.name || currentUser.uid}`,
+                    balanceBefore: recipientData.balance || 0,
+                    balanceAfter: (recipientData.balance || 0) + amount,
+                    senderId: currentUser.uid
+                };
+                
+                updates[`transactions/${recipientTxId}`] = {
+                    userId: recipientId,
+                    type: "transfer",
+                    amount: amount,
+                    status: "completed",
+                    timestamp: timestamp,
+                    details: `Transfer from ${userData.name || currentUser.uid}`,
+                    balanceBefore: recipientData.balance || 0,
+                    balanceAfter: (recipientData.balance || 0) + amount,
+                    senderId: currentUser.uid
+                };
+                
+                // Execute all updates
+                await database.ref().update(updates);
+                
+                showToast(`Successfully transferred $${amount.toFixed(2)}`, 'success');
+                document.getElementById('transferAmount').value = '';
+                document.getElementById('recipientId').value = '';
+                loadUserData(currentUser.uid); // Refresh user data
+                
             } catch (error) {
                 console.error('Transfer error:', error);
-                showToast('Error processing transfer', 'error');
+                showToast('Error processing transfer: ' + error.message, 'error');
             }
         }
         
