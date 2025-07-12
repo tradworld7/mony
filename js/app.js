@@ -43,6 +43,7 @@ async function initializeUserData(uid) {
         tradingProfit: 0,
         referralEarnings: 0,
         teamEarnings: 0,
+        tradingPoolEarnings: 0,
         referredBy: null,
         transactions: {},
         investments: {},
@@ -80,7 +81,7 @@ function updateLastActive(uid) {
   }, 60000);
 }
 
-// Purchase package function
+// Purchase package function with updated commission structure
 async function purchasePackage(amount) {
   if (!currentUser || !userData) {
     return showToast("Please wait, user data is loading...", "error");
@@ -108,10 +109,15 @@ async function purchasePackage(amount) {
     const packageId = database.ref().child("investments").push().key;
     const txId = database.ref().child("transactions").push().key;
 
-    // Calculate commissions
-    const adminCommission = amount * 0.10;
-    const tradingPool = amount * 0.70;
-    const userProfit = amount * 0.10;
+    // Updated Commission Structure
+    const directReferralCommission = amount * 0.10; // 10% for direct referral
+    const adminCommission = amount * 0.10;         // 10% for admin
+    const level2Commission = amount * 0.02;       // 2% for level 2
+    const level3Commission = amount * 0.02;       // 2% for level 3
+    const level4Commission = amount * 0.02;       // 2% for level 4
+    const level5Commission = amount * 0.02;       // 2% for level 5
+    const tradingPool = amount * 0.70;            // 70% for trading pool
+    const userProfit = amount * 0.02;             // 2% remaining as user profit
 
     // User updates
     updates[`users/${uid}/balance`] = currentBalance - amount + userProfit;
@@ -174,7 +180,10 @@ async function purchasePackage(amount) {
       details: `Contribution from ${uid} package purchase`
     };
 
-    // Referral commissions
+    // Distribute trading pool to active users
+    await distributeTradingPool(tradingPool, timestamp, updates);
+
+    // Referral commissions - updated structure
     if (userData.referredBy) {
       await handleReferralCommissions(userData.referredBy, uid, amount, timestamp, updates);
     }
@@ -194,11 +203,49 @@ async function purchasePackage(amount) {
   }
 }
 
-// Handle referral commissions
+// Distribute trading pool to active users
+async function distributeTradingPool(amount, timestamp, updates) {
+  try {
+    // Get all active users
+    const activeUsersSnapshot = await database.ref("users")
+      .orderByChild("accountStatus")
+      .equalTo("active")
+      .once("value");
+    
+    const activeUsers = activeUsersSnapshot.val() || {};
+    const activeUserIds = Object.keys(activeUsers);
+    
+    if (activeUserIds.length === 0) return;
+    
+    const sharePerUser = amount / activeUserIds.length;
+    
+    // Distribute equal shares to all active users
+    activeUserIds.forEach(uid => {
+      updates[`users/${uid}/balance`] = firebase.database.ServerValue.increment(sharePerUser);
+      updates[`users/${uid}/tradingPoolEarnings`] = firebase.database.ServerValue.increment(sharePerUser);
+      
+      const txId = database.ref().child("transactions").push().key;
+      updates[`users/${uid}/transactions/${txId}`] = {
+        type: "trading_pool_share",
+        amount: sharePerUser,
+        status: "completed",
+        timestamp,
+        details: `Trading pool distribution from system`,
+        balanceBefore: (activeUsers[uid].balance || 0),
+        balanceAfter: (activeUsers[uid].balance || 0) + sharePerUser
+      };
+    });
+    
+  } catch (error) {
+    console.error("Error distributing trading pool:", error);
+  }
+}
+
+// Updated referral commission handler
 async function handleReferralCommissions(referrerId, userId, packageAmount, timestamp, updates) {
   try {
     let currentUpline = referrerId;
-    const commissionRates = [0.10, 0.05, 0.03, 0.02, 0.01]; // 5 levels
+    const commissionRates = [0.10, 0.02, 0.02, 0.02, 0.02]; // 10% for level 1, 2% for levels 2-5
     
     for (let level = 0; level < 5 && currentUpline; level++) {
       const commission = packageAmount * commissionRates[level];
@@ -253,6 +300,7 @@ async function loadUserData(uid) {
     document.getElementById("tradingProfit").textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
     document.getElementById("referralEarnings").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
     document.getElementById("teamEarnings").textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
+    document.getElementById("tradingPoolEarnings").textContent = `$${(userData.tradingPoolEarnings || 0).toFixed(2)}`;
     
     // Load transaction history
     await loadTransactionHistory(uid);
