@@ -3,1383 +3,813 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade World - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Investment Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #3498db;
-            --secondary-color: #2980b9;
+            --secondary-color: #2c3e50;
             --success-color: #2ecc71;
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
             --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --text-color: #333;
-            --text-light: #7f8c8d;
-            --border-color: #ddd;
-            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
+            --dark-color: #34495e;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
-            color: var(--text-color);
-            line-height: 1.6;
+            color: #333;
         }
-
-        header {
-            background-color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--card-shadow);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-icon {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            margin-right: 0.5rem;
-        }
-
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--dark-color);
-            cursor: pointer;
-            display: none;
-        }
-
+        
         .sidebar {
-            width: 250px;
-            background-color: white;
+            background-color: var(--secondary-color);
+            color: white;
+            height: 100vh;
             position: fixed;
-            top: 70px;
-            left: 0;
-            bottom: 0;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            z-index: 90;
-            overflow-y: auto;
+            padding-top: 20px;
+            transition: all 0.3s;
         }
-
-        .sidebar.open {
-            left: 0;
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+            padding: 10px 15px;
         }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 1rem 0;
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
         }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            padding: 0.8rem 1.5rem;
-            color: var(--text-color);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .sidebar-menu li a i {
-            margin-right: 1rem;
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
             width: 20px;
             text-align: center;
         }
-
-        .sidebar-menu li a:hover {
-            background-color: var(--light-color);
-            color: var(--primary-color);
-        }
-
-        .sidebar-menu li a.active {
-            background-color: rgba(52, 152, 219, 0.1);
-            color: var(--primary-color);
-            border-left: 3px solid var(--primary-color);
-        }
-
+        
         .main-content {
             margin-left: 250px;
-            margin-top: 70px;
-            padding: 2rem;
-            transition: var(--transition);
+            padding: 20px;
+            transition: all 0.3s;
         }
-
-        .page-title {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
-        }
-
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
+        
         .card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-            transition: var(--transition);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
         }
-
+        
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-
+        
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .card-title {
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .card-icon.balance {
-            background-color: var(--primary-color);
-        }
-
-        .card-icon.trading {
-            background-color: var(--success-color);
-        }
-
-        .card-icon.referral {
-            background-color: var(--warning-color);
-        }
-
-        .card-icon.team {
-            background-color: #9b59b6;
-        }
-
-        .card-icon.pool {
-            background-color: #1abc9c;
-        }
-
-        .card-value {
-            font-size: 1.8rem;
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             font-weight: 600;
-            padding: 1rem;
-            color: var(--dark-color);
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0 !important;
         }
-
-        .card-footer {
-            padding: 0.8rem 1rem;
-            background-color: var(--light-color);
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            margin: 2rem 0 1.5rem;
-            color: var(--dark-color);
-            position: relative;
-            padding-bottom: 0.5rem;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background-color: var(--primary-color);
-        }
-
-        .team-structure {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 2rem;
-        }
-
-        .team-levels {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-
-        .team-level {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .team-level h4 {
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
-            color: var(--dark-color);
-        }
-
-        .team-members {
-            min-height: 100px;
-            background-color: white;
-            border-radius: 4px;
-            padding: 0.8rem;
-            margin-bottom: 0.8rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .team-member {
-            padding: 0.3rem 0;
-            font-size: 0.85rem;
-            color: var(--text-light);
-        }
-
-        .team-count {
-            padding: 0.3rem 0;
-            font-size: 0.85rem;
-            color: var(--text-light);
+        
+        .stat-card {
             text-align: center;
+            padding: 20px;
         }
-
-        .team-earnings {
-            font-weight: 500;
-            color: var(--success-color);
+        
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 10px 0;
         }
-
-        .transfer-form {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 2rem;
-            max-width: 500px;
+        
+        .stat-card .label {
+            color: #7f8c8d;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn i {
-            margin-right: 0.5rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-
-        .packages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
+        
         .package-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
+            cursor: pointer;
+            text-align: center;
+            padding: 25px 15px;
+            border: 2px solid transparent;
         }
-
+        
         .package-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
         }
-
-        .package-name {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            color: var(--dark-color);
-        }
-
-        .package-price {
-            font-size: 1.8rem;
+        
+        .package-card .amount {
+            font-size: 24px;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 0.5rem;
         }
-
-        .package-return {
-            font-size: 0.9rem;
+        
+        .package-card .return {
             color: var(--success-color);
-            margin-bottom: 1rem;
-            font-weight: 500;
+            font-weight: 600;
         }
-
-        .package-features {
-            list-style: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .package-features li {
-            padding: 0.3rem 0;
-            font-size: 0.9rem;
-        }
-
-        .trading-section {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-        }
-
-        .trading-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .trading-title {
-            font-size: 1.3rem;
-            color: var(--dark-color);
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th, .table td {
-            padding: 0.8rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .table th {
-            font-weight: 500;
-            color: var(--dark-color);
+        
+        .team-member {
+            padding: 8px 12px;
             background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 14px;
         }
-
-        .table tr:hover {
-            background-color: #f8f9fa;
+        
+        .team-count {
+            padding: 8px 12px;
+            color: var(--primary-color);
+            font-weight: 600;
         }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-success {
-            color: var(--success-color);
-        }
-
-        .text-danger {
-            color: var(--danger-color);
-        }
-
-        .text-muted {
-            color: var(--text-light);
-        }
-
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
+        
         .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
             background-color: white;
+            border-left: 4px solid;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
-            padding: 0.8rem 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             display: flex;
             justify-content: space-between;
             align-items: center;
             max-width: 350px;
-            animation: slideIn 0.3s ease forwards;
-            position: relative;
-            overflow: hidden;
+            z-index: 1000;
+            animation: slideIn 0.3s forwards;
         }
-
-        .toast::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background-color: var(--primary-color);
-            animation: progress 5s linear forwards;
+        
+        .toast.success {
+            border-color: var(--success-color);
         }
-
-        .toast.success::after {
-            background-color: var(--success-color);
+        
+        .toast.error {
+            border-color: var(--danger-color);
         }
-
-        .toast.error::after {
-            background-color: var(--danger-color);
-        }
-
+        
         .toast-close {
             background: none;
             border: none;
-            font-size: 1.2rem;
+            font-size: 18px;
             cursor: pointer;
-            color: var(--text-light);
-            margin-left: 1rem;
+            margin-left: 15px;
+            color: #7f8c8d;
         }
-
+        
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-
-        @keyframes progress {
-            from {
-                width: 100%;
-            }
-            to {
-                width: 0%;
-            }
+        
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
         }
-
-        /* Responsive Styles */
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-profile .user-name {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        
+        .user-profile .user-email {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 0;
+        }
+        
+        .referral-link {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        
+        .referral-link input {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .referral-link button {
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        /* Mobile responsiveness */
         @media (max-width: 992px) {
             .sidebar {
-                left: -250px;
+                width: 70px;
+                overflow: hidden;
             }
-
-            .sidebar.open {
-                left: 0;
+            
+            .sidebar .nav-link span {
+                display: none;
             }
-
+            
+            .sidebar .nav-link i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .sidebar .user-profile {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                position: fixed;
+                z-index: 1000;
+                height: 100%;
+            }
+            
+            .sidebar.show {
+                width: 250px;
+            }
+            
             .main-content {
                 margin-left: 0;
             }
-
-            .menu-toggle {
+            
+            .navbar-toggler {
                 display: block;
             }
         }
-
-        @media (max-width: 768px) {
-            .dashboard-cards {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .team-levels {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-
-        @media (max-width: 576px) {
-            .dashboard-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .team-levels {
-                grid-template-columns: 1fr;
-            }
-
-            .packages-grid {
-                grid-template-columns: 1fr;
-            }
-
-            header {
-                padding: 1rem;
-            }
-
-            .page-title {
-                font-size: 1.5rem;
-            }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #95a5a6;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <i class="fas fa-chart-line logo-icon"></i>
-            <span class="logo-text">Trade World</span>
-        </div>
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    </header>
-
-    <!-- Sidebar Menu -->
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
-            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
-            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
-            <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <h1 class="page-title">Dashboard</h1>
-        
-        <div class="dashboard-cards">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">My Balance</span>
-                    <div class="card-icon balance">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="userBalance">$0.00</div>
-                <div class="card-footer">
-                    Available balance for investments
+    <div id="toastContainer"></div>
+    
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="user-profile">
+                <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" id="userAvatar">
+                <div>
+                    <h6 class="user-name" id="userName">Loading...</h6>
+                    <small class="user-email" id="userEmail">user@example.com</small>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Trading Profit</span>
-                    <div class="card-icon trading">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#investments">
                         <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="tradingProfit">$0.00</div>
-                <div class="card-footer">
-                    Total profit from your investments
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Referral Earnings</span>
-                    <div class="card-icon referral">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="referralEarnings">$0.00</div>
-                <div class="card-footer">
-                    From direct referrals
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Team Earnings</span>
-                    <div class="card-icon team">
+                        <span>Investments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#transactions">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transactions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#team">
                         <i class="fas fa-users"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="teamEarnings">$0.00</div>
-                <div class="card-footer">
-                    From all 5 levels
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Trading Pool</span>
-                    <div class="card-icon pool">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                </div>
-                <div class="card-value" id="tradingPoolEarnings">$0.00</div>
-                <div class="card-footer">
-                    Earnings from trading pool
-                </div>
-            </div>
-        </div>
-        
-        <!-- Team Structure Section -->
-        <div class="team-structure" id="teamStructure">
-            <h3>Your Team Structure</h3>
-            <div class="team-levels">
-                <div class="team-level">
-                    <h4>Level 1 - Direct Referrals</h4>
-                    <div class="team-members" id="level1Members">
-                        <div class="text-muted">Loading...</div>
-                    </div>
-                    <div class="team-earnings">Earnings: $<span id="level1Earnings">0.00</span></div>
-                </div>
-                <div class="team-level">
-                    <h4>Level 2</h4>
-                    <div class="team-members" id="level2Members">
-                        <div class="text-muted">Loading...</div>
-                    </div>
-                    <div class="team-earnings">Earnings: $<span id="level2Earnings">0.00</span></div>
-                </div>
-                <div class="team-level">
-                    <h4>Level 3</h4>
-                    <div class="team-members" id="level3Members">
-                        <div class="text-muted">Loading...</div>
-                    </div>
-                    <div class="team-earnings">Earnings: $<span id="level3Earnings">0.00</span></div>
-                </div>
-                <div class="team-level">
-                    <h4>Level 4</h4>
-                    <div class="team-members" id="level4Members">
-                        <div class="text-muted">Loading...</div>
-                    </div>
-                    <div class="team-earnings">Earnings: $<span id="level4Earnings">0.00</span></div>
-                </div>
-                <div class="team-level">
-                    <h4>Level 5</h4>
-                    <div class="team-members" id="level5Members">
-                        <div class="text-muted">Loading...</div>
-                    </div>
-                    <div class="team-earnings">Earnings: $<span id="level5Earnings">0.00</span></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Transfer Funds Section -->
-        <div class="transfer-form">
-            <h2 class="section-title">Transfer Funds</h2>
-            <div class="form-group">
-                <label for="recipientId">Recipient User ID</label>
-                <input type="text" id="recipientId" class="form-control" placeholder="Enter recipient's ID">
-            </div>
-            <div class="form-group">
-                <label for="transferAmount">Amount ($)</label>
-                <input type="number" id="transferAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-            </div>
-            <button id="submitTransfer" class="btn btn-primary btn-block">
-                <i class="fas fa-paper-plane"></i> Transfer Now
-            </button>
-        </div>
-        
-        <!-- Investment Packages Section -->
-        <h2 class="section-title">Investment Packages</h2>
-        
-        <div class="packages-grid">
-            <div class="package-card">
-                <h3 class="package-name">Starter Package</h3>
-                <div class="package-price">$10</div>
-                <div class="package-return">Returns $20 (100% Profit)</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Basic Trading Access</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Beginner-Friendly Tools</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% Direct Referral Bonus</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% Team Commission (Levels 2-5)</li>
-                </ul>
-                <button class="btn btn-primary" data-package="10">Buy Now</button>
-            </div>
+                        <span>Team</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#transfer">
+                        <i class="fas fa-money-bill-transfer"></i>
+                        <span>Transfer</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
             
-            <div class="package-card">
-                <h3 class="package-name">Standard Package</h3>
-                <div class="package-price">$30</div>
-                <div class="package-return">Returns $60 (100% Profit)</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Advanced Trading Tools</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Exclusive Market Insights</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% Direct Referral Bonus</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% Team Commission (Levels 2-5)</li>
-                </ul>
-                <button class="btn btn-primary" data-package="30">Buy Now</button>
-            </div>
-            
-            <div class="package-card">
-                <h3 class="package-name">Premium Package</h3>
-                <div class="package-price">$100</div>
-                <div class="package-return">Returns $200 (100% Profit)</div>
-                <ul class="package-features">
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 100% Return on Investment</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Premium Trading Features</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Priority Customer Support</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 10% Direct Referral Bonus</li>
-                    <li><i class="fas fa-check-circle" style="color: var(--success-color);"></i> 2% Team Commission (Levels 2-5)</li>
-                </ul>
-                <button class="btn btn-primary" data-package="100">Buy Now</button>
+            <div class="referral-link p-3 mt-auto">
+                <small class="d-block mb-2">Your Referral Link</small>
+                <input type="text" id="referralLink" readonly>
+                <button class="btn btn-sm btn-primary mt-2" onclick="copyReferralLink()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
             </div>
         </div>
         
-        <!-- Transaction History Section -->
-        <div class="trading-section">
-            <div class="trading-header">
-                <h2 class="trading-title">Recent Transactions</h2>
-                <span>Updated: <span id="lastUpdated">Just now</span></span>
-            </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white rounded shadow-sm mb-4">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" id="sidebarToggle">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">InvestPro</a>
+                    
+                    <div class="d-flex align-items-center">
+                        <span class="me-3 d-none d-md-inline">
+                            <i class="fas fa-wallet me-2"></i>
+                            Balance: <strong id="userBalanceNav">$0.00</strong>
+                        </span>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle fs-4"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="#settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtnMobile"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
             
-            <div class="table-responsive">
-                <table class="table trading-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Details</th>
-                            <th>Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionHistory">
-                        <tr>
-                            <td colspan="6" class="text-center">Loading transactions...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Dashboard Section -->
+            <section id="dashboard">
+                <h4 class="mb-4">Dashboard Overview</h4>
+                
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card stat-card">
+                            <div class="label">Total Balance</div>
+                            <div class="value text-primary" id="userBalance">$0.00</div>
+                            <div class="text-muted">Available for investment</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card stat-card">
+                            <div class="label">Trading Profit</div>
+                            <div class="value text-success" id="tradingProfit">$0.00</div>
+                            <div class="text-muted">From active packages</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card stat-card">
+                            <div class="label">Referral Earnings</div>
+                            <div class="value text-warning" id="referralEarnings">$0.00</div>
+                            <div class="text-muted">From direct referrals</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card stat-card">
+                            <div class="label">Team Earnings</div>
+                            <div class="value text-info" id="teamEarnings">$0.00</div>
+                            <div class="text-muted">From team members</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Recent Transactions</span>
+                                <a href="#transactions" class="btn btn-sm btn-outline-primary">View All</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Type</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Details</th>
+                                                <th>Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="transactionHistory">
+                                            <tr>
+                                                <td colspan="6" class="text-center">Loading transactions...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <span>Investment Packages</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <div class="card package-card" data-package="100">
+                                            <div class="amount">$100</div>
+                                            <div class="return">200% Return</div>
+                                            <small class="text-muted">30 Days</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card package-card" data-package="500">
+                                            <div class="amount">$500</div>
+                                            <div class="return">200% Return</div>
+                                            <small class="text-muted">30 Days</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card package-card" data-package="1000">
+                                            <div class="amount">$1,000</div>
+                                            <div class="return">200% Return</div>
+                                            <small class="text-muted">30 Days</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card package-card" data-package="5000">
+                                            <div class="amount">$5,000</div>
+                                            <div class="return">200% Return</div>
+                                            <small class="text-muted">30 Days</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Team Section -->
+            <section id="team" class="mt-5" style="display: none;">
+                <h4 class="mb-4">Team Structure</h4>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Team Members
+                            </div>
+                            <div class="card-body">
+                                <ul class="nav nav-tabs" id="teamTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="level1-tab" data-bs-toggle="tab" data-bs-target="#level1" type="button">Level 1</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="level2-tab" data-bs-toggle="tab" data-bs-target="#level2" type="button">Level 2</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="level3-tab" data-bs-toggle="tab" data-bs-target="#level3" type="button">Level 3</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="level4-tab" data-bs-toggle="tab" data-bs-target="#level4" type="button">Level 4</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="level5-tab" data-bs-toggle="tab" data-bs-target="#level5" type="button">Level 5</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content p-3" id="teamTabsContent">
+                                    <div class="tab-pane fade show active" id="level1" role="tabpanel">
+                                        <div id="level1Members">Loading...</div>
+                                    </div>
+                                    <div class="tab-pane fade" id="level2" role="tabpanel">
+                                        <div id="level2Members">Loading...</div>
+                                    </div>
+                                    <div class="tab-pane fade" id="level3" role="tabpanel">
+                                        <div id="level3Members">Loading...</div>
+                                    </div>
+                                    <div class="tab-pane fade" id="level4" role="tabpanel">
+                                        <div id="level4Members">Loading...</div>
+                                    </div>
+                                    <div class="tab-pane fade" id="level5" role="tabpanel">
+                                        <div id="level5Members">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Team Earnings
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Level</th>
+                                                <th>Members</th>
+                                                <th>Earnings</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Level 1</td>
+                                                <td id="level1Count">0</td>
+                                                <td>$<span id="level1Earnings">0.00</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Level 2</td>
+                                                <td id="level2Count">0</td>
+                                                <td>$<span id="level2Earnings">0.00</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Level 3</td>
+                                                <td id="level3Count">0</td>
+                                                <td>$<span id="level3Earnings">0.00</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Level 4</td>
+                                                <td id="level4Count">0</td>
+                                                <td>$<span id="level4Earnings">0.00</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Level 5</td>
+                                                <td id="level5Count">0</td>
+                                                <td>$<span id="level5Earnings">0.00</span></td>
+                                            </tr>
+                                            <tr class="table-active">
+                                                <th>Total</th>
+                                                <th id="totalTeamCount">0</th>
+                                                <th>$<span id="totalTeamEarnings">0.00</span></th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Transfer Section -->
+            <section id="transfer" class="mt-5" style="display: none;">
+                <h4 class="mb-4">Transfer Funds</h4>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Send Funds
+                            </div>
+                            <div class="card-body">
+                                <form id="transferForm">
+                                    <div class="mb-3">
+                                        <label for="recipientId" class="form-label">Recipient ID</label>
+                                        <input type="text" class="form-control" id="recipientId" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="transferAmount" class="form-label">Amount</label>
+                                        <input type="number" class="form-control" id="transferAmount" min="1" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="submitTransfer">Transfer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Transfer Guidelines
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        Minimum transfer amount: $1
+                                    </li>
+                                    <li class="list-group-item">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        Transfers are instant and cannot be reversed
+                                    </li>
+                                    <li class="list-group-item">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        No transfer fees apply
+                                    </li>
+                                    <li class="list-group-item">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        You cannot transfer to yourself
+                                    </li>
+                                    <li class="list-group-item">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        Ensure recipient ID is correct before sending
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Settings Section -->
+            <section id="settings" class="mt-5" style="display: none;">
+                <h4 class="mb-4">Account Settings</h4>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Profile Information
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="userNameInput" value="Loading...">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="userEmailInput" value="Loading..." readonly>
+                                </div>
+                                <button class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Security
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Change Password</label>
+                                    <input type="password" class="form-control mb-2" placeholder="Current Password">
+                                    <input type="password" class="form-control mb-2" placeholder="New Password">
+                                    <input type="password" class="form-control" placeholder="Confirm New Password">
+                                </div>
+                                <button class="btn btn-primary">Update Password</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                KYC Verification
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Complete KYC verification to unlock all platform features.
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ID Document</label>
+                                    <input type="file" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Selfie with ID</label>
+                                    <input type="file" class="form-control">
+                                </div>
+                                <button class="btn btn-primary">Submit for Verification</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-    </main>
-
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Firebase SDK -->
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-functions.js"></script>
+    <script src="app.js"></script>
     
-    <!-- App Script -->
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-          apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
-          authDomain: "mywebsite-600d3.firebaseapp.com",
-          databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
-          projectId: "mywebsite-600d3",
-          storageBucket: "mywebsite-600d3.firebasestorage.app",
-          messagingSenderId: "584485288598",
-          appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
-          measurementId: "G-GQ9J9QH42J"
-        };
-
-        const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
-
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-        }
-
-        const auth = firebase.auth();
-        const database = firebase.database();
-        const functions = firebase.functions();
-
-        let currentUser = null;
-        let userData = null;
-
-        // Auth state listener
-        auth.onAuthStateChanged((user) => {
-          if (user) {
-            currentUser = user;
-            initializeUserData(user.uid);
-          } else {
-            window.location.href = "login.html";
-          }
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
         });
-
-        // Initialize user data
-        async function initializeUserData(uid) {
-          try {
-            const snapshot = await database.ref("users/" + uid).once("value");
-            userData = snapshot.val();
-            
-            if (!userData) {
-              const defaultUserData = {
-                name: currentUser.displayName || "User",
-                email: currentUser.email,
-                balance: 0,
-                tradingProfit: 0,
-                referralEarnings: 0,
-                teamEarnings: 0,
-                tradingPoolEarnings: 0,
-                referredBy: null,
-                transactions: {},
-                investments: {},
-                directReferrals: {},
-                teamStructure: {
-                  level1Count: 0,
-                  level2Count: 0,
-                  level3Count: 0,
-                  level4Count: 0,
-                  level5Count: 0
-                },
-                lastActive: Date.now(),
-                accountStatus: "active",
-                kycVerified: false
-              };
-              
-              await database.ref("users/" + uid).set(defaultUserData);
-              userData = defaultUserData;
-            }
-            
-            loadUserData(uid);
-            updateLastActive(uid);
-            
-          } catch (error) {
-            console.error("Error initializing user data:", error);
-            showToast("Error loading user data. Please refresh the page.", "error");
-          }
-        }
-
-        // Update last active time
-        function updateLastActive(uid) {
-          database.ref("users/" + uid + "/lastActive").set(Date.now());
-          setInterval(() => {
-            database.ref("users/" + uid + "/lastActive").set(Date.now());
-          }, 60000);
-        }
-
-        // Purchase package function
-        async function purchasePackage(amount) {
-          if (!currentUser || !userData) {
-            showToast("Please wait, user data is loading...", "error");
-            return;
-          }
-
-          amount = parseFloat(amount);
-          if (isNaN(amount) || amount <= 0) {
-            showToast("Invalid package amount", "error");
-            return;
-          }
-
-          if (userData.accountStatus !== "active") {
-            showToast("Your account is not active for transactions", "error");
-            return;
-          }
-
-          const uid = currentUser.uid;
-          const currentBalance = parseFloat(userData.balance || 0);
-          
-          if (amount > currentBalance) {
-            showToast("Insufficient balance", "error");
-            return;
-          }
-
-          try {
-            const updates = {};
-            const timestamp = Date.now();
-            const packageId = database.ref().child("investments").push().key;
-            const txId = database.ref().child("transactions").push().key;
-
-            // Commission structure
-            const directReferralCommission = amount * 0.10;
-            const adminCommission = amount * 0.10;
-            const level2Commission = amount * 0.02;
-            const level3Commission = amount * 0.02;
-            const level4Commission = amount * 0.02;
-            const level5Commission = amount * 0.02;
-            const tradingPool = amount * 0.70;
-            const userProfit = amount * 0.02;
-
-            // User updates
-            updates[`users/${uid}/balance`] = currentBalance - amount + userProfit;
-            updates[`users/${uid}/tradingProfit`] = (userData.tradingProfit || 0) + userProfit;
-
-            // Investment record
-            updates[`users/${uid}/investments/${packageId}`] = {
-              amount,
-              status: "active",
-              purchaseDate: timestamp,
-              expectedReturn: amount * 2,
-              maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000,
-              profitEarned: 0,
-              lastProfitDate: null
-            };
-
-            // Transaction records
-            updates[`transactions/${txId}`] = {
-              userId: uid,
-              type: "investment",
-              amount: -amount,
-              status: "completed",
-              timestamp,
-              details: `Purchased package of $${amount}`,
-              balanceBefore: currentBalance,
-              balanceAfter: currentBalance - amount + userProfit
-            };
-
-            updates[`users/${uid}/transactions/${txId}`] = {
-              type: "investment",
-              amount: -amount,
-              status: "completed",
-              timestamp,
-              details: `Purchased package of $${amount}`,
-              balanceBefore: currentBalance,
-              balanceAfter: currentBalance - amount + userProfit
-            };
-
-            // Admin commission
-            updates[`users/${ADMIN_USER_ID}/balance`] = firebase.database.ServerValue.increment(adminCommission);
-            updates[`users/${ADMIN_USER_ID}/adminEarnings`] = firebase.database.ServerValue.increment(adminCommission);
-            
-            const adminTxId = database.ref().child("transactions").push().key;
-            updates[`users/${ADMIN_USER_ID}/transactions/${adminTxId}`] = {
-              type: "admin_commission",
-              amount: adminCommission,
-              status: "completed",
-              timestamp,
-              details: `Commission from user ${uid} package purchase`,
-              balanceBefore: (await database.ref(`users/${ADMIN_USER_ID}/balance`).once("value")).val() || 0,
-              balanceAfter: firebase.database.ServerValue.increment(adminCommission)
-            };
-
-            // Trading pool
-            updates[`system/tradingPool`] = firebase.database.ServerValue.increment(tradingPool);
-            updates[`system/poolTransactions/${txId}`] = {
-              userId: uid,
-              amount: tradingPool,
-              timestamp,
-              details: `Contribution from ${uid} package purchase`
-            };
-
-            // Distribute trading pool to active users
-            await distributeTradingPool(tradingPool, timestamp, updates);
-
-            // Referral commissions
-            if (userData.referredBy) {
-              await handleReferralCommissions(userData.referredBy, uid, amount, timestamp, updates);
-            }
-
-            // Execute all updates
-            await database.ref().update(updates);
-            
-            // Refresh data
-            await loadUserData(uid);
-            await loadTeamStructure(uid);
-            
-            showToast(`Package of $${amount.toFixed(2)} purchased successfully!`, "success");
-            
-          } catch (error) {
-            console.error("Package purchase error:", error);
-            showToast("Error processing package purchase. Please try again.", "error");
-          }
-        }
-
-        // Distribute trading pool to active users
-        async function distributeTradingPool(amount, timestamp, updates) {
-          try {
-            const activeUsersSnapshot = await database.ref("users")
-              .orderByChild("accountStatus")
-              .equalTo("active")
-              .once("value");
-            
-            const activeUsers = activeUsersSnapshot.val() || {};
-            const activeUserIds = Object.keys(activeUsers);
-            
-            if (activeUserIds.length === 0) return;
-            
-            const sharePerUser = amount / activeUserIds.length;
-            
-            activeUserIds.forEach(uid => {
-              updates[`users/${uid}/balance`] = firebase.database.ServerValue.increment(sharePerUser);
-              updates[`users/${uid}/tradingPoolEarnings`] = firebase.database.ServerValue.increment(sharePerUser);
-              
-              const txId = database.ref().child("transactions").push().key;
-              updates[`users/${uid}/transactions/${txId}`] = {
-                type: "trading_pool_share",
-                amount: sharePerUser,
-                status: "completed",
-                timestamp,
-                details: `Trading pool distribution from system`,
-                balanceBefore: (activeUsers[uid].balance || 0),
-                balanceAfter: (activeUsers[uid].balance || 0) + sharePerUser
-              };
+        
+        // Navigation between sections
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    showSection(targetId);
+                }
+            });
+        });
+        
+        // Show specific section and hide others
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
             });
             
-          } catch (error) {
-            console.error("Error distributing trading pool:", error);
-          }
-        }
-
-        // Handle referral commissions
-        async function handleReferralCommissions(referrerId, userId, packageAmount, timestamp, updates) {
-          try {
-            let currentUpline = referrerId;
-            const commissionRates = [0.10, 0.02, 0.02, 0.02, 0.02];
-            
-            for (let level = 0; level < 5 && currentUpline; level++) {
-              const commission = packageAmount * commissionRates[level];
-              const uplineTxId = database.ref().child("transactions").push().key;
-              
-              updates[`users/${currentUpline}/balance`] = firebase.database.ServerValue.increment(commission);
-              
-              if (level === 0) {
-                updates[`users/${currentUpline}/referralEarnings`] = firebase.database.ServerValue.increment(commission);
-              } else {
-                updates[`users/${currentUpline}/teamEarnings`] = firebase.database.ServerValue.increment(commission);
-              }
-              
-              updates[`users/${currentUpline}/transactions/${uplineTxId}`] = {
-                type: level === 0 ? "direct_referral" : `team_level_${level+1}`,
-                amount: commission,
-                status: "completed",
-                timestamp,
-                details: level === 0 
-                  ? `Direct referral commission from ${userId}`
-                  : `Level ${level+1} team commission from ${userId}`,
-                packageAmount,
-                level: level + 1
-              };
-              
-              const uplineSnapshot = await database.ref(`users/${currentUpline}/referredBy`).once("value");
-              currentUpline = uplineSnapshot.val();
+            if (sectionId) {
+                document.getElementById(sectionId).style.display = 'block';
             }
             
-          } catch (error) {
-            console.error("Referral commission error:", error);
-          }
-        }
-
-        // Load user data
-        async function loadUserData(uid) {
-          try {
-            const snapshot = await database.ref("users/" + uid).once("value");
-            userData = snapshot.val();
-            
-            if (!userData) {
-              console.error("User data not found");
-              return;
-            }
-
-            // Update UI
-            document.getElementById("userBalance").textContent = `$${(userData.balance || 0).toFixed(2)}`;
-            document.getElementById("tradingProfit").textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
-            document.getElementById("referralEarnings").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
-            document.getElementById("teamEarnings").textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
-            document.getElementById("tradingPoolEarnings").textContent = `$${(userData.tradingPoolEarnings || 0).toFixed(2)}`;
-            
-            // Load transaction history
-            await loadTransactionHistory(uid);
-            
-            // Update last updated time
-            document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString();
-
-          } catch (error) {
-            console.error("Error loading user data:", error);
-            showToast("Error loading data. Please refresh the page.", "error");
-          }
-        }
-
-        // Load team structure
-        async function loadTeamStructure(uid) {
-          try {
-            const directRefsSnapshot = await database.ref(`users/${uid}/directReferrals`).once("value");
-            const directRefs = directRefsSnapshot.val() || {};
-            
-            document.getElementById("level1Members").innerHTML = 
-              Object.keys(directRefs).length > 0 
-                ? Object.keys(directRefs).map(id => `<div class="team-member">${id}</div>`).join("")
-                : '<div class="text-muted">No direct referrals</div>';
-            
-            for (let level = 1; level <= 5; level++) {
-              const earnings = await calculateLevelEarnings(uid, level);
-              document.getElementById(`level${level}Earnings`).textContent = earnings.toFixed(2);
-              
-              if (level > 1) {
-                const count = await getLevelCount(uid, level);
-                document.getElementById(`level${level}Members`).innerHTML = 
-                  count > 0 
-                    ? `<div class="team-count">${count} members</div>`
-                    : '<div class="text-muted">No members</div>';
-              }
-            }
-            
-          } catch (error) {
-            console.error("Error loading team structure:", error);
-          }
-        }
-
-        // Calculate earnings for a specific level
-        async function calculateLevelEarnings(uid, level) {
-          const snapshot = await database.ref(`users/${uid}/transactions`)
-            .orderByChild("level")
-            .equalTo(level)
-            .once("value");
-          
-          const transactions = snapshot.val() || {};
-          return Object.values(transactions).reduce((sum, tx) => sum + (tx.amount || 0), 0);
-        }
-
-        // Get member count for a level
-        async function getLevelCount(uid, level) {
-          const snapshot = await database.ref(`users/${uid}/teamStructure/level${level}Count`).once("value");
-          return snapshot.val() || 0;
-        }
-
-        // Load transaction history
-        async function loadTransactionHistory(uid, limit = 10) {
-          try {
-            const snapshot = await database.ref(`users/${uid}/transactions`)
-              .orderByChild("timestamp")
-              .limitToLast(limit)
-              .once("value");
-            
-            const container = document.getElementById("transactionHistory");
-            if (!container) return;
-            
-            container.innerHTML = "";
-            const data = snapshot.val();
-            
-            if (data) {
-              Object.values(data).reverse().forEach((tx) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                  <td>${new Date(tx.timestamp).toLocaleString()}</td>
-                  <td>${tx.type.replace(/_/g, ' ').toUpperCase()}</td>
-                  <td class="${tx.amount >= 0 ? 'text-success' : 'text-danger'}">
-                    $${Math.abs(tx.amount).toFixed(2)}
-                  </td>
-                  <td>${tx.status}</td>
-                  <td>${tx.details}</td>
-                  <td>$${(tx.balanceAfter || 0).toFixed(2)}</td>
-                `;
-                container.appendChild(row);
-              });
-            } else {
-              container.innerHTML = `<tr><td colspan="6" class="text-center">No transactions found</td></tr>`;
-            }
-          } catch (error) {
-            console.error("Error loading transactions:", error);
-            const container = document.getElementById("transactionHistory");
-            if (container) {
-              container.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading transactions</td></tr>`;
-            }
-          }
-        }
-
-        // Transfer funds function
-        async function transferFunds(recipientId, amount) {
-          if (!currentUser || !userData) {
-            showToast("Please wait, user data is loading...", "error");
-            return;
-          }
-          
-          if (recipientId === currentUser.uid) {
-            showToast("Cannot transfer to yourself", "error");
-            return;
-          }
-          
-          if ((userData.balance || 0) < amount) {
-            showToast("Insufficient balance", "error");
-            return;
-          }
-          
-          try {
-            const updates = {};
-            const timestamp = Date.now();
-            const txId = database.ref().child("transactions").push().key;
-            const recipientTxId = database.ref().child("transactions").push().key;
-            
-            // Check if recipient exists
-            const recipientSnapshot = await database.ref("users/" + recipientId).once("value");
-            if (!recipientSnapshot.exists()) {
-              showToast("Recipient not found", "error");
-              return;
-            }
-            
-            const recipientData = recipientSnapshot.val();
-            
-            // Update balances
-            updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
-            updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
-            
-            // Create transaction records
-            updates[`users/${currentUser.uid}/transactions/${txId}`] = {
-              type: "transfer_out",
-              amount: -amount,
-              status: "completed",
-              timestamp,
-              details: `Transfer to ${recipientData.name || recipientId}`,
-              balanceBefore: userData.balance || 0,
-              balanceAfter: (userData.balance || 0) - amount,
-              recipientId
-            };
-            
-            updates[`users/${recipientId}/transactions/${recipientTxId}`] = {
-              type: "transfer_in",
-              amount: amount,
-              status: "completed",
-              timestamp,
-              details: `Transfer from ${userData.name || currentUser.uid}`,
-              balanceBefore: recipientData.balance || 0,
-              balanceAfter: (recipientData.balance || 0) + amount,
-              senderId: currentUser.uid
-            };
-            
-            // Execute updates
-            await database.ref().update(updates);
-            
-            showToast(`Successfully transferred $${amount.toFixed(2)}`, "success");
-            document.getElementById("transferAmount").value = "";
-            document.getElementById("recipientId").value = "";
-            loadUserData(currentUser.uid);
-            
-          } catch (error) {
-            console.error("Transfer error:", error);
-            showToast("Error processing transfer", "error");
-          }
-        }
-
-        // Show toast notification
-        function showToast(message, type) {
-          const toastContainer = document.getElementById("toastContainer");
-          const toast = document.createElement("div");
-          toast.className = `toast ${type}`;
-          toast.innerHTML = `
-            <span>${message}</span>
-            <button class="toast-close">&times;</button>
-          `;
-          
-          toastContainer.appendChild(toast);
-          
-          setTimeout(() => {
-            toast.remove();
-          }, 5000);
-          
-          toast.querySelector(".toast-close").addEventListener("click", () => {
-            toast.remove();
-          });
-        }
-
-        // Initialize package purchase buttons and logout
-        window.addEventListener("DOMContentLoaded", () => {
-          // Package purchase buttons
-          document.querySelectorAll("[data-package]").forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              e.preventDefault();
-              const amount = parseFloat(btn.getAttribute("data-package"));
-              if (!isNaN(amount)) {
-                purchasePackage(amount);
-              }
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${sectionId}`) {
+                    link.classList.add('active');
+                }
             });
-          });
-
-          // Logout button
-          const logoutBtn = document.getElementById("logoutBtn");
-          if (logoutBtn) {
-            logoutBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              auth.signOut().then(() => {
+            
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.remove('show');
+            }
+        }
+        
+        // Default to dashboard view
+        showSection('dashboard');
+        
+        // Copy referral link
+        function copyReferralLink() {
+            const referralInput = document.getElementById('referralLink');
+            referralInput.select();
+            document.execCommand('copy');
+            showToast('Referral link copied to clipboard!', 'success');
+        }
+        
+        // Mobile logout button
+        document.getElementById('logoutBtnMobile').addEventListener('click', function(e) {
+            e.preventDefault();
+            auth.signOut().then(() => {
                 window.location.href = "login.html";
-              }).catch((error) => {
+            }).catch((error) => {
                 console.error("Logout error:", error);
                 showToast("Error logging out. Please try again.", "error");
-              });
             });
-          }
-
-          // Transfer button
-          const transferBtn = document.getElementById("submitTransfer");
-          if (transferBtn) {
-            transferBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              const recipientId = document.getElementById("recipientId").value;
-              const amount = parseFloat(document.getElementById("transferAmount").value);
-              
-              if (!recipientId || !amount || amount <= 0) {
-                showToast("Please enter valid recipient and amount", "error");
-                return;
-              }
-              
-              transferFunds(recipientId, amount);
-            });
-          }
-
-          // Initialize sidebar toggle
-          document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('open');
-          });
+        });
+        
+        // Prevent form submission
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
