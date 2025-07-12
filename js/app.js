@@ -11,7 +11,12 @@ const firebaseConfig = {
 };
 
 const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
-firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
 const auth = firebase.auth();
 const database = firebase.database();
 const functions = firebase.functions();
@@ -81,26 +86,30 @@ function updateLastActive(uid) {
   }, 60000);
 }
 
-// Purchase package function with updated commission structure
+// Purchase package function
 async function purchasePackage(amount) {
   if (!currentUser || !userData) {
-    return showToast("Please wait, user data is loading...", "error");
+    showToast("Please wait, user data is loading...", "error");
+    return;
   }
 
   amount = parseFloat(amount);
   if (isNaN(amount) || amount <= 0) {
-    return showToast("Invalid package amount", "error");
+    showToast("Invalid package amount", "error");
+    return;
   }
 
   if (userData.accountStatus !== "active") {
-    return showToast("Your account is not active for transactions", "error");
+    showToast("Your account is not active for transactions", "error");
+    return;
   }
 
   const uid = currentUser.uid;
   const currentBalance = parseFloat(userData.balance || 0);
   
   if (amount > currentBalance) {
-    return showToast("Insufficient balance", "error");
+    showToast("Insufficient balance", "error");
+    return;
   }
 
   try {
@@ -109,15 +118,15 @@ async function purchasePackage(amount) {
     const packageId = database.ref().child("investments").push().key;
     const txId = database.ref().child("transactions").push().key;
 
-    // Updated Commission Structure
-    const directReferralCommission = amount * 0.10; // 10% for direct referral
-    const adminCommission = amount * 0.10;         // 10% for admin
-    const level2Commission = amount * 0.02;       // 2% for level 2
-    const level3Commission = amount * 0.02;       // 2% for level 3
-    const level4Commission = amount * 0.02;       // 2% for level 4
-    const level5Commission = amount * 0.02;       // 2% for level 5
-    const tradingPool = amount * 0.70;            // 70% for trading pool
-    const userProfit = amount * 0.02;             // 2% remaining as user profit
+    // Commission structure
+    const directReferralCommission = amount * 0.10;
+    const adminCommission = amount * 0.10;
+    const level2Commission = amount * 0.02;
+    const level3Commission = amount * 0.02;
+    const level4Commission = amount * 0.02;
+    const level5Commission = amount * 0.02;
+    const tradingPool = amount * 0.70;
+    const userProfit = amount * 0.02;
 
     // User updates
     updates[`users/${uid}/balance`] = currentBalance - amount + userProfit;
@@ -183,7 +192,7 @@ async function purchasePackage(amount) {
     // Distribute trading pool to active users
     await distributeTradingPool(tradingPool, timestamp, updates);
 
-    // Referral commissions - updated structure
+    // Referral commissions
     if (userData.referredBy) {
       await handleReferralCommissions(userData.referredBy, uid, amount, timestamp, updates);
     }
@@ -195,7 +204,7 @@ async function purchasePackage(amount) {
     await loadUserData(uid);
     await loadTeamStructure(uid);
     
-    showToast(`✅ Package of $${amount.toFixed(2)} purchased successfully!`, "success");
+    showToast(`Package of $${amount.toFixed(2)} purchased successfully!`, "success");
     
   } catch (error) {
     console.error("Package purchase error:", error);
@@ -206,7 +215,6 @@ async function purchasePackage(amount) {
 // Distribute trading pool to active users
 async function distributeTradingPool(amount, timestamp, updates) {
   try {
-    // Get all active users
     const activeUsersSnapshot = await database.ref("users")
       .orderByChild("accountStatus")
       .equalTo("active")
@@ -219,7 +227,6 @@ async function distributeTradingPool(amount, timestamp, updates) {
     
     const sharePerUser = amount / activeUserIds.length;
     
-    // Distribute equal shares to all active users
     activeUserIds.forEach(uid => {
       updates[`users/${uid}/balance`] = firebase.database.ServerValue.increment(sharePerUser);
       updates[`users/${uid}/tradingPoolEarnings`] = firebase.database.ServerValue.increment(sharePerUser);
@@ -241,27 +248,24 @@ async function distributeTradingPool(amount, timestamp, updates) {
   }
 }
 
-// Updated referral commission handler
+// Handle referral commissions
 async function handleReferralCommissions(referrerId, userId, packageAmount, timestamp, updates) {
   try {
     let currentUpline = referrerId;
-    const commissionRates = [0.10, 0.02, 0.02, 0.02, 0.02]; // 10% for level 1, 2% for levels 2-5
+    const commissionRates = [0.10, 0.02, 0.02, 0.02, 0.02];
     
     for (let level = 0; level < 5 && currentUpline; level++) {
       const commission = packageAmount * commissionRates[level];
       const uplineTxId = database.ref().child("transactions").push().key;
       
-      // Update upline balance
       updates[`users/${currentUpline}/balance`] = firebase.database.ServerValue.increment(commission);
       
-      // Update earnings based on level
       if (level === 0) {
         updates[`users/${currentUpline}/referralEarnings`] = firebase.database.ServerValue.increment(commission);
       } else {
         updates[`users/${currentUpline}/teamEarnings`] = firebase.database.ServerValue.increment(commission);
       }
       
-      // Create transaction record
       updates[`users/${currentUpline}/transactions/${uplineTxId}`] = {
         type: level === 0 ? "direct_referral" : `team_level_${level+1}`,
         amount: commission,
@@ -274,7 +278,6 @@ async function handleReferralCommissions(referrerId, userId, packageAmount, time
         level: level + 1
       };
       
-      // Get next upline
       const uplineSnapshot = await database.ref(`users/${currentUpline}/referredBy`).once("value");
       currentUpline = uplineSnapshot.val();
     }
@@ -320,7 +323,6 @@ async function loadUserData(uid) {
 // Load team structure
 async function loadTeamStructure(uid) {
   try {
-    // Load direct referrals
     const directRefsSnapshot = await database.ref(`users/${uid}/directReferrals`).once("value");
     const directRefs = directRefsSnapshot.val() || {};
     
@@ -329,7 +331,6 @@ async function loadTeamStructure(uid) {
         ? Object.keys(directRefs).map(id => `<div class="team-member">${id}</div>`).join("")
         : '<div class="text-muted">No direct referrals</div>';
     
-    // Load team counts and earnings for all levels
     for (let level = 1; level <= 5; level++) {
       const earnings = await calculateLevelEarnings(uid, level);
       document.getElementById(`level${level}Earnings`).textContent = earnings.toFixed(2);
@@ -418,21 +419,21 @@ function showToast(message, type) {
   
   toastContainer.appendChild(toast);
   
-  // Auto remove after 5 seconds
   setTimeout(() => {
     toast.remove();
   }, 5000);
   
-  // Close button
   toast.querySelector(".toast-close").addEventListener("click", () => {
     toast.remove();
   });
 }
 
-// Initialize package purchase buttons
+// Initialize package purchase buttons and logout
 window.addEventListener("DOMContentLoaded", () => {
+  // Package purchase buttons
   document.querySelectorAll("[data-package]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
       const amount = parseFloat(btn.getAttribute("data-package"));
       if (!isNaN(amount)) {
         purchasePackage(amount);
@@ -440,13 +441,107 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Add logout functionality
+  // Logout button
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       auth.signOut().then(() => {
         window.location.href = "login.html";
+      }).catch((error) => {
+        console.error("Logout error:", error);
+        showToast("Error logging out. Please try again.", "error");
       });
     });
   }
+
+  // Transfer button
+  const transferBtn = document.getElementById("submitTransfer");
+  if (transferBtn) {
+    transferBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const recipientId = document.getElementById("recipientId").value;
+      const amount = parseFloat(document.getElementById("transferAmount").value);
+      
+      if (!recipientId || !amount || amount <= 0) {
+        showToast("Please enter valid recipient and amount", "error");
+        return;
+      }
+      
+      transferFunds(recipientId, amount);
+    });
+  }
 });
+
+// Transfer funds function
+async function transferFunds(recipientId, amount) {
+  if (!currentUser || !userData) {
+    showToast("Please wait, user data is loading...", "error");
+    return;
+  }
+  
+  if (recipientId === currentUser.uid) {
+    showToast("Cannot transfer to yourself", "error");
+    return;
+  }
+  
+  if ((userData.balance || 0) < amount) {
+    showToast("Insufficient balance", "error");
+    return;
+  }
+  
+  try {
+    const updates = {};
+    const timestamp = Date.now();
+    const txId = database.ref().child("transactions").push().key;
+    const recipientTxId = database.ref().child("transactions").push().key;
+    
+    // Check if recipient exists
+    const recipientSnapshot = await database.ref("users/" + recipientId).once("value");
+    if (!recipientSnapshot.exists()) {
+      showToast("Recipient not found", "error");
+      return;
+    }
+    
+    const recipientData = recipientSnapshot.val();
+    
+    // Update balances
+    updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
+    updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
+    
+    // Create transaction records
+    updates[`users/${currentUser.uid}/transactions/${txId}`] = {
+      type: "transfer_out",
+      amount: -amount,
+      status: "completed",
+      timestamp,
+      details: `Transfer to ${recipientData.name || recipientId}`,
+      balanceBefore: userData.balance || 0,
+      balanceAfter: (userData.balance || 0) - amount,
+      recipientId
+    };
+    
+    updates[`users/${recipientId}/transactions/${recipientTxId}`] = {
+      type: "transfer_in",
+      amount: amount,
+      status: "completed",
+      timestamp,
+      details: `Transfer from ${userData.name || currentUser.uid}`,
+      balanceBefore: recipientData.balance || 0,
+      balanceAfter: (recipientData.balance || 0) + amount,
+      senderId: currentUser.uid
+    };
+    
+    // Execute updates
+    await database.ref().update(updates);
+    
+    showToast(`Successfully transferred $${amount.toFixed(2)}`, "success");
+    document.getElementById("transferAmount").value = "";
+    document.getElementById("recipientId").value = "";
+    loadUserData(currentUser.uid);
+    
+  } catch (error) {
+    console.error("Transfer error:", error);
+    showToast("Error processing transfer", "error");
+  }
+}
