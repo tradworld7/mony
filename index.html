@@ -223,6 +223,55 @@
             color: var(--gray-color);
         }
 
+        /* Transfer Form Styles */
+        .transfer-form {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
         /* Live Trading Section */
         .live-trading {
             background-color: var(--white-color);
@@ -444,7 +493,7 @@
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
             <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
             <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
-            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
@@ -502,6 +551,22 @@
                 <div class="card-value" id="teamEarnings">$0.00</div>
                 <div class="card-footer">From all 5 levels</div>
             </div>
+        </div>
+        
+        <!-- Transfer Funds Section -->
+        <div class="transfer-form">
+            <h2 class="section-title">Transfer Funds</h2>
+            <div class="form-group">
+                <label for="recipientId">Recipient User ID</label>
+                <input type="text" id="recipientId" class="form-control" placeholder="Enter recipient's ID">
+            </div>
+            <div class="form-group">
+                <label for="transferAmount">Amount ($)</label>
+                <input type="number" id="transferAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <button id="submitTransfer" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Transfer Now
+            </button>
         </div>
         
         <!-- Live Trading Section -->
@@ -731,6 +796,82 @@
             return Object.values(transactions).reduce((sum, tx) => sum + (tx.amount || 0), 0);
         }
 
+        // Transfer funds function
+        async function transferFunds() {
+            if (!currentUser || !userData) {
+                showToast("Please wait, user data is loading...", "error");
+                return;
+            }
+            
+            const recipientId = document.getElementById("recipientId").value;
+            const amount = parseFloat(document.getElementById("transferAmount").value);
+            
+            if (recipientId === currentUser.uid) {
+                showToast("Cannot transfer to yourself", "error");
+                return;
+            }
+            
+            if ((userData.balance || 0) < amount) {
+                showToast("Insufficient balance", "error");
+                return;
+            }
+            
+            try {
+                const updates = {};
+                const timestamp = Date.now();
+                const txId = database.ref().child("transactions").push().key;
+                const recipientTxId = database.ref().child("transactions").push().key;
+                
+                // Check if recipient exists
+                const recipientSnapshot = await database.ref("users/" + recipientId).once("value");
+                if (!recipientSnapshot.exists()) {
+                    showToast("Recipient not found", "error");
+                    return;
+                }
+                
+                const recipientData = recipientSnapshot.val();
+                
+                // Update balances
+                updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
+                updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
+                
+                // Create transaction records
+                updates[`users/${currentUser.uid}/transactions/${txId}`] = {
+                    type: "transfer_out",
+                    amount: -amount,
+                    status: "completed",
+                    timestamp,
+                    details: `Transfer to ${recipientData.name || recipientId}`,
+                    balanceBefore: userData.balance || 0,
+                    balanceAfter: (userData.balance || 0) - amount,
+                    recipientId
+                };
+                
+                updates[`users/${recipientId}/transactions/${recipientTxId}`] = {
+                    type: "transfer_in",
+                    amount: amount,
+                    status: "completed",
+                    timestamp,
+                    details: `Transfer from ${userData.name || currentUser.uid}`,
+                    balanceBefore: recipientData.balance || 0,
+                    balanceAfter: (recipientData.balance || 0) + amount,
+                    senderId: currentUser.uid
+                };
+                
+                // Execute updates
+                await database.ref().update(updates);
+                
+                showToast(`Successfully transferred $${amount.toFixed(2)}`, "success");
+                document.getElementById("transferAmount").value = "";
+                document.getElementById("recipientId").value = "";
+                loadUserData(currentUser.uid);
+                
+            } catch (error) {
+                console.error("Transfer error:", error);
+                showToast("Error processing transfer", "error");
+            }
+        }
+
         // Show toast notification
         function showToast(message, type) {
             const toastContainer = document.getElementById("toastContainer");
@@ -821,6 +962,12 @@
             // Sidebar toggle for mobile
             document.getElementById("menuToggle").addEventListener("click", () => {
                 document.getElementById("sidebar").classList.toggle("open");
+            });
+            
+            // Transfer button
+            document.getElementById("submitTransfer").addEventListener("click", (e) => {
+                e.preventDefault();
+                transferFunds();
             });
             
             // Logout button
