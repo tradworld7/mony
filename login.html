@@ -316,16 +316,13 @@
 
     <div id="toastContainer"></div>
 
-    <!-- Firebase and App Scripts -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
-
-        // Firebase configuration
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script>
+        // Firebase configuration - matches signup.html
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -338,8 +335,12 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const database = firebase.database();
 
         // Show toast notification
         function showToast(message, type) {
@@ -353,12 +354,10 @@
             
             toastContainer.appendChild(toast);
             
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 toast.remove();
             }, 5000);
             
-            // Close button
             toast.querySelector('.toast-close').addEventListener('click', () => {
                 toast.remove();
             });
@@ -394,7 +393,10 @@
             
             try {
                 // Sign in with email and password
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                
+                // Update last active timestamp in database
+                await database.ref('users/' + userCredential.user.uid + '/lastActive').set(Date.now());
                 
                 showToast('Login successful! Redirecting...', 'success');
                 
