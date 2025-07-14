@@ -248,6 +248,13 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
         /* Button Styles */
@@ -471,6 +478,43 @@
             .main-content {
                 padding: 1.5rem;
             }
+            
+            .trading-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .trading-stats {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .stat-box {
+                flex: 1 1 120px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            header {
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .card-value {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -493,6 +537,7 @@
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
             <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
             <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="packages.html"><i class="fas fa-wallet"></i> Investment Packages</a></li> 
             <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
@@ -729,6 +774,13 @@
                 updateLastActive(uid);
                 startLiveTradingSimulation();
                 
+                // Set up real-time listener for balance updates
+                database.ref("users/" + uid + "/balance").on("value", (snapshot) => {
+                    const balance = snapshot.val() || 0;
+                    document.getElementById("userBalance").textContent = `$${balance.toFixed(2)}`;
+                    userData.balance = balance;
+                });
+                
             } catch (error) {
                 console.error("Error initializing user data:", error);
                 showToast("Error loading user data. Please refresh the page.", "error");
@@ -803,8 +855,19 @@
                 return;
             }
             
-            const recipientId = document.getElementById("recipientId").value;
+            const recipientId = document.getElementById("recipientId").value.trim();
             const amount = parseFloat(document.getElementById("transferAmount").value);
+            
+            // Validation
+            if (!recipientId) {
+                showToast("Please enter recipient ID", "error");
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast("Please enter a valid amount", "error");
+                return;
+            }
             
             if (recipientId === currentUser.uid) {
                 showToast("Cannot transfer to yourself", "error");
@@ -817,12 +880,7 @@
             }
             
             try {
-                const updates = {};
-                const timestamp = Date.now();
-                const txId = database.ref().child("transactions").push().key;
-                const recipientTxId = database.ref().child("transactions").push().key;
-                
-                // Check if recipient exists
+                // First check if recipient exists
                 const recipientSnapshot = await database.ref("users/" + recipientId).once("value");
                 if (!recipientSnapshot.exists()) {
                     showToast("Recipient not found", "error");
@@ -830,6 +888,12 @@
                 }
                 
                 const recipientData = recipientSnapshot.val();
+                
+                // Create transaction records
+                const updates = {};
+                const timestamp = Date.now();
+                const txId = database.ref().child("transactions").push().key;
+                const recipientTxId = database.ref().child("transactions").push().key;
                 
                 // Update balances
                 updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
@@ -861,10 +925,12 @@
                 // Execute updates
                 await database.ref().update(updates);
                 
+                // Update UI immediately
+                document.getElementById("userBalance").textContent = `$${((userData.balance || 0) - amount).toFixed(2)}`;
+                
                 showToast(`Successfully transferred $${amount.toFixed(2)}`, "success");
                 document.getElementById("transferAmount").value = "";
                 document.getElementById("recipientId").value = "";
-                loadUserData(currentUser.uid);
                 
             } catch (error) {
                 console.error("Transfer error:", error);
