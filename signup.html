@@ -301,22 +301,13 @@
 
     <div id="toastContainer"></div>
 
-    <!-- Firebase and App Scripts -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword,
-            updateProfile
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
-        import { 
-            getDatabase, 
-            ref, 
-            set 
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
-
-        // Firebase configuration
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script>
+        // Firebase configuration - matches index.html
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -329,9 +320,12 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const database = firebase.database();
 
         // Show toast notification
         function showToast(message, type) {
@@ -345,12 +339,10 @@
             
             toastContainer.appendChild(toast);
             
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 toast.remove();
             }, 5000);
             
-            // Close button
             toast.querySelector('.toast-close').addEventListener('click', () => {
                 toast.remove();
             });
@@ -366,16 +358,47 @@
             }
         }
 
-        // Create user data in database
+        // Create user data in database - matches index.html structure
         async function createUserData(userId, userData) {
             try {
-                await set(ref(database, 'users/' + userId), userData);
+                // Default user data structure matching index.html
+                const defaultUserData = {
+                    name: userData.name,
+                    email: userData.email,
+                    mobile: userData.mobile,
+                    balance: 0,
+                    tradingProfit: 0,
+                    referralEarnings: 0,
+                    teamEarnings: 0,
+                    tradingPoolEarnings: 0,
+                    referredBy: userData.sponsorId || null,
+                    transactions: {},
+                    directReferrals: {},
+                    teamStructure: {
+                        level1Count: 0,
+                        level2Count: 0,
+                        level3Count: 0,
+                        level4Count: 0,
+                        level5Count: 0
+                    },
+                    lastActive: Date.now(),
+                    accountStatus: "active",
+                    kycVerified: false,
+                    joinDate: new Date().toISOString()
+                };
+                
+                await database.ref('users/' + userId).set(defaultUserData);
                 
                 // If there's a sponsor, update sponsor's referrals
                 if (userData.sponsorId) {
-                    await set(ref(database, `users/${userData.sponsorId}/referrals/${userId}`), {
+                    await database.ref(`users/${userData.sponsorId}/directReferrals/${userId}`).set({
                         joinDate: new Date().toISOString(),
                         status: 'active'
+                    });
+                    
+                    // Update sponsor's team structure level1Count
+                    await database.ref(`users/${userData.sponsorId}/teamStructure/level1Count`).transaction((current) => {
+                        return (current || 0) + 1;
                     });
                 }
                 
@@ -418,29 +441,19 @@
             
             try {
                 // Create user with email and password
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 
                 // Update user profile with name
-                await updateProfile(userCredential.user, {
+                await userCredential.user.updateProfile({
                     displayName: name
                 });
                 
                 // Prepare user data for database
                 const userData = {
+                    name: name,
                     email: email,
-                    fullName: name,
-                    mobileNumber: mobile,
-                    balance: 0,
-                    sponsorId: sponsorId || '',
-                    joinDate: new Date().toISOString(),
-                    lastLogin: new Date().toISOString(),
-                    teamStructure: {
-                        level1: 0,
-                        level2: 0,
-                        level3: 0,
-                        level4: 0,
-                        level5: 0
-                    }
+                    mobile: mobile,
+                    sponsorId: sponsorId || null
                 };
                 
                 // Create user data in database
