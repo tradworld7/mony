@@ -272,6 +272,73 @@
             font-size: 0.9rem;
         }
 
+        /* Print Button */
+        .print-btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 2rem;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .print-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         /* Responsive Styles */
         @media (max-width: 992px) {
             .sidebar {
@@ -302,6 +369,26 @@
             
             .total-box {
                 width: 100%;
+            }
+        }
+
+        @media print {
+            header, .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin: 0;
+                padding: 0;
+            }
+            
+            .invoice-container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            
+            .print-btn {
+                display: none;
             }
         }
     </style>
@@ -339,7 +426,7 @@
     <main class="main-content" id="mainContent">
         <h1 class="page-title">Invoice</h1>
         
-        <div class="invoice-container">
+        <div class="invoice-container" id="invoiceContent">
             <div class="invoice-header">
                 <div>
                     <div class="invoice-company">Trade World</div>
@@ -353,7 +440,7 @@
             
             <div class="invoice-meta">
                 <div class="invoice-to">
-                    <div class="invoice-to-title">INVOICE TO.</div>
+                    <div class="invoice-to-title">INVOICE TO</div>
                     <div id="invoiceName"></div>
                     <div id="invoiceEmail"></div>
                 </div>
@@ -363,6 +450,7 @@
                     <div>Invoice ID: <span id="invoiceId"></span></div>
                     <div>Date: <span id="invoiceDate2"></span></div>
                     <div>Maturity Date: <span id="maturityDate"></span></div>
+                    <div>Status: <span id="invoiceStatus">Paid</span></div>
                 </div>
             </div>
             
@@ -404,24 +492,20 @@
                 Thank you for investing with Trade World. Your investment will mature on <span id="maturityDateFooter"></span>.
             </div>
         </div>
+
+        <button class="print-btn" id="printBtn"><i class="fas fa-print"></i> Print Invoice</button>
+
+        <!-- Toast Notifications Container -->
+        <div class="toast-container" id="toastContainer"></div>
     </main>
 
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-        import { 
-            getAuth, 
-            onAuthStateChanged, 
-            signOut
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
-        import { 
-            getDatabase, 
-            ref, 
-            onValue, 
-            get 
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
-
-        // Your web app's Firebase configuration
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -434,49 +518,36 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
-        // Global Variables
+        const auth = firebase.auth();
+        const database = firebase.database();
+
         let currentUser = null;
         let userData = null;
+        let invoiceData = null;
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup sidebar toggle
-            document.getElementById('menuToggle').addEventListener('click', function() {
-                document.getElementById('sidebar').classList.toggle('open');
-            });
-            
-            // Check if user is logged in
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    loadUserData(user.uid);
-                    loadInvoiceData();
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
-            
-            // Setup logout
-            document.getElementById('logoutLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                logoutUser();
-            });
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData(user.uid);
+                loadInvoiceData();
+            } else {
+                window.location.href = "login.html";
+            }
         });
 
-        // Load user data from Firebase
-        function loadUserData(userId) {
-            const userRef = ref(database, 'users/' + userId);
-            
-            onValue(userRef, (snapshot) => {
+        // Load user data
+        function loadUserData(uid) {
+            database.ref("users/" + uid).on("value", (snapshot) => {
                 userData = snapshot.val();
+                
                 if (userData) {
-                    // Update user info in invoice
-                    document.getElementById('invoiceName').textContent = userData.name || 'N/A';
-                    document.getElementById('invoiceEmail').textContent = userData.email || 'N/A';
+                    document.getElementById("invoiceName").textContent = userData.name || "User";
+                    document.getElementById("invoiceEmail").textContent = userData.email || "N/A";
                 }
             });
         }
@@ -487,59 +558,113 @@
             const invoiceId = urlParams.get('id');
             
             if (invoiceId) {
-                const invoiceRef = ref(database, `invoices/${invoiceId}`);
-                
-                get(invoiceRef).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const invoiceData = snapshot.val();
-                        displayInvoice(invoiceData);
-                    } else {
-                        document.getElementById('mainContent').innerHTML = `
-                            <div class="alert alert-danger">Invoice not found</div>
-                        `;
-                    }
-                });
+                database.ref("invoices/" + currentUser.uid + "/" + invoiceId).once("value")
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            invoiceData = snapshot.val();
+                            displayInvoice(invoiceData);
+                        } else {
+                            showToast("Invoice not found", "error");
+                            document.getElementById("invoiceContent").innerHTML = `
+                                <div class="error-message" style="text-align: center; padding: 2rem;">
+                                    <h3>Invoice Not Found</h3>
+                                    <p>The requested invoice could not be found in our records.</p>
+                                    <a href="invoices.html" class="btn btn-primary">Back to Invoices</a>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error loading invoice:", error);
+                        showToast("Error loading invoice: " + error.message, "error");
+                    });
             } else {
-                document.getElementById('mainContent').innerHTML = `
-                    <div class="alert alert-danger">No invoice ID provided</div>
+                showToast("No invoice ID provided", "error");
+                document.getElementById("invoiceContent").innerHTML = `
+                    <div class="error-message" style="text-align: center; padding: 2rem;">
+                        <h3>No Invoice Specified</h3>
+                        <p>Please select an invoice from your invoices page.</p>
+                        <a href="invoices.html" class="btn btn-primary">Back to Invoices</a>
+                    </div>
                 `;
             }
         }
 
         // Display invoice data
-        function displayInvoice(invoiceData) {
+        function displayInvoice(data) {
             // Format dates
-            const purchaseDate = new Date(invoiceData.purchaseDate);
-            const maturityDate = new Date(invoiceData.maturityDate);
+            const purchaseDate = new Date(data.date);
+            const maturityDate = new Date(data.maturityDate || new Date().setDate(new Date().getDate() + 30));
             
             const options = { year: 'numeric', month: 'short', day: 'numeric' };
             
             // Set invoice details
-            document.getElementById('invoiceId').textContent = invoiceData.invoiceId;
-            document.getElementById('invoiceDate').textContent = purchaseDate.toLocaleDateString('en-US', options);
-            document.getElementById('invoiceDate2').textContent = purchaseDate.toLocaleDateString('en-US', options);
-            document.getElementById('maturityDate').textContent = maturityDate.toLocaleDateString('en-US', options);
-            document.getElementById('maturityDateFooter').textContent = maturityDate.toLocaleDateString('en-US', options);
+            document.getElementById("invoiceId").textContent = data.invoiceNumber || "N/A";
+            document.getElementById("invoiceDate").textContent = purchaseDate.toLocaleDateString('en-US', options);
+            document.getElementById("invoiceDate2").textContent = purchaseDate.toLocaleDateString('en-US', options);
+            document.getElementById("maturityDate").textContent = maturityDate.toLocaleDateString('en-US', options);
+            document.getElementById("maturityDateFooter").textContent = maturityDate.toLocaleDateString('en-US', options);
             
             // Set package details
-            document.getElementById('packageName').textContent = invoiceData.packageName;
-            document.getElementById('packageAmount').textContent = `$${invoiceData.amount.toFixed(2)}`;
-            document.getElementById('expectedReturn').textContent = `$${invoiceData.expectedReturn.toFixed(2)}`;
+            document.getElementById("packageName").textContent = data.packageName || "Investment Package";
+            document.getElementById("packageAmount").textContent = `$${(data.amount || 0).toFixed(2)}`;
+            document.getElementById("expectedReturn").textContent = `$${(data.returnAmount || (data.amount * 2) || 0).toFixed(2)}`;
             
             // Set totals
-            document.getElementById('subtotal').textContent = `$${invoiceData.amount.toFixed(2)}`;
-            document.getElementById('profit').textContent = `$${(invoiceData.expectedReturn - invoiceData.amount).toFixed(2)}`;
-            document.getElementById('grandTotal').textContent = `$${invoiceData.expectedReturn.toFixed(2)}`;
+            document.getElementById("subtotal").textContent = `$${(data.amount || 0).toFixed(2)}`;
+            document.getElementById("profit").textContent = `$${((data.returnAmount || (data.amount * 2) || 0) - (data.amount || 0)).toFixed(2)}`;
+            document.getElementById("grandTotal").textContent = `$${(data.returnAmount || (data.amount * 2) || 0).toFixed(2)}`;
+            
+            // Set status if available
+            if (data.status) {
+                document.getElementById("invoiceStatus").textContent = data.status;
+            }
         }
 
-        // Logout user
-        function logoutUser() {
-            signOut(auth).then(() => {
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error logging out:', error);
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            toast.querySelector(".toast-close").addEventListener("click", () => {
+                toast.remove();
             });
         }
+
+        // Initialize sidebar toggle and logout
+        window.addEventListener("DOMContentLoaded", () => {
+            // Sidebar toggle for mobile
+            document.getElementById("menuToggle").addEventListener("click", () => {
+                document.getElementById("sidebar").classList.toggle("open");
+            });
+            
+            // Print button
+            document.getElementById("printBtn").addEventListener("click", () => {
+                window.print();
+            });
+            
+            // Logout button
+            document.getElementById("logoutLink").addEventListener("click", (e) => {
+                e.preventDefault();
+                auth.signOut().then(() => {
+                    window.location.href = "login.html";
+                }).catch((error) => {
+                    console.error("Logout error:", error);
+                    showToast("Error logging out. Please try again.", "error");
+                });
+            });
+        });
     </script>
 </body>
 </html>
