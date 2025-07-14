@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade World - Invoice</title>
+    <title>My Invoices | Trade World</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -31,7 +31,6 @@
             background-color: #f5f7fa;
             color: var(--dark-color);
             line-height: 1.6;
-            overflow-x: hidden;
         }
 
         /* Header Styles */
@@ -138,151 +137,132 @@
 
         /* Invoice Styles */
         .invoice-container {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
+        .invoice-card {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
         .invoice-header {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            padding: 1.5rem;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            padding-bottom: 1rem;
+            align-items: center;
         }
 
         .invoice-company {
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--primary-color);
         }
 
         .invoice-address {
-            color: var(--gray-color);
             font-size: 0.9rem;
-            margin-top: 0.5rem;
+            opacity: 0.9;
         }
 
         .invoice-title {
             font-size: 1.8rem;
             font-weight: 600;
-            color: var(--dark-color);
         }
 
         .invoice-meta {
-            margin-top: 2rem;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .invoice-to {
-            background-color: rgba(67, 97, 238, 0.05);
-            padding: 1rem;
-            border-radius: 5px;
-        }
-
-        .invoice-to-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
+            flex: 1;
         }
 
         .invoice-details {
-            background-color: rgba(76, 201, 240, 0.05);
-            padding: 1rem;
-            border-radius: 5px;
+            flex: 1;
+            text-align: right;
         }
 
-        .invoice-details-title {
+        .invoice-label {
             font-weight: 600;
             margin-bottom: 0.5rem;
-            color: var(--success-color);
+            display: block;
         }
 
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 2rem 0;
         }
 
         .invoice-table th {
-            background-color: rgba(0, 0, 0, 0.02);
-            padding: 0.8rem 1rem;
             text-align: left;
-            font-weight: 500;
-            color: var(--gray-color);
+            padding: 1rem;
+            background-color: rgba(67, 97, 238, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .invoice-table td {
-            padding: 0.8rem 1rem;
+            padding: 1rem;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .invoice-table tr:last-child td {
-            border-bottom: none;
-        }
-
         .invoice-total {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 1rem;
-        }
-
-        .total-box {
-            background-color: rgba(67, 97, 238, 0.05);
+            text-align: right;
             padding: 1.5rem;
-            border-radius: 5px;
-            width: 300px;
         }
 
         .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
+            display: inline-block;
+            margin-left: 1rem;
         }
 
         .total-label {
-            font-weight: 500;
+            font-weight: 600;
+            margin-right: 1rem;
         }
 
         .total-amount {
-            font-weight: 600;
-        }
-
-        .grand-total {
             font-size: 1.2rem;
+            font-weight: 700;
             color: var(--primary-color);
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .invoice-footer {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            background-color: rgba(67, 97, 238, 0.05);
             text-align: center;
-            color: var(--gray-color);
             font-size: 0.9rem;
+            color: var(--gray-color);
         }
 
-        /* Print Button */
+        .no-invoices {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-color);
+        }
+
+        .no-invoices i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--gray-color);
+            opacity: 0.5;
+        }
+
         .print-btn {
-            display: inline-block;
             background-color: var(--primary-color);
             color: white;
-            padding: 0.75rem 1.5rem;
+            border: none;
+            padding: 0.5rem 1rem;
             border-radius: 5px;
-            text-decoration: none;
-            margin-top: 2rem;
-            text-align: center;
             cursor: pointer;
+            margin-top: 1rem;
+            display: inline-block;
         }
 
         .print-btn:hover {
@@ -360,15 +340,16 @@
 
         @media (max-width: 768px) {
             .invoice-meta {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                gap: 1rem;
             }
-            
+
+            .invoice-details {
+                text-align: left;
+            }
+
             .main-content {
                 padding: 1.5rem;
-            }
-            
-            .total-box {
-                width: 100%;
             }
         }
 
@@ -376,17 +357,17 @@
             header, .sidebar {
                 display: none;
             }
-            
+
             .main-content {
                 margin: 0;
                 padding: 0;
             }
-            
-            .invoice-container {
+
+            .invoice-card {
                 box-shadow: none;
-                max-width: 100%;
+                border: 1px solid #ddd;
             }
-            
+
             .print-btn {
                 display: none;
             }
@@ -412,92 +393,30 @@
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
             <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
             <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
-            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="invoices.html" class="active"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
-            <li><a href="invoices.html" class="active"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">Invoice</h1>
+        <h1 class="page-title">My Investment Invoices</h1>
         
-        <div class="invoice-container" id="invoiceContent">
-            <div class="invoice-header">
-                <div>
-                    <div class="invoice-company">Trade World</div>
-                    <div class="invoice-address">London SE1 4SU, United Kingdom</div>
-                </div>
-                <div>
-                    <div class="invoice-title">INVOICE</div>
-                    <div id="invoiceDate" class="invoice-address"></div>
-                </div>
-            </div>
-            
-            <div class="invoice-meta">
-                <div class="invoice-to">
-                    <div class="invoice-to-title">INVOICE TO</div>
-                    <div id="invoiceName"></div>
-                    <div id="invoiceEmail"></div>
-                </div>
-                
-                <div class="invoice-details">
-                    <div class="invoice-details-title">INVOICE DETAILS</div>
-                    <div>Invoice ID: <span id="invoiceId"></span></div>
-                    <div>Date: <span id="invoiceDate2"></span></div>
-                    <div>Maturity Date: <span id="maturityDate"></span></div>
-                    <div>Status: <span id="invoiceStatus">Paid</span></div>
-                </div>
-            </div>
-            
-            <table class="invoice-table">
-                <thead>
-                    <tr>
-                        <th>DESCRIPTION</th>
-                        <th>AMOUNT</th>
-                        <th>EXPECTED RETURN</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td id="packageName">Package</td>
-                        <td id="packageAmount">$0.00</td>
-                        <td id="expectedReturn">$0.00</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="invoice-total">
-                <div class="total-box">
-                    <div class="total-row">
-                        <span class="total-label">Subtotal:</span>
-                        <span class="total-amount" id="subtotal">$0.00</span>
-                    </div>
-                    <div class="total-row">
-                        <span class="total-label">Profit (100%):</span>
-                        <span class="total-amount" id="profit">$0.00</span>
-                    </div>
-                    <div class="total-row grand-total">
-                        <span class="total-label">Total Return:</span>
-                        <span class="total-amount" id="grandTotal">$0.00</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="invoice-footer">
-                Thank you for investing with Trade World. Your investment will mature on <span id="maturityDateFooter"></span>.
+        <div class="invoice-container" id="invoiceContainer">
+            <!-- Invoices will be loaded here dynamically -->
+            <div class="no-invoices">
+                <i class="fas fa-file-invoice"></i>
+                <p>No investment invoices found</p>
             </div>
         </div>
-
-        <button class="print-btn" id="printBtn"><i class="fas fa-print"></i> Print Invoice</button>
-
-        <!-- Toast Notifications Container -->
-        <div class="toast-container" id="toastContainer"></div>
     </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -525,100 +444,16 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        let currentUser = null;
-        let userData = null;
-        let invoiceData = null;
+        // DOM Elements
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const logoutLink = document.getElementById('logoutLink');
+        const invoiceContainer = document.getElementById('invoiceContainer');
 
-        // Auth state listener
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                loadUserData(user.uid);
-                loadInvoiceData();
-            } else {
-                window.location.href = "login.html";
-            }
-        });
-
-        // Load user data
-        function loadUserData(uid) {
-            database.ref("users/" + uid).on("value", (snapshot) => {
-                userData = snapshot.val();
-                
-                if (userData) {
-                    document.getElementById("invoiceName").textContent = userData.name || "User";
-                    document.getElementById("invoiceEmail").textContent = userData.email || "N/A";
-                }
-            });
-        }
-
-        // Load invoice data from URL parameters
-        function loadInvoiceData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const invoiceId = urlParams.get('id');
-            
-            if (invoiceId) {
-                database.ref("invoices/" + currentUser.uid + "/" + invoiceId).once("value")
-                    .then((snapshot) => {
-                        if (snapshot.exists()) {
-                            invoiceData = snapshot.val();
-                            displayInvoice(invoiceData);
-                        } else {
-                            showToast("Invoice not found", "error");
-                            document.getElementById("invoiceContent").innerHTML = `
-                                <div class="error-message" style="text-align: center; padding: 2rem;">
-                                    <h3>Invoice Not Found</h3>
-                                    <p>The requested invoice could not be found in our records.</p>
-                                    <a href="invoices.html" class="btn btn-primary">Back to Invoices</a>
-                                </div>
-                            `;
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error loading invoice:", error);
-                        showToast("Error loading invoice: " + error.message, "error");
-                    });
-            } else {
-                showToast("No invoice ID provided", "error");
-                document.getElementById("invoiceContent").innerHTML = `
-                    <div class="error-message" style="text-align: center; padding: 2rem;">
-                        <h3>No Invoice Specified</h3>
-                        <p>Please select an invoice from your invoices page.</p>
-                        <a href="invoices.html" class="btn btn-primary">Back to Invoices</a>
-                    </div>
-                `;
-            }
-        }
-
-        // Display invoice data
-        function displayInvoice(data) {
-            // Format dates
-            const purchaseDate = new Date(data.date);
-            const maturityDate = new Date(data.maturityDate || new Date().setDate(new Date().getDate() + 30));
-            
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            
-            // Set invoice details
-            document.getElementById("invoiceId").textContent = data.invoiceNumber || "N/A";
-            document.getElementById("invoiceDate").textContent = purchaseDate.toLocaleDateString('en-US', options);
-            document.getElementById("invoiceDate2").textContent = purchaseDate.toLocaleDateString('en-US', options);
-            document.getElementById("maturityDate").textContent = maturityDate.toLocaleDateString('en-US', options);
-            document.getElementById("maturityDateFooter").textContent = maturityDate.toLocaleDateString('en-US', options);
-            
-            // Set package details
-            document.getElementById("packageName").textContent = data.packageName || "Investment Package";
-            document.getElementById("packageAmount").textContent = `$${(data.amount || 0).toFixed(2)}`;
-            document.getElementById("expectedReturn").textContent = `$${(data.returnAmount || (data.amount * 2) || 0).toFixed(2)}`;
-            
-            // Set totals
-            document.getElementById("subtotal").textContent = `$${(data.amount || 0).toFixed(2)}`;
-            document.getElementById("profit").textContent = `$${((data.returnAmount || (data.amount * 2) || 0) - (data.amount || 0)).toFixed(2)}`;
-            document.getElementById("grandTotal").textContent = `$${(data.returnAmount || (data.amount * 2) || 0).toFixed(2)}`;
-            
-            // Set status if available
-            if (data.status) {
-                document.getElementById("invoiceStatus").textContent = data.status;
-            }
+        // Format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
         }
 
         // Show toast notification
@@ -642,20 +477,115 @@
             });
         }
 
+        // Load user invoices
+        function loadInvoices(userId) {
+            database.ref('investments/' + userId).orderByChild('date').once('value')
+                .then(snapshot => {
+                    const invoices = snapshot.val();
+                    invoiceContainer.innerHTML = '';
+
+                    if (!invoices) {
+                        invoiceContainer.innerHTML = `
+                            <div class="no-invoices">
+                                <i class="fas fa-file-invoice"></i>
+                                <p>No investment invoices found</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Convert to array and sort by date (newest first)
+                    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
+                    invoicesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    // Load user data to get name and email
+                    database.ref('users/' + userId).once('value').then(userSnapshot => {
+                        const userData = userSnapshot.val();
+                        const userName = userData?.name || 'User';
+                        const userEmail = userData?.email || '';
+
+                        // Display each invoice
+                        invoicesArray.forEach(invoice => {
+                            const invoiceElement = document.createElement('div');
+                            invoiceElement.className = 'invoice-card';
+                            invoiceElement.innerHTML = `
+                                <div class="invoice-header">
+                                    <div>
+                                        <div class="invoice-company">Trade World</div>
+                                        <div class="invoice-address">London SE1 4SU, United Kingdom</div>
+                                    </div>
+                                    <div class="invoice-title">INVOICE</div>
+                                </div>
+                                
+                                <div class="invoice-meta">
+                                    <div class="invoice-to">
+                                        <span class="invoice-label">INVOICE TO:</span>
+                                        <div>${userName}</div>
+                                        <div>${userEmail}</div>
+                                    </div>
+                                    <div class="invoice-details">
+                                        <div><span class="invoice-label">Invoice ID:</span> ${invoice.invoiceId || invoice.id}</div>
+                                        <div><span class="invoice-label">Date:</span> ${formatDate(invoice.date)}</div>
+                                    </div>
+                                </div>
+                                
+                                <table class="invoice-table">
+                                    <thead>
+                                        <tr>
+                                            <th>DESCRIPTION</th>
+                                            <th>AMOUNT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>${invoice.packageName || 'Investment Package'}</td>
+                                            <td>$${invoice.amount.toFixed(2)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <div class="invoice-total">
+                                    <div class="total-row">
+                                        <span class="total-label">Total:</span>
+                                        <span class="total-amount">$${invoice.amount.toFixed(2)}</span>
+                                    </div>
+                                    <div class="total-row">
+                                        <span class="total-label">Expected Return:</span>
+                                        <span class="total-amount" style="color: var(--success-color);">$${(invoice.amount * 2).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="invoice-footer">
+                                    <p>Thank you for your investment. Your package will mature on ${formatDate(invoice.maturityDate)}</p>
+                                    <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Invoice</button>
+                                </div>
+                            `;
+                            invoiceContainer.appendChild(invoiceElement);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading invoices:", error);
+                    showToast("Error loading invoices. Please try again.", "error");
+                });
+        }
+
         // Initialize sidebar toggle and logout
         window.addEventListener("DOMContentLoaded", () => {
             // Sidebar toggle for mobile
-            document.getElementById("menuToggle").addEventListener("click", () => {
-                document.getElementById("sidebar").classList.toggle("open");
+            menuToggle.addEventListener("click", () => {
+                sidebar.classList.toggle("open");
             });
             
-            // Print button
-            document.getElementById("printBtn").addEventListener("click", () => {
-                window.print();
+            // Close sidebar when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!sidebar.contains(e.target) {
+                    sidebar.classList.remove('open');
+                }
             });
-            
+
             // Logout button
-            document.getElementById("logoutLink").addEventListener("click", (e) => {
+            logoutLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 auth.signOut().then(() => {
                     window.location.href = "login.html";
@@ -663,6 +593,17 @@
                     console.error("Logout error:", error);
                     showToast("Error logging out. Please try again.", "error");
                 });
+            });
+
+            // Auth state listener
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in, load their invoices
+                    loadInvoices(user.uid);
+                } else {
+                    // No user is signed in, redirect to login
+                    window.location.href = "login.html";
+                }
             });
         });
     </script>
