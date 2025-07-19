@@ -548,7 +548,346 @@ function showToast(message, type) {
     toast.remove();
   });
 }
+// Add this to your app.js file (merge with existing code)
 
+// Invoice generation system
+async function generateInvoice(transactionId, userId) {
+  try {
+    // Get transaction details
+    const txSnapshot = await database.ref(`users/${userId}/transactions/${transactionId}`).once("value");
+    const transaction = txSnapshot.val();
+    
+    if (!transaction || transaction.type !== "investment") {
+      throw new Error("Not an investment transaction");
+    }
+    
+    // Get user details
+    const userSnapshot = await database.ref(`users/${userId}`).once("value");
+    const user = userSnapshot.val();
+    
+    // Create invoice HTML
+    const invoiceDate = new Date(transaction.timestamp);
+    const invoiceNumber = `INV-${invoiceDate.getFullYear()}${(invoiceDate.getMonth()+1).toString().padStart(2, '0')}${transactionId.substring(0, 5).toUpperCase()}`;
+    
+    const invoiceHTML = `
+      <div class="invoice-container" id="invoiceContent">
+        <div class="invoice-header">
+          <div class="logo">
+            <h2>TradeWorld</h2>
+            <p>Investment Invoice</p>
+          </div>
+          <div class="invoice-info">
+            <p><strong>Invoice #:</strong> ${invoiceNumber}</p>
+            <p><strong>Date:</strong> ${invoiceDate.toLocaleDateString()}</p>
+          </div>
+        </div>
+        
+        <div class="invoice-addresses">
+          <div class="billing-address">
+            <h3>Billed To:</h3>
+            <p>${user.name || 'User'}</p>
+            <p>${user.email || ''}</p>
+            <p>User ID: ${userId}</p>
+          </div>
+          <div class="company-address">
+            <h3>TradeWorld</h3>
+            <p>123 Investment Street</p>
+            <p>Financial District</p>
+            <p>support@tradworld.com</p>
+          </div>
+        </div>
+        
+        <table class="invoice-items">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Investment Package Purchase</td>
+              <td>$${Math.abs(transaction.amount).toFixed(2)}</td>
+            </tr>
+            <tr class="total">
+              <td><strong>Total</strong></td>
+              <td><strong>$${Math.abs(transaction.amount).toFixed(2)}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="invoice-footer">
+          <p>Thank you for your investment!</p>
+          <p>This is an automated invoice, no signature required.</p>
+        </div>
+      </div>
+    `;
+    
+    // Create a modal to display the invoice
+    const invoiceModal = document.createElement("div");
+    invoiceModal.className = "invoice-modal";
+    invoiceModal.innerHTML = `
+      <div class="invoice-modal-content">
+        <div class="invoice-modal-header">
+          <h3>Invoice #${invoiceNumber}</h3>
+          <button class="close-invoice">&times;</button>
+        </div>
+        <div class="invoice-modal-body">
+          ${invoiceHTML}
+        </div>
+        <div class="invoice-modal-footer">
+          <button class="btn btn-primary print-invoice">Print Invoice</button>
+          <button class="btn btn-secondary download-invoice">Download PDF</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(invoiceModal);
+    
+    // Add event listeners
+    invoiceModal.querySelector(".close-invoice").addEventListener("click", () => {
+      invoiceModal.remove();
+    });
+    
+    invoiceModal.querySelector(".print-invoice").addEventListener("click", () => {
+      printInvoice(invoiceModal.querySelector("#invoiceContent"));
+    });
+    
+    invoiceModal.querySelector(".download-invoice").addEventListener("click", () => {
+      downloadInvoiceAsPDF(invoiceModal.querySelector("#invoiceContent"), invoiceNumber);
+    });
+    
+    // Also save the invoice to the database
+    await database.ref(`users/${userId}/invoices/${transactionId}`).set({
+      invoiceNumber,
+      amount: Math.abs(transaction.amount),
+      date: transaction.timestamp,
+      status: "generated",
+      lastViewed: Date.now()
+    });
+    
+  } catch (error) {
+    console.error("Error generating invoice:", error);
+    showToast("Error generating invoice", "error");
+  }
+}
+
+// Print invoice function
+function printInvoice(element) {
+  const printWindow = window.open('', '', 'width=800,height=600');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Invoice</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
+          .invoice-container { max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #eee; }
+          .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .invoice-addresses { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .invoice-items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          .invoice-items th, .invoice-items td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+          .invoice-items .total td { border-top: 2px solid #333; font-weight: bold; }
+          .invoice-footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
+        </style>
+      </head>
+      <body>
+        ${element.innerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+  }, 500);
+}
+
+// Download invoice as PDF (requires jsPDF library)
+function downloadInvoiceAsPDF(element, invoiceNumber) {
+  // Check if jsPDF is available
+  if (typeof jsPDF !== 'undefined') {
+    const doc = new jsPDF();
+    
+    // Add invoice content to PDF
+    doc.html(element, {
+      callback: function(doc) {
+        doc.save(`invoice_${invoiceNumber}.pdf`);
+      },
+      margin: [10, 10, 10, 10],
+      autoPaging: 'text',
+      width: 190,
+      windowWidth: element.clientWidth
+    });
+  } else {
+    showToast("PDF library not loaded. Please try printing instead.", "error");
+  }
+}
+
+// Modify the purchasePackage function to generate invoice after purchase
+async function purchasePackage(amount) {
+  // ... (keep all existing purchasePackage code until the successful purchase)
+  
+  // After successful purchase (inside the try block), add:
+  showToast(`Package of $${amount.toFixed(2)} purchased successfully!`, "success");
+  
+  // Generate invoice for this purchase
+  await generateInvoice(txId, uid);
+  
+  // ... (rest of the existing code)
+}
+
+// Update the invoices.html page loading
+async function loadInvoices(uid) {
+  try {
+    const container = document.getElementById("invoiceList");
+    if (!container) return;
+    
+    const snapshot = await database.ref(`users/${uid}/transactions`)
+      .orderByChild("timestamp")
+      .once("value");
+    
+    const data = snapshot.val() || {};
+    container.innerHTML = "";
+    
+    // Filter for investment transactions
+    const investmentTxs = Object.entries(data).filter(([id, tx]) => 
+      tx.type === "investment" && tx.amount < 0
+    ).sort((a, b) => b[1].timestamp - a[1].timestamp);
+    
+    if (investmentTxs.length > 0) {
+      investmentTxs.forEach(([id, tx], index) => {
+        const invoiceDate = new Date(tx.timestamp);
+        const invoiceNumber = `INV-${invoiceDate.getFullYear()}${(invoiceDate.getMonth()+1).toString().padStart(2, '0')}${id.substring(0, 5).toUpperCase()}`;
+        
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${invoiceNumber}</td>
+          <td>${invoiceDate.toLocaleDateString()}</td>
+          <td>$${Math.abs(tx.amount).toFixed(2)}</td>
+          <td>
+            <button class="btn btn-sm btn-primary view-invoice" data-id="${id}">
+              View Invoice
+            </button>
+          </td>
+        `;
+        container.appendChild(row);
+      });
+      
+      // Add event listeners to invoice buttons
+      document.querySelectorAll(".view-invoice").forEach(btn => {
+        btn.addEventListener("click", () => {
+          generateInvoice(btn.dataset.id, uid);
+        });
+      });
+    } else {
+      container.innerHTML = `<tr><td colspan="4" class="text-center">No invoices found</td></tr>`;
+    }
+  } catch (error) {
+    console.error("Error loading invoices:", error);
+  }
+}
+
+// Add this CSS to your main stylesheet or in a style tag in invoices.html
+/*
+.invoice-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.invoice-modal-content {
+  background: white;
+  width: 80%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+.invoice-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.close-invoice {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.invoice-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.invoice-container {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.invoice-addresses {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.invoice-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.invoice-items th {
+  text-align: left;
+  padding: 10px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.invoice-items td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.invoice-items .total td {
+  border-top: 2px solid #333;
+  font-weight: bold;
+}
+
+.invoice-footer {
+  text-align: center;
+  margin-top: 30px;
+  color: #777;
+  font-size: 0.9em;
+}
+*/
 // Other functions (transferFunds, distributeTradingPool, handleReferralCommissions, etc.)
 // ... (keep all your existing functions from the original file)
 // Make sure to include all the functions you had in your original file
