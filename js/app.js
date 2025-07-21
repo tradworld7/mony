@@ -32,17 +32,49 @@ auth.onAuthStateChanged((user) => {
     currentUser = user;
     initializeUserData(user.uid);
     
+    // Update UI based on auth state
+    updateAuthUI(true);
+    
     // Redirect away from auth pages if already logged in
     if (currentPage === 'login.html' || currentPage === 'signup.html') {
       window.location.href = "index.html";
     }
   } else {
+    // Update UI based on auth state
+    updateAuthUI(false);
+    
     // Allow access to auth pages when not logged in
     if (currentPage !== 'login.html' && currentPage !== 'signup.html') {
       window.location.href = "login.html";
     }
   }
 });
+
+// Update UI elements based on auth state
+function updateAuthUI(isLoggedIn) {
+  // Header buttons
+  const loginBtn = document.getElementById('loginBtnHeader');
+  const signupBtn = document.getElementById('signupBtnHeader');
+  const dashboardBtn = document.getElementById('dashboardBtnHeader');
+  
+  if (loginBtn && signupBtn && dashboardBtn) {
+    if (isLoggedIn) {
+      loginBtn.style.display = 'none';
+      signupBtn.style.display = 'none';
+      dashboardBtn.style.display = 'inline-block';
+    } else {
+      loginBtn.style.display = 'inline-block';
+      signupBtn.style.display = 'inline-block';
+      dashboardBtn.style.display = 'none';
+    }
+  }
+  
+  // Sidebar - show/hide logout button
+  const logoutLink = document.getElementById('logoutLink');
+  if (logoutLink) {
+    logoutLink.style.display = isLoggedIn ? 'block' : 'none';
+  }
+}
 
 // Initialize user data - common for all pages
 async function initializeUserData(uid) {
@@ -72,7 +104,9 @@ async function initializeUserData(uid) {
         },
         lastActive: Date.now(),
         accountStatus: "active",
-        kycVerified: false
+        kycVerified: false,
+        walletAddress: "",
+        mobileNumber: ""
       };
       
       await database.ref("users/" + uid).set(defaultUserData);
@@ -106,7 +140,6 @@ async function loadPageSpecificData(uid) {
   // Page-specific data loading
   switch(currentPage) {
     case 'index.html':
-    case 'home.html':
       await loadDashboardData(uid);
       break;
       
@@ -154,17 +187,33 @@ async function loadCommonUserData(uid) {
     const snapshot = await database.ref("users/" + uid).once("value");
     userData = snapshot.val();
     
+    // Update balance display if element exists
     if (document.getElementById("userBalance")) {
       document.getElementById("userBalance").textContent = `$${(userData.balance || 0).toFixed(2)}`;
     }
     
+    // Update user name display if element exists
     if (document.getElementById("userName")) {
       document.getElementById("userName").textContent = userData.name || "User";
     }
     
+    // Update referral link if element exists
     if (document.getElementById("referralLink")) {
       document.getElementById("referralLink").value = 
-        `${window.location.origin}/register.html?ref=${uid}`;
+        `${window.location.origin}/signup.html?ref=${uid}`;
+    }
+    
+    // Update profile page fields if they exist
+    if (document.getElementById("fullName")) {
+      document.getElementById("fullName").value = userData.name || "";
+      document.getElementById("userEmail").value = userData.email || "";
+      document.getElementById("mobileNumber").value = userData.mobileNumber || "";
+      document.getElementById("userId").value = uid;
+      
+      if (userData.joinDate) {
+        const joinDate = new Date(userData.joinDate);
+        document.getElementById("accountCreated").value = joinDate.toLocaleDateString();
+      }
     }
     
   } catch (error) {
@@ -175,10 +224,23 @@ async function loadCommonUserData(uid) {
 // Dashboard specific data
 async function loadDashboardData(uid) {
   try {
-    document.getElementById("tradingProfit").textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
-    document.getElementById("referralEarnings").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
-    document.getElementById("teamEarnings").textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
-    document.getElementById("tradingPoolEarnings").textContent = `$${(userData.tradingPoolEarnings || 0).toFixed(2)}`;
+    // Update dashboard cards
+    if (document.getElementById("tradingProfit")) {
+      document.getElementById("tradingProfit").textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
+    }
+    
+    if (document.getElementById("referralProfit")) {
+      document.getElementById("referralProfit").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
+    }
+    
+    if (document.getElementById("teamEarnings")) {
+      document.getElementById("teamEarnings").textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
+    }
+    
+    if (document.getElementById("directReferrals")) {
+      const referralsCount = userData.directReferrals ? Object.keys(userData.directReferrals).length : 0;
+      document.getElementById("directReferrals").textContent = referralsCount;
+    }
     
     // Load recent transactions
     await loadTransactionHistory(uid, 5);
@@ -215,7 +277,7 @@ async function loadActiveInvestments(uid) {
         row.innerHTML = `
           <div>$${investment.amount.toFixed(2)}</div>
           <div>${daysLeft} days left</div>
-          <div>$${investment.profitEarned.toFixed(2)} earned</div>
+          <div>$${investment.profitEarned?.toFixed(2) || '0.00'} earned</div>
         `;
         container.appendChild(row);
       });
@@ -244,16 +306,31 @@ async function loadTransactionHistory(uid, limit = 10) {
     if (data) {
       Object.values(data).reverse().forEach((tx) => {
         const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${new Date(tx.timestamp).toLocaleString()}</td>
-          <td>${tx.type.replace(/_/g, ' ').toUpperCase()}</td>
-          <td class="${tx.amount >= 0 ? 'text-success' : 'text-danger'}">
-            $${Math.abs(tx.amount).toFixed(2)}
-          </td>
-          <td>${tx.status}</td>
-          <td>${tx.details}</td>
-          <td>$${(tx.balanceAfter || 0).toFixed(2)}</td>
-        `;
+        
+        // Format based on page requirements
+        if (window.location.pathname.includes('trading-history.html')) {
+          row.innerHTML = `
+            <td>${tx.txId || 'N/A'}</td>
+            <td>${new Date(tx.timestamp).toLocaleString()}</td>
+            <td>$${Math.abs(tx.amount).toFixed(2)}</td>
+            <td>$${(tx.currentValue || tx.amount * 2).toFixed(2)}</td>
+            <td class="${tx.amount >= 0 ? 'text-success' : 'text-danger'}">
+              $${((tx.currentValue || tx.amount * 2) - Math.abs(tx.amount)).toFixed(2)}
+            </td>
+            <td>${tx.status || 'completed'}</td>
+          `;
+        } else {
+          row.innerHTML = `
+            <td>${new Date(tx.timestamp).toLocaleString()}</td>
+            <td>${tx.type.replace(/_/g, ' ').toUpperCase()}</td>
+            <td class="${tx.amount >= 0 ? 'text-success' : 'text-danger'}">
+              $${Math.abs(tx.amount).toFixed(2)}
+            </td>
+            <td>${tx.status}</td>
+            <td>${tx.details}</td>
+          `;
+        }
+        
         container.appendChild(row);
       });
     } else {
@@ -268,62 +345,279 @@ async function loadTransactionHistory(uid, limit = 10) {
   }
 }
 
-// Load invoices
-async function loadInvoices(uid) {
+// Load profile data
+async function loadProfileData(uid) {
   try {
-    const container = document.getElementById("invoiceList");
-    if (!container) return;
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const user = snapshot.val();
     
-    const snapshot = await database.ref(`users/${uid}/transactions`)
-      .orderByChild("timestamp")
-      .once("value");
-    
-    const data = snapshot.val() || {};
-    container.innerHTML = "";
-    
-    // Filter for investment transactions
-    const investmentTxs = Object.values(data).filter(tx => 
-      tx.type === "investment" && tx.amount < 0
-    ).reverse();
-    
-    if (investmentTxs.length > 0) {
-      investmentTxs.forEach((tx, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>INV-${(index + 1).toString().padStart(4, '0')}</td>
-          <td>${new Date(tx.timestamp).toLocaleDateString()}</td>
-          <td>$${Math.abs(tx.amount).toFixed(2)}</td>
-          <td>
-            <button class="btn btn-sm btn-primary view-invoice" data-id="${tx.timestamp}">
-              View Invoice
-            </button>
-          </td>
-        `;
-        container.appendChild(row);
-      });
+    if (user) {
+      document.getElementById("fullName").value = user.name || "";
+      document.getElementById("userEmail").value = user.email || "";
+      document.getElementById("mobileNumber").value = user.mobileNumber || "";
+      document.getElementById("userId").value = uid;
       
-      // Add event listeners to invoice buttons
-      document.querySelectorAll(".view-invoice").forEach(btn => {
-        btn.addEventListener("click", () => {
-          generateInvoicePDF(btn.dataset.id);
-        });
-      });
-    } else {
-      container.innerHTML = `<tr><td colspan="4" class="text-center">No invoices found</td></tr>`;
+      if (user.joinDate) {
+        const joinDate = new Date(user.joinDate);
+        document.getElementById("accountCreated").value = joinDate.toLocaleDateString();
+      }
     }
   } catch (error) {
-    console.error("Error loading invoices:", error);
+    console.error("Error loading profile data:", error);
+    showToast("Error loading profile data", "error");
   }
 }
 
-// Generate invoice PDF (placeholder - implement with your PDF library)
-function generateInvoicePDF(timestamp) {
-  // This is a placeholder - implement with your preferred PDF generation library
-  console.log("Generating invoice for transaction at:", timestamp);
-  showToast("Invoice generation functionality will be implemented here", "info");
+// Load packages data
+async function loadPackagesData(uid) {
+  try {
+    // Check if packages are already loaded in the HTML
+    const packagesContainer = document.querySelector(".packages-grid");
+    if (!packagesContainer || packagesContainer.children.length === 0) {
+      // Load packages from database if not in HTML
+      const snapshot = await database.ref("packages").once("value");
+      const packages = snapshot.val();
+      
+      if (packages) {
+        packagesContainer.innerHTML = "";
+        Object.entries(packages).forEach(([id, pkg]) => {
+          const packageCard = document.createElement("div");
+          packageCard.className = "package-card";
+          packageCard.innerHTML = `
+            <h3 class="package-name">${pkg.name}</h3>
+            <div class="package-price">$${pkg.price}</div>
+            <div class="package-return">Returns $${pkg.returnAmount} (${pkg.returnPercentage}% Profit)</div>
+            <ul class="package-features">
+              ${pkg.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}
+            </ul>
+            <button class="btn btn-primary" data-package="${pkg.price}">Buy Now</button>
+          `;
+          packagesContainer.appendChild(packageCard);
+        });
+      }
+    }
+    
+    // Add event listeners to package buttons
+    document.querySelectorAll("[data-package]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const amount = parseFloat(btn.getAttribute("data-package"));
+        purchasePackage(amount);
+      });
+    });
+    
+  } catch (error) {
+    console.error("Error loading packages:", error);
+  }
 }
 
-// Package purchase function (used in packages.html)
+// Load referral data
+async function loadReferralData(uid) {
+  try {
+    const snapshot = await database.ref(`users/${uid}/directReferrals`).once("value");
+    const referrals = snapshot.val() || {};
+    const container = document.getElementById("referralList");
+    
+    container.innerHTML = "";
+    
+    if (Object.keys(referrals).length > 0) {
+      // Get details for each referral
+      const referralPromises = Object.keys(referrals).map(async (refId) => {
+        const refSnapshot = await database.ref(`users/${refId}`).once("value");
+        return refSnapshot.val();
+      });
+      
+      const referralUsers = await Promise.all(referralPromises);
+      
+      referralUsers.forEach((user, index) => {
+        if (user) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${user.name || 'User'}</td>
+            <td>${new Date(user.joinDate).toLocaleDateString()}</td>
+            <td>Active</td>
+            <td>$${(user.totalInvested || 0).toFixed(2)}</td>
+            <td>$${(user.referralEarnings || 0).toFixed(2)}</td>
+          `;
+          container.appendChild(row);
+        }
+      });
+    } else {
+      container.innerHTML = `<tr><td colspan="5" class="text-center">No referrals yet</td></tr>`;
+    }
+    
+  } catch (error) {
+    console.error("Error loading referral data:", error);
+  }
+}
+
+// Load team structure
+async function loadTeamStructure(uid) {
+  try {
+    const snapshot = await database.ref(`users/${uid}/teamStructure`).once("value");
+    const teamStructure = snapshot.val() || {};
+    
+    // Update team stats
+    document.getElementById("total-members").textContent = 
+      (teamStructure.level1Count || 0) + 
+      (teamStructure.level2Count || 0) + 
+      (teamStructure.level3Count || 0) + 
+      (teamStructure.level4Count || 0) + 
+      (teamStructure.level5Count || 0);
+    
+    document.getElementById("active-members").textContent = 
+      (teamStructure.level1Count || 0); // Assuming only level 1 is active
+    
+    document.getElementById("team-earnings").textContent = 
+      `$${(userData.teamEarnings || 0).toFixed(2)}`;
+    
+    // Load members for each level
+    for (let level = 1; level <= 5; level++) {
+      await loadTeamMembers(uid, level);
+    }
+    
+  } catch (error) {
+    console.error("Error loading team structure:", error);
+  }
+}
+
+// Load team members for a specific level
+async function loadTeamMembers(uid, level) {
+  try {
+    const container = document.getElementById(`level${level}-members`);
+    if (!container) return;
+    
+    let members = [];
+    
+    if (level === 1) {
+      // Direct referrals
+      const snapshot = await database.ref(`users/${uid}/directReferrals`).once("value");
+      const referrals = snapshot.val() || {};
+      members = Object.keys(referrals);
+    } else {
+      // For levels 2-5, we need to recursively find members
+      // This is simplified - in a real app you'd need a more efficient structure
+      const snapshot = await database.ref(`users/${uid}/teamLevels/level${level}`).once("value");
+      members = snapshot.val() ? Object.keys(snapshot.val()) : [];
+    }
+    
+    container.innerHTML = "";
+    
+    if (members.length > 0) {
+      // Get member details
+      const memberPromises = members.map(async (memberId) => {
+        const memberSnapshot = await database.ref(`users/${memberId}`).once("value");
+        return memberSnapshot.val();
+      });
+      
+      const memberDetails = await Promise.all(memberPromises);
+      
+      memberDetails.forEach((member, index) => {
+        if (member) {
+          const memberDiv = document.createElement("div");
+          memberDiv.className = "team-member";
+          memberDiv.innerHTML = `
+            <span class="member-name">${member.name || 'Member'}</span>
+            <span class="member-id">ID: ${memberId.substring(0, 8)}</span>
+          `;
+          container.appendChild(memberDiv);
+        }
+      });
+      
+      if (members.length > 10) {
+        const moreMsg = document.createElement("p");
+        moreMsg.className = "more-members";
+        moreMsg.textContent = `+${members.length - 10} more members...`;
+        container.appendChild(moreMsg);
+      }
+    } else {
+      const emptyMsg = document.createElement("p");
+      emptyMsg.className = "empty-message";
+      emptyMsg.textContent = `No members at level ${level}`;
+      container.appendChild(emptyMsg);
+    }
+    
+  } catch (error) {
+    console.error(`Error loading level ${level} members:`, error);
+  }
+}
+
+// Load withdrawal data
+async function loadWithdrawalData(uid) {
+  try {
+    // Update available balances
+    document.getElementById("availableTradingProfit").textContent = 
+      `$${(userData.tradingProfit || 0).toFixed(2)}`;
+    
+    document.getElementById("availableReferralProfit").textContent = 
+      `$${(userData.referralEarnings || 0).toFixed(2)}`;
+    
+    // Load withdrawal history
+    const snapshot = await database.ref(`users/${uid}/withdrawals`)
+      .orderByChild("timestamp")
+      .limitToLast(10)
+      .once("value");
+    
+    const container = document.getElementById("withdrawalHistory");
+    container.innerHTML = "";
+    
+    const withdrawals = snapshot.val() || {};
+    
+    if (Object.keys(withdrawals).length > 0) {
+      Object.values(withdrawals).reverse().forEach((withdrawal) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${new Date(withdrawal.timestamp).toLocaleDateString()}</td>
+          <td>$${withdrawal.amount.toFixed(2)}</td>
+          <td>${withdrawal.type}</td>
+          <td>${withdrawal.walletAddress.substring(0, 6)}...${withdrawal.walletAddress.substring(walletAddress.length - 4)}</td>
+          <td class="status-${withdrawal.status}">${withdrawal.status}</td>
+        `;
+        container.appendChild(row);
+      });
+    } else {
+      container.innerHTML = `<tr><td colspan="5" class="text-center">No withdrawal history</td></tr>`;
+    }
+    
+  } catch (error) {
+    console.error("Error loading withdrawal data:", error);
+  }
+}
+
+// Load deposit data
+async function loadDepositData(uid) {
+  try {
+    const snapshot = await database.ref(`users/${uid}/deposits`)
+      .orderByChild("timestamp")
+      .limitToLast(5)
+      .once("value");
+    
+    const container = document.getElementById("depositHistory");
+    if (container) {
+      container.innerHTML = "";
+      
+      const deposits = snapshot.val() || {};
+      
+      if (Object.keys(deposits).length > 0) {
+        Object.values(deposits).reverse().forEach((deposit) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${new Date(deposit.timestamp).toLocaleDateString()}</td>
+            <td>$${deposit.amount.toFixed(2)}</td>
+            <td>${deposit.status}</td>
+            <td>${deposit.txHash.substring(0, 10)}...</td>
+          `;
+          container.appendChild(row);
+        });
+      } else {
+        container.innerHTML = `<tr><td colspan="4" class="text-center">No deposit history</td></tr>`;
+      }
+    }
+  } catch (error) {
+    console.error("Error loading deposit data:", error);
+  }
+}
+
+// Package purchase function
 async function purchasePackage(amount) {
   if (!currentUser || !userData) {
     showToast("Please wait, user data is loading...", "error");
@@ -448,8 +742,473 @@ async function purchasePackage(amount) {
   }
 }
 
-// Initialize all page elements
-window.addEventListener("DOMContentLoaded", () => {
+// Distribute trading pool to active users
+async function distributeTradingPool(amount, timestamp, updates) {
+  try {
+    // Get all active users
+    const snapshot = await database.ref("users")
+      .orderByChild("accountStatus")
+      .equalTo("active")
+      .once("value");
+    
+    const users = snapshot.val() || {};
+    const activeUsers = Object.keys(users).filter(uid => {
+      return users[uid].investments && Object.keys(users[uid].investments).length > 0;
+    });
+    
+    if (activeUsers.length > 0) {
+      const sharePerUser = amount / activeUsers.length;
+      
+      activeUsers.forEach(uid => {
+        updates[`users/${uid}/tradingPoolEarnings`] = 
+          firebase.database.ServerValue.increment(sharePerUser);
+        
+        updates[`users/${uid}/balance`] = 
+          firebase.database.ServerValue.increment(sharePerUser);
+          
+        const txId = database.ref().child("transactions").push().key;
+        updates[`users/${uid}/transactions/${txId}`] = {
+          type: "trading_pool",
+          amount: sharePerUser,
+          status: "completed",
+          timestamp,
+          details: `Trading pool distribution`,
+          balanceBefore: users[uid].balance || 0,
+          balanceAfter: (users[uid].balance || 0) + sharePerUser
+        };
+      });
+    }
+    
+  } catch (error) {
+    console.error("Error distributing trading pool:", error);
+  }
+}
+
+// Handle referral commissions
+async function handleReferralCommissions(referrerId, userId, amount, timestamp, updates) {
+  try {
+    // Get referrer data
+    const referrerSnapshot = await database.ref(`users/${referrerId}`).once("value");
+    const referrer = referrerSnapshot.val();
+    
+    if (!referrer) return;
+    
+    // Direct referral commission (10%)
+    const directCommission = amount * 0.10;
+    updates[`users/${referrerId}/referralEarnings`] = 
+      firebase.database.ServerValue.increment(directCommission);
+    
+    updates[`users/${referrerId}/balance`] = 
+      firebase.database.ServerValue.increment(directCommission);
+      
+    const directTxId = database.ref().child("transactions").push().key;
+    updates[`users/${referrerId}/transactions/${directTxId}`] = {
+      type: "referral_commission",
+      amount: directCommission,
+      status: "completed",
+      timestamp,
+      details: `Direct referral commission from ${userId}`,
+      balanceBefore: referrer.balance || 0,
+      balanceAfter: (referrer.balance || 0) + directCommission
+    };
+    
+    // Level commissions (2% each for levels 2-5)
+    let currentUpline = referrer.referredBy;
+    for (let level = 2; level <= 5; level++) {
+      if (!currentUpline) break;
+      
+      const levelCommission = amount * 0.02;
+      
+      // Get upline data
+      const uplineSnapshot = await database.ref(`users/${currentUpline}`).once("value");
+      const upline = uplineSnapshot.val();
+      
+      if (upline) {
+        updates[`users/${currentUpline}/teamEarnings`] = 
+          firebase.database.ServerValue.increment(levelCommission);
+        
+        updates[`users/${currentUpline}/balance`] = 
+          firebase.database.ServerValue.increment(levelCommission);
+          
+        const levelTxId = database.ref().child("transactions").push().key;
+        updates[`users/${currentUpline}/transactions/${levelTxId}`] = {
+          type: "team_commission",
+          amount: levelCommission,
+          status: "completed",
+          timestamp,
+          details: `Level ${level} commission from ${userId}`,
+          balanceBefore: upline.balance || 0,
+          balanceAfter: (upline.balance || 0) + levelCommission
+        };
+        
+        // Update team structure counts
+        updates[`users/${currentUpline}/teamStructure/level${level}Count`] = 
+          firebase.database.ServerValue.increment(1);
+      }
+      
+      currentUpline = upline?.referredBy;
+    }
+    
+  } catch (error) {
+    console.error("Error handling referral commissions:", error);
+  }
+}
+
+// Transfer funds to another user
+async function transferFunds(recipientId, amount) {
+  if (!currentUser || !userData) {
+    showToast("Please wait, user data is loading...", "error");
+    return;
+  }
+
+  amount = parseFloat(amount);
+  if (isNaN(amount) || amount <= 0) {
+    showToast("Invalid transfer amount", "error");
+    return;
+  }
+
+  const uid = currentUser.uid;
+  const currentBalance = parseFloat(userData.balance || 0);
+  
+  if (amount > currentBalance) {
+    showToast("Insufficient balance", "error");
+    return;
+  }
+
+  try {
+    // Verify recipient exists
+    const recipientSnapshot = await database.ref(`users/${recipientId}`).once("value");
+    const recipient = recipientSnapshot.val();
+    
+    if (!recipient) {
+      showToast("Recipient not found", "error");
+      return;
+    }
+    
+    if (recipientId === uid) {
+      showToast("Cannot transfer to yourself", "error");
+      return;
+    }
+
+    const updates = {};
+    const timestamp = Date.now();
+    const txId = database.ref().child("transactions").push().key;
+
+    // Update sender balance
+    updates[`users/${uid}/balance`] = currentBalance - amount;
+    
+    // Update recipient balance
+    updates[`users/${recipientId}/balance`] = 
+      firebase.database.ServerValue.increment(amount);
+    
+    // Create transaction records
+    updates[`transactions/${txId}`] = {
+      userId: uid,
+      type: "transfer",
+      amount: -amount,
+      status: "completed",
+      timestamp,
+      details: `Transfer to ${recipient.name || recipientId}`,
+      balanceBefore: currentBalance,
+      balanceAfter: currentBalance - amount,
+      recipientId
+    };
+    
+    updates[`users/${uid}/transactions/${txId}`] = {
+      type: "transfer",
+      amount: -amount,
+      status: "completed",
+      timestamp,
+      details: `Transfer to ${recipient.name || recipientId}`,
+      balanceBefore: currentBalance,
+      balanceAfter: currentBalance - amount,
+      recipientId
+    };
+    
+    const recipientTxId = database.ref().child("transactions").push().key;
+    updates[`users/${recipientId}/transactions/${recipientTxId}`] = {
+      type: "transfer",
+      amount: amount,
+      status: "completed",
+      timestamp,
+      details: `Transfer from ${userData.name || uid}`,
+      balanceBefore: recipient.balance || 0,
+      balanceAfter: (recipient.balance || 0) + amount,
+      senderId: uid
+    };
+
+    // Execute all updates
+    await database.ref().update(updates);
+    
+    // Refresh data
+    await loadPageSpecificData(uid);
+    
+    showToast(`Successfully transferred $${amount.toFixed(2)}`, "success");
+    
+    // Clear form if exists
+    if (document.getElementById("transferAmount")) {
+      document.getElementById("transferAmount").value = "";
+    }
+    if (document.getElementById("recipientId")) {
+      document.getElementById("recipientId").value = "";
+    }
+    
+  } catch (error) {
+    console.error("Transfer error:", error);
+    showToast("Error processing transfer. Please try again.", "error");
+  }
+}
+
+// Process deposit request
+async function processDeposit(amount, txHash) {
+  if (!currentUser || !userData) {
+    showToast("Please wait, user data is loading...", "error");
+    return;
+  }
+
+  amount = parseFloat(amount);
+  if (isNaN(amount) || amount < 10 || amount > 2000) {
+    showToast("Amount must be between $10 and $2000", "error");
+    return;
+  }
+
+  if (!txHash || txHash.length < 10) {
+    showToast("Please enter a valid transaction hash", "error");
+    return;
+  }
+
+  const uid = currentUser.uid;
+  
+  try {
+    const updates = {};
+    const timestamp = Date.now();
+    const depositId = database.ref().child("deposits").push().key;
+    const txId = database.ref().child("transactions").push().key;
+
+    // Create deposit record
+    updates[`users/${uid}/deposits/${depositId}`] = {
+      amount,
+      txHash,
+      status: "pending",
+      timestamp,
+      walletAddress: "0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886"
+    };
+    
+    // Create transaction record
+    updates[`users/${uid}/transactions/${txId}`] = {
+      type: "deposit",
+      amount: amount,
+      status: "pending",
+      timestamp,
+      details: `USDT Deposit (BEP20) - TX: ${txHash.substring(0, 10)}...`,
+      txHash
+    };
+    
+    // Update admin notifications
+    updates[`admin/depositNotifications/${depositId}`] = {
+      userId: uid,
+      amount,
+      txHash,
+      timestamp,
+      status: "pending"
+    };
+
+    // Execute all updates
+    await database.ref().update(updates);
+    
+    // Clear form if exists
+    if (document.getElementById("depositAmount")) {
+      document.getElementById("depositAmount").value = "";
+    }
+    if (document.getElementById("transactionHash")) {
+      document.getElementById("transactionHash").value = "";
+    }
+    
+    showToast("Deposit request submitted for verification", "success");
+    
+  } catch (error) {
+    console.error("Deposit error:", error);
+    showToast("Error processing deposit. Please try again.", "error");
+  }
+}
+
+// Process withdrawal request
+async function processWithdrawal(amount, walletAddress, type = "trading") {
+  if (!currentUser || !userData) {
+    showToast("Please wait, user data is loading...", "error");
+    return;
+  }
+
+  amount = parseFloat(amount);
+  if (isNaN(amount) || amount <= 0) {
+    showToast("Invalid withdrawal amount", "error");
+    return;
+  }
+
+  if (!walletAddress || walletAddress.length < 10) {
+    showToast("Please enter a valid wallet address", "error");
+    return;
+  }
+
+  const uid = currentUser.uid;
+  let availableBalance = 0;
+  
+  if (type === "trading") {
+    availableBalance = parseFloat(userData.tradingProfit || 0);
+    if (amount < 20) {
+      showToast("Minimum trading withdrawal is $20", "error");
+      return;
+    }
+  } else {
+    availableBalance = parseFloat(userData.referralEarnings || 0);
+    if (amount < 10) {
+      showToast("Minimum referral withdrawal is $10", "error");
+      return;
+    }
+  }
+  
+  if (amount > availableBalance) {
+    showToast("Insufficient balance for withdrawal", "error");
+    return;
+  }
+
+  try {
+    const updates = {};
+    const timestamp = Date.now();
+    const withdrawalId = database.ref().child("withdrawals").push().key;
+    const txId = database.ref().child("transactions").push().key;
+
+    // Create withdrawal record
+    updates[`users/${uid}/withdrawals/${withdrawalId}`] = {
+      amount,
+      walletAddress,
+      type,
+      status: "pending",
+      timestamp
+    };
+    
+    // Create transaction record
+    updates[`users/${uid}/transactions/${txId}`] = {
+      type: "withdrawal",
+      amount: -amount,
+      status: "pending",
+      timestamp,
+      details: `${type === "trading" ? "Trading" : "Referral"} withdrawal to ${walletAddress.substring(0, 6)}...`,
+      walletAddress
+    };
+    
+    // Update admin notifications
+    updates[`admin/withdrawalNotifications/${withdrawalId}`] = {
+      userId: uid,
+      amount,
+      walletAddress,
+      type,
+      timestamp,
+      status: "pending"
+    };
+
+    // Execute all updates
+    await database.ref().update(updates);
+    
+    // Clear form if exists
+    if (document.getElementById("withdrawalAmount")) {
+      document.getElementById("withdrawalAmount").value = "";
+    }
+    if (document.getElementById("walletAddress")) {
+      document.getElementById("walletAddress").value = "";
+    }
+    
+    showToast("Withdrawal request submitted for processing", "success");
+    
+  } catch (error) {
+    console.error("Withdrawal error:", error);
+    showToast("Error processing withdrawal. Please try again.", "error");
+  }
+}
+
+// Change password
+async function changePassword(currentPassword, newPassword) {
+  if (!currentUser) {
+    showToast("Please log in first", "error");
+    return;
+  }
+
+  if (!currentPassword || !newPassword) {
+    showToast("Please enter both current and new password", "error");
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    showToast("New password must be at least 8 characters", "error");
+    return;
+  }
+
+  try {
+    // Reauthenticate user
+    const credential = firebase.auth.EmailAuthProvider.credential(
+      currentUser.email,
+      currentPassword
+    );
+    
+    await currentUser.reauthenticateWithCredential(credential);
+    
+    // Update password
+    await currentUser.updatePassword(newPassword);
+    
+    showToast("Password changed successfully", "success");
+    
+    // Clear form if exists
+    if (document.getElementById("currentPassword")) {
+      document.getElementById("currentPassword").value = "";
+    }
+    if (document.getElementById("newPassword")) {
+      document.getElementById("newPassword").value = "";
+    }
+    if (document.getElementById("confirmPassword")) {
+      document.getElementById("confirmPassword").value = "";
+    }
+    
+  } catch (error) {
+    console.error("Password change error:", error);
+    
+    let errorMessage = "Error changing password";
+    if (error.code === "auth/wrong-password") {
+      errorMessage = "Current password is incorrect";
+    } else if (error.code === "auth/weak-password") {
+      errorMessage = "New password is too weak";
+    }
+    
+    showToast(errorMessage, "error");
+  }
+}
+
+// Show toast notification
+function showToast(message, type = "success") {
+  const toastContainer = document.getElementById("toastContainer");
+  if (!toastContainer) return;
+  
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span>${message}</span>
+    <button class="toast-close">&times;</button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 5000);
+  
+  // Close button
+  toast.querySelector(".toast-close").addEventListener("click", () => {
+    toast.remove();
+  });
+}
+
+// Initialize all page elements and event listeners
+document.addEventListener("DOMContentLoaded", () => {
   // Package purchase buttons
   document.querySelectorAll("[data-package]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -460,20 +1219,6 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
-  // Logout button
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      }).catch((error) => {
-        console.error("Logout error:", error);
-        showToast("Error logging out. Please try again.", "error");
-      });
-    });
-  }
 
   // Transfer button
   const transferBtn = document.getElementById("submitTransfer");
@@ -499,13 +1244,14 @@ window.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const amount = parseFloat(document.getElementById("withdrawalAmount").value);
       const walletAddress = document.getElementById("walletAddress").value;
+      const type = document.getElementById("withdrawalType").value;
       
       if (!amount || amount <= 0 || !walletAddress) {
         showToast("Please enter valid amount and wallet address", "error");
         return;
       }
       
-      requestWithdrawal(amount, walletAddress);
+      processWithdrawal(amount, walletAddress, type);
     });
   }
 
@@ -515,379 +1261,141 @@ window.addEventListener("DOMContentLoaded", () => {
     depositBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const amount = parseFloat(document.getElementById("depositAmount").value);
+      const txHash = document.getElementById("transactionHash").value.trim();
       
-      if (!amount || amount <= 0) {
-        showToast("Please enter valid amount", "error");
+      if (!amount || amount <= 0 || !txHash) {
+        showToast("Please enter valid amount and transaction hash", "error");
         return;
       }
       
-      requestDeposit(amount);
+      processDeposit(amount, txHash);
+    });
+  }
+
+  // Change password button
+  const changePasswordBtn = document.getElementById("changePasswordBtn");
+  if (changePasswordBtn) {
+    changePasswordBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById("currentPassword").value;
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      
+      if (newPassword !== confirmPassword) {
+        showToast("New passwords do not match", "error");
+        return;
+      }
+      
+      changePassword(currentPassword, newPassword);
+    });
+  }
+
+  // Copy referral link button
+  const copyReferralBtn = document.getElementById("copyReferralLink");
+  if (copyReferralBtn) {
+    copyReferralBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const referralLink = document.getElementById("referralLink");
+      referralLink.select();
+      document.execCommand("copy");
+      showToast("Referral link copied to clipboard", "success");
+    });
+  }
+
+  // Logout button
+  const logoutBtn = document.getElementById("logoutLink");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      auth.signOut().then(() => {
+        window.location.href = "login.html";
+      }).catch((error) => {
+        console.error("Logout error:", error);
+        showToast("Error logging out. Please try again.", "error");
+      });
+    });
+  }
+
+  // Menu toggle for mobile
+  const menuToggle = document.getElementById("menuToggle");
+  if (menuToggle) {
+    menuToggle.addEventListener("click", () => {
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar) {
+        sidebar.classList.toggle("open");
+      }
     });
   }
 });
 
-// Show toast notification
-function showToast(message, type) {
-  const toastContainer = document.getElementById("toastContainer");
-  if (!toastContainer) return;
-  
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `
-    <span>${message}</span>
-    <button class="toast-close">&times;</button>
-  `;
-  
-  toastContainer.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.remove();
-  }, 5000);
-  
-  toast.querySelector(".toast-close").addEventListener("click", () => {
-    toast.remove();
-  });
-}
-// Add this to your app.js file (merge with existing code)
-
-// Invoice generation system
-async function generateInvoice(transactionId, userId) {
-  try {
-    // Get transaction details
-    const txSnapshot = await database.ref(`users/${userId}/transactions/${transactionId}`).once("value");
-    const transaction = txSnapshot.val();
-    
-    if (!transaction || transaction.type !== "investment") {
-      throw new Error("Not an investment transaction");
-    }
-    
-    // Get user details
-    const userSnapshot = await database.ref(`users/${userId}`).once("value");
-    const user = userSnapshot.val();
-    
-    // Create invoice HTML
-    const invoiceDate = new Date(transaction.timestamp);
-    const invoiceNumber = `INV-${invoiceDate.getFullYear()}${(invoiceDate.getMonth()+1).toString().padStart(2, '0')}${transactionId.substring(0, 5).toUpperCase()}`;
-    
-    const invoiceHTML = `
-      <div class="invoice-container" id="invoiceContent">
-        <div class="invoice-header">
-          <div class="logo">
-            <h2>TradeWorld</h2>
-            <p>Investment Invoice</p>
-          </div>
-          <div class="invoice-info">
-            <p><strong>Invoice #:</strong> ${invoiceNumber}</p>
-            <p><strong>Date:</strong> ${invoiceDate.toLocaleDateString()}</p>
-          </div>
-        </div>
-        
-        <div class="invoice-addresses">
-          <div class="billing-address">
-            <h3>Billed To:</h3>
-            <p>${user.name || 'User'}</p>
-            <p>${user.email || ''}</p>
-            <p>User ID: ${userId}</p>
-          </div>
-          <div class="company-address">
-            <h3>TradeWorld</h3>
-            <p>123 Investment Street</p>
-            <p>Financial District</p>
-            <p>support@tradworld.com</p>
-          </div>
-        </div>
-        
-        <table class="invoice-items">
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Investment Package Purchase</td>
-              <td>$${Math.abs(transaction.amount).toFixed(2)}</td>
-            </tr>
-            <tr class="total">
-              <td><strong>Total</strong></td>
-              <td><strong>$${Math.abs(transaction.amount).toFixed(2)}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div class="invoice-footer">
-          <p>Thank you for your investment!</p>
-          <p>This is an automated invoice, no signature required.</p>
-        </div>
-      </div>
-    `;
-    
-    // Create a modal to display the invoice
-    const invoiceModal = document.createElement("div");
-    invoiceModal.className = "invoice-modal";
-    invoiceModal.innerHTML = `
-      <div class="invoice-modal-content">
-        <div class="invoice-modal-header">
-          <h3>Invoice #${invoiceNumber}</h3>
-          <button class="close-invoice">&times;</button>
-        </div>
-        <div class="invoice-modal-body">
-          ${invoiceHTML}
-        </div>
-        <div class="invoice-modal-footer">
-          <button class="btn btn-primary print-invoice">Print Invoice</button>
-          <button class="btn btn-secondary download-invoice">Download PDF</button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(invoiceModal);
-    
-    // Add event listeners
-    invoiceModal.querySelector(".close-invoice").addEventListener("click", () => {
-      invoiceModal.remove();
-    });
-    
-    invoiceModal.querySelector(".print-invoice").addEventListener("click", () => {
-      printInvoice(invoiceModal.querySelector("#invoiceContent"));
-    });
-    
-    invoiceModal.querySelector(".download-invoice").addEventListener("click", () => {
-      downloadInvoiceAsPDF(invoiceModal.querySelector("#invoiceContent"), invoiceNumber);
-    });
-    
-    // Also save the invoice to the database
-    await database.ref(`users/${userId}/invoices/${transactionId}`).set({
-      invoiceNumber,
-      amount: Math.abs(transaction.amount),
-      date: transaction.timestamp,
-      status: "generated",
-      lastViewed: Date.now()
-    });
-    
-  } catch (error) {
-    console.error("Error generating invoice:", error);
-    showToast("Error generating invoice", "error");
-  }
-}
-
-// Print invoice function
-function printInvoice(element) {
-  const printWindow = window.open('', '', 'width=800,height=600');
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Invoice</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
-          .invoice-container { max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #eee; }
-          .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-          .invoice-addresses { display: flex; justify-content: space-between; margin-bottom: 20px; }
-          .invoice-items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          .invoice-items th, .invoice-items td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-          .invoice-items .total td { border-top: 2px solid #333; font-weight: bold; }
-          .invoice-footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
-        </style>
-      </head>
-      <body>
-        ${element.innerHTML}
-      </body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
-  }, 500);
-}
-
-// Download invoice as PDF (requires jsPDF library)
-function downloadInvoiceAsPDF(element, invoiceNumber) {
-  // Check if jsPDF is available
-  if (typeof jsPDF !== 'undefined') {
-    const doc = new jsPDF();
-    
-    // Add invoice content to PDF
-    doc.html(element, {
-      callback: function(doc) {
-        doc.save(`invoice_${invoiceNumber}.pdf`);
-      },
-      margin: [10, 10, 10, 10],
-      autoPaging: 'text',
-      width: 190,
-      windowWidth: element.clientWidth
-    });
-  } else {
-    showToast("PDF library not loaded. Please try printing instead.", "error");
-  }
-}
-
-// Modify the purchasePackage function to generate invoice after purchase
-async function purchasePackage(amount) {
-  // ... (keep all existing purchasePackage code until the successful purchase)
-  
-  // After successful purchase (inside the try block), add:
-  showToast(`Package of $${amount.toFixed(2)} purchased successfully!`, "success");
-  
-  // Generate invoice for this purchase
-  await generateInvoice(txId, uid);
-  
-  // ... (rest of the existing code)
-}
-
-// Update the invoices.html page loading
-async function loadInvoices(uid) {
-  try {
-    const container = document.getElementById("invoiceList");
-    if (!container) return;
-    
-    const snapshot = await database.ref(`users/${uid}/transactions`)
-      .orderByChild("timestamp")
-      .once("value");
-    
-    const data = snapshot.val() || {};
-    container.innerHTML = "";
-    
-    // Filter for investment transactions
-    const investmentTxs = Object.entries(data).filter(([id, tx]) => 
-      tx.type === "investment" && tx.amount < 0
-    ).sort((a, b) => b[1].timestamp - a[1].timestamp);
-    
-    if (investmentTxs.length > 0) {
-      investmentTxs.forEach(([id, tx], index) => {
-        const invoiceDate = new Date(tx.timestamp);
-        const invoiceNumber = `INV-${invoiceDate.getFullYear()}${(invoiceDate.getMonth()+1).toString().padStart(2, '0')}${id.substring(0, 5).toUpperCase()}`;
-        
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${invoiceNumber}</td>
-          <td>${invoiceDate.toLocaleDateString()}</td>
-          <td>$${Math.abs(tx.amount).toFixed(2)}</td>
-          <td>
-            <button class="btn btn-sm btn-primary view-invoice" data-id="${id}">
-              View Invoice
-            </button>
-          </td>
-        `;
-        container.appendChild(row);
-      });
+// Handle login form submission
+function handleLogin(email, password) {
+  auth.signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      showToast("Login successful", "success");
+      window.location.href = "index.html";
+    })
+    .catch((error) => {
+      console.error("Login error:", error);
       
-      // Add event listeners to invoice buttons
-      document.querySelectorAll(".view-invoice").forEach(btn => {
-        btn.addEventListener("click", () => {
-          generateInvoice(btn.dataset.id, uid);
-        });
+      let errorMessage = "Login failed";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "User not found";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many attempts. Try again later";
+      }
+      
+      showToast(errorMessage, "error");
+    });
+}
+
+// Handle signup form submission
+function handleSignup(name, email, password, mobile, sponsorId) {
+  auth.createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      
+      // Create user data in database
+      return database.ref("users/" + user.uid).set({
+        name,
+        email,
+        mobileNumber: mobile,
+        balance: 0,
+        tradingProfit: 0,
+        referralEarnings: 0,
+        teamEarnings: 0,
+        tradingPoolEarnings: 0,
+        referredBy: sponsorId || null,
+        joinDate: new Date().toISOString(),
+        lastActive: Date.now(),
+        accountStatus: "active",
+        kycVerified: false,
+        walletAddress: "",
+        teamStructure: {
+          level1Count: 0,
+          level2Count: 0,
+          level3Count: 0,
+          level4Count: 0,
+          level5Count: 0
+        }
       });
-    } else {
-      container.innerHTML = `<tr><td colspan="4" class="text-center">No invoices found</td></tr>`;
-    }
-  } catch (error) {
-    console.error("Error loading invoices:", error);
-  }
+    })
+    .then(() => {
+      showToast("Account created successfully", "success");
+      window.location.href = "index.html";
+    })
+    .catch((error) => {
+      console.error("Signup error:", error);
+      
+      let errorMessage = "Signup failed";
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "Email already in use";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak";
+      }
+      
+      showToast(errorMessage, "error");
+    });
 }
-
-// Add this CSS to your main stylesheet or in a style tag in invoices.html
-/*
-.invoice-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.invoice-modal-content {
-  background: white;
-  width: 80%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow: auto;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.2);
-}
-
-.invoice-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.close-invoice {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.invoice-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
-}
-
-.invoice-container {
-  font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.invoice-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
-}
-
-.invoice-addresses {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
-}
-
-.invoice-items {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 30px;
-}
-
-.invoice-items th {
-  text-align: left;
-  padding: 10px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-}
-
-.invoice-items td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.invoice-items .total td {
-  border-top: 2px solid #333;
-  font-weight: bold;
-}
-
-.invoice-footer {
-  text-align: center;
-  margin-top: 30px;
-  color: #777;
-  font-size: 0.9em;
-}
-*/
-// Other functions (transferFunds, distributeTradingPool, handleReferralCommissions, etc.)
-// ... (keep all your existing functions from the original file)
-// Make sure to include all the functions you had in your original file
