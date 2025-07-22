@@ -205,6 +205,33 @@
             opacity: 0.8;
             margin-bottom: 0;
         }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -307,13 +334,15 @@
                                         <tr>
                                             <th>Invoice #</th>
                                             <th>Date</th>
+                                            <th>Package</th>
                                             <th>Amount</th>
+                                            <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="invoiceList">
                                         <tr>
-                                            <td colspan="4" class="text-center">Loading invoices...</td>
+                                            <td colspan="6" class="text-center">Loading invoices...</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -325,6 +354,85 @@
         </div>
     </div>
 
+    <!-- Invoice Modal -->
+    <div class="invoice-modal" id="invoiceModal" style="display: none;">
+        <div class="invoice-modal-content">
+            <div class="invoice-modal-header">
+                <h3>Invoice Details</h3>
+                <button class="close-invoice" id="closeInvoiceModal">&times;</button>
+            </div>
+            
+            <div class="invoice-container" id="invoiceContent">
+                <div class="invoice-header">
+                    <div>
+                        <h2>INVOICE</h2>
+                        <p id="invoiceNumber">#INV-0001</p>
+                    </div>
+                    <div class="text-end">
+                        <img src="https://via.placeholder.com/150x50?text=TradeWorld" alt="Company Logo" style="height: 50px;">
+                        <p>Invoice Date: <span id="invoiceDate">01 Jan 2023</span></p>
+                    </div>
+                </div>
+                
+                <div class="invoice-addresses">
+                    <div>
+                        <h5>From:</h5>
+                        <p><strong>TradeWorld Investments</strong></p>
+                        <p>123 Business Street</p>
+                        <p>Financial District</p>
+                        <p>New York, NY 10001</p>
+                        <p>Email: support@tradeworld.com</p>
+                    </div>
+                    <div class="text-end">
+                        <h5>To:</h5>
+                        <p><strong id="customerName">John Doe</strong></p>
+                        <p id="customerEmail">john.doe@example.com</p>
+                        <p id="customerId">User ID: U123456</p>
+                        <p>Invoice Status: <span class="status-badge status-active" id="invoiceStatus">Active</span></p>
+                    </div>
+                </div>
+                
+                <table class="invoice-items">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="packageDescription">Starter Investment Package</td>
+                            <td id="packageAmount">$10.00</td>
+                        </tr>
+                        <tr>
+                            <td>Expected Return (100%)</td>
+                            <td id="expectedReturn">$20.00</td>
+                        </tr>
+                        <tr class="total">
+                            <td><strong>Total</strong></td>
+                            <td><strong id="totalAmount">$10.00</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="invoice-footer">
+                    <p>Thank you for your investment with TradeWorld</p>
+                    <p>Maturity Date: <span id="maturityDate">31 Jan 2023</span></p>
+                    <p>For any questions regarding this invoice, please contact our support team</p>
+                </div>
+            </div>
+            
+            <div class="invoice-modal-footer">
+                <button class="btn btn-secondary" id="printInvoice">
+                    <i class="fas fa-print me-2"></i> Print
+                </button>
+                <button class="btn btn-primary" id="downloadInvoice">
+                    <i class="fas fa-download me-2"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
@@ -332,35 +440,283 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-functions.js"></script>
     <!-- jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Your app.js will be loaded here -->
-    <script src="app.js"></script>
-    
     <script>
-        // Initialize jsPDF
-        const { jsPDF } = window.jspdf;
-        
-        // Custom function to download invoice as PDF
-        window.downloadInvoiceAsPDF = function(element, invoiceNumber) {
-            const doc = new jsPDF();
-            
-            // Add invoice content to PDF
-            doc.html(element, {
-                callback: function(doc) {
-                    doc.save(`TradeWorld_Invoice_${invoiceNumber}.pdf`);
-                },
-                margin: [10, 10, 10, 10],
-                autoPaging: 'text',
-                width: 190,
-                windowWidth: element.clientWidth
-            });
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.appspot.com",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
         };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const { jsPDF } = window.jspdf;
+
+        let currentUser = null;
+        let userData = null;
+
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData(user.uid);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Load user data
+        function loadUserData(uid) {
+            const userRef = database.ref('users/' + uid);
+            
+            userRef.on('value', (snapshot) => {
+                userData = snapshot.val();
+                
+                if (userData) {
+                    // Update sidebar user info
+                    document.getElementById('sidebarUserName').textContent = userData.name || 'User';
+                    document.getElementById('sidebarUserEmail').textContent = userData.email || 'user@example.com';
+                    
+                    // Load invoices
+                    loadInvoices(uid);
+                }
+            });
+        }
+
+        // Load user invoices
+        function loadInvoices(uid) {
+            const invoicesRef = database.ref('users/' + uid + '/invoices');
+            const invoiceList = document.getElementById('invoiceList');
+            
+            invoicesRef.on('value', (snapshot) => {
+                const invoices = snapshot.val();
+                invoiceList.innerHTML = '';
+                
+                if (invoices) {
+                    // Convert to array and sort by date (newest first)
+                    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
+                    invoicesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    invoicesArray.forEach(invoice => {
+                        const row = document.createElement('tr');
+                        
+                        // Format date
+                        const invoiceDate = new Date(invoice.date);
+                        const formattedDate = invoiceDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                        
+                        // Determine status class
+                        let statusClass = 'status-pending';
+                        if (invoice.status === 'active') statusClass = 'status-active';
+                        else if (invoice.status === 'completed') statusClass = 'status-completed';
+                        else if (invoice.status === 'cancelled') statusClass = 'status-cancelled';
+                        
+                        row.innerHTML = `
+                            <td>${invoice.invoiceNumber || 'INV-' + invoice.id.substring(0, 8)}</td>
+                            <td>${formattedDate}</td>
+                            <td>${invoice.packageName || 'Investment Package'}</td>
+                            <td>$${invoice.amount?.toFixed(2) || '0.00'}</td>
+                            <td><span class="status-badge ${statusClass}">${invoice.status || 'pending'}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary view-invoice" data-invoice-id="${invoice.id}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        `;
+                        
+                        invoiceList.appendChild(row);
+                    });
+                    
+                    // Add event listeners to view buttons
+                    document.querySelectorAll('.view-invoice').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const invoiceId = btn.getAttribute('data-invoice-id');
+                            showInvoiceModal(invoiceId);
+                        });
+                    });
+                } else {
+                    invoiceList.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">No invoices found</td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        // Show invoice modal with details
+        function showInvoiceModal(invoiceId) {
+            const invoiceRef = database.ref('users/' + currentUser.uid + '/invoices/' + invoiceId);
+            
+            invoiceRef.once('value').then((snapshot) => {
+                const invoice = snapshot.val();
+                
+                if (invoice) {
+                    // Update modal with invoice data
+                    document.getElementById('invoiceNumber').textContent = invoice.invoiceNumber || 'INV-' + invoiceId.substring(0, 8);
+                    
+                    const invoiceDate = new Date(invoice.date);
+                    document.getElementById('invoiceDate').textContent = invoiceDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    document.getElementById('customerName').textContent = userData.name || 'User';
+                    document.getElementById('customerEmail').textContent = userData.email || '';
+                    document.getElementById('customerId').textContent = 'User ID: ' + currentUser.uid.substring(0, 8);
+                    
+                    // Set status with appropriate class
+                    const statusElement = document.getElementById('invoiceStatus');
+                    statusElement.textContent = invoice.status || 'active';
+                    statusElement.className = 'status-badge ';
+                    
+                    if (invoice.status === 'active') statusElement.classList.add('status-active');
+                    else if (invoice.status === 'completed') statusElement.classList.add('status-completed');
+                    else if (invoice.status === 'cancelled') statusElement.classList.add('status-cancelled');
+                    else statusElement.classList.add('status-pending');
+                    
+                    document.getElementById('packageDescription').textContent = invoice.packageName || 'Investment Package';
+                    document.getElementById('packageAmount').textContent = '$' + (invoice.amount?.toFixed(2) || '0.00');
+                    
+                    const expectedReturn = invoice.returnAmount || (invoice.amount * 2) || 0;
+                    document.getElementById('expectedReturn').textContent = '$' + expectedReturn.toFixed(2);
+                    document.getElementById('totalAmount').textContent = '$' + (invoice.amount?.toFixed(2) || '0.00');
+                    
+                    if (invoice.maturityDate) {
+                        const maturityDate = new Date(invoice.maturityDate);
+                        document.getElementById('maturityDate').textContent = maturityDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    } else {
+                        document.getElementById('maturityDate').textContent = 'N/A';
+                    }
+                    
+                    // Show modal
+                    document.getElementById('invoiceModal').style.display = 'flex';
+                }
+            });
+        }
+
+        // Close invoice modal
+        document.getElementById('closeInvoiceModal').addEventListener('click', () => {
+            document.getElementById('invoiceModal').style.display = 'none';
+        });
+
+        // Print invoice
+        document.getElementById('printInvoice').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Download invoice as PDF
+        document.getElementById('downloadInvoice').addEventListener('click', () => {
+            const invoiceContent = document.getElementById('invoiceContent');
+            const invoiceNumber = document.getElementById('invoiceNumber').textContent;
+            
+            // Use html2canvas to capture the invoice content
+            html2canvas(invoiceContent).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 295; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add new page if content is too long
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save(`${invoiceNumber}.pdf`);
+            });
+        });
+
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                showToast('Error logging out: ' + error.message, 'error');
+            });
+        });
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.style.cssText = `
+                padding: 12px 16px;
+                margin-bottom: 8px;
+                background-color: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                animation: slideIn 0.3s ease forwards;
+            `;
+            
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close" style="
+                    background: none;
+                    border: none;
+                    color: white;
+                    margin-left: 10px;
+                    cursor: pointer;
+                ">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+
+        // Animation for toast
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
