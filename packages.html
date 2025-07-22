@@ -757,7 +757,8 @@
                 returnAmount: packageAmount * 2,
                 status: 'Paid',
                 userId: currentUser.uid,
-                userEmail: currentUser.email
+                userEmail: currentUser.email,
+                maturityDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             };
 
             // Update database
@@ -770,6 +771,7 @@
                 details: `Purchased ${packageName} package`
             };
             updates['invoices/' + currentUser.uid + '/' + purchaseId] = invoiceData;
+            updates['users/' + currentUser.uid + '/invoices/' + purchaseId] = invoiceData;
 
             try {
                 await database.ref().update(updates);
