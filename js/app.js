@@ -88,7 +88,7 @@ async function initializeUserData(uid) {
         email: currentUser.email,
         balance: 0,
         tradingProfit: 0,
-        Direct Referrals: 0,
+        directreferrals: 0,
         referralEarnings: 0,
         teamEarnings: 0,
         tradingPoolEarnings: 0,
