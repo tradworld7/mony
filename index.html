@@ -1018,6 +1018,113 @@
     </div>
 
     <script type="module">
+        <script type="module">
+    // ... (previous code remains the same until processPackagePurchase function)
+
+    // Process package purchase with multi-level commissions
+    async function processPackagePurchase(packageAmount) {
+        if (!currentUser) {
+            showToast('Please login first', 'error');
+            return false;
+        }
+
+        if ((userData.balance || 0) < packageAmount) {
+            showToast('Insufficient balance', 'error');
+            return false;
+        }
+
+        try {
+            // Create invoice
+            const invoiceId = push(ref(database, 'invoices')).key;
+            const purchaseDate = new Date().toISOString();
+            const maturityDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+            const packageName = getPackageName(packageAmount);
+            
+            const invoiceData = {
+                invoiceId,
+                invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+                userId: currentUser.uid,
+                amount: packageAmount,
+                expectedReturn: packageAmount * 2,
+                purchaseDate,
+                maturityDate,
+                status: 'active',
+                packageName: packageName,
+                userEmail: currentUser.email
+            };
+            
+            // Calculate total commission (30%)
+            const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
+            const tradingPool = packageAmount - totalCommission;
+            
+            // Prepare all updates
+            const updates = {};
+            
+            // 1. Deduct from user balance
+            updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - packageAmount;
+            
+            // 2. Add to investments
+            updates[`users/${currentUser.uid}/investments/${invoiceId}`] = {
+                amount: packageAmount,
+                purchaseDate: purchaseDate,
+                status: 'active',
+                expectedReturn: packageAmount * 2,
+                maturityDate: maturityDate
+            };
+            
+            // 3. Add invoice
+            updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
+            updates[`invoices/${invoiceId}`] = invoiceData;
+            
+            // 4. Add transaction record
+            const transactionId = push(ref(database, 'transactions')).key;
+            updates[`transactions/${transactionId}`] = {
+                type: 'investment',
+                amount: packageAmount,
+                status: 'completed',
+                timestamp: Date.now(),
+                userId: currentUser.uid,
+                details: `Purchased ${packageName} package`,
+                invoiceId: invoiceId
+            };
+            updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
+                type: 'investment',
+                amount: packageAmount,
+                status: 'completed',
+                timestamp: Date.now(),
+                details: `Purchased ${packageName} package`,
+                invoiceId: invoiceId
+            };
+            
+            // 5. Add admin commission (10%)
+            const adminCommission = packageAmount * COMMISSION_RATES.admin;
+            updates[`users/${ADMIN_ID}/tradingProfit`] = (await getValue(`users/${ADMIN_ID}/tradingProfit`)) + adminCommission;
+            updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
+            
+            // 6. Process referral commissions (if any)
+            if (userData.referredBy) {
+                await processReferralCommissions(userData.referredBy, packageAmount, updates);
+            }
+            
+            // 7. Add to trading pool (70%)
+            updates[`system/tradingPool`] = (await getValue('system/tradingPool')) + tradingPool;
+            
+            // Execute all updates
+            await update(ref(database), updates);
+            
+            showToast(`Successfully purchased ${packageName}`, 'success');
+            loadUserData(currentUser.uid);
+            return true;
+            
+        } catch (error) {
+            console.error('Package purchase error:', error);
+            showToast('Failed to purchase package', 'error');
+            return false;
+        }
+    }
+
+    // ... (rest of the code remains the same) ...
+</script>
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
         import { 
