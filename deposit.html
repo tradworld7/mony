@@ -10,14 +10,25 @@
         /* Base Styles */
         :root {
             --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
             --secondary-color: #3f37c9;
             --success-color: #4cc9f0;
+            --success-light: #e6f7fd;
             --danger-color: #f72585;
+            --danger-light: #fde6ef;
             --warning-color: #f8961e;
+            --warning-light: #fef3e6;
+            --info-color: #4895ef;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --gray-color: #6c757d;
+            --gray-light: #e9ecef;
             --white-color: #ffffff;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -46,6 +57,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
+            height: var(--header-height);
         }
 
         .logo {
@@ -65,6 +77,24 @@
             color: var(--dark-color);
         }
 
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
         .menu-toggle {
             background: none;
             border: none;
@@ -74,16 +104,92 @@
             display: none;
         }
 
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--white-color);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 999;
+            transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: var(--transition);
+            gap: 0.8rem;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: var(--header-height);
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-title i {
+            color: var(--primary-color);
+        }
+
         /* Button Styles */
         .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             border: 2px solid transparent;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1rem;
         }
 
         .btn-primary {
@@ -111,23 +217,11 @@
             width: 100%;
         }
 
-        /* Main Content Styles */
-        .main-content {
-            margin-top: 70px;
-            padding: 2rem;
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--dark-color);
-        }
-
         /* Form Styles */
         .form-container {
             background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             padding: 2rem;
             max-width: 600px;
             margin: 0 auto;
@@ -147,51 +241,45 @@
         .form-control {
             width: 100%;
             padding: 0.8rem 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: var(--transition);
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
-        .input-group {
+        /* Address Box - Improved for mobile */
+        .address-container {
             display: flex;
+            flex-direction: column;
             gap: 0.5rem;
         }
 
-        .input-group .form-control {
-            flex: 1;
-        }
-
-        /* Address Box */
         .address-box {
             background-color: var(--light-color);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
             padding: 1rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        .address-box .address {
             word-break: break-all;
             font-family: monospace;
+            position: relative;
+            flex-grow: 1;
         }
 
-        .copy-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
+        .copy-btn-container {
+            display: flex;
+            justify-content: flex-end;
         }
 
         /* Instructions */
         .instructions {
             background-color: var(--light-color);
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             padding: 1rem;
             margin-bottom: 1.5rem;
         }
@@ -214,14 +302,13 @@
 
         /* Spinner */
         .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--white-color);
+            animation: spin 1s ease-in-out infinite;
             display: inline-block;
-            margin-left: 0.5rem;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         /* Toast Notifications */
@@ -237,13 +324,14 @@
 
         .toast {
             padding: 1rem 1.5rem;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             color: var(--white-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--box-shadow);
             display: flex;
             align-items: center;
             justify-content: space-between;
             animation: slideIn 0.3s ease forwards;
+            min-width: 300px;
         }
 
         .toast.success {
@@ -254,15 +342,25 @@
             background-color: var(--danger-color);
         }
 
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
         .toast-close {
             background: none;
             border: none;
             color: var(--white-color);
             cursor: pointer;
             font-size: 1rem;
-            margin-left: 1rem;
+            opacity: 0.8;
+            transition: var(--transition);
         }
 
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Animations */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -274,18 +372,52 @@
             }
         }
 
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Responsive Styles */
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             .main-content {
-                padding: 1rem;
+                padding: 1.5rem;
             }
             
             .form-container {
                 padding: 1.5rem;
             }
-            
-            .menu-toggle {
-                display: block;
+
+            /* Improved address display for mobile */
+            .address-container {
+                flex-direction: column;
+            }
+
+            .address-box {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .copy-btn-container {
+                margin-top: 0.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            header {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -297,19 +429,35 @@
             <i class="fas fa-chart-line logo-icon"></i>
             <span class="logo-text">Trade World</span>
         </div>
-        <div class="auth-buttons">
-            <a href="login.html" class="btn btn-outline" id="loginBtnHeader">Login</a>
-            <a href="signup.html" class="btn btn-primary" id="signupBtnHeader">Sign Up</a>
-            <a href="index.html" class="btn btn-outline" id="dashboardBtnHeader" style="display:none;">Dashboard</a>
+        
+        <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">U</div>
         </div>
+        
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
         </button>
     </header>
 
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="deposit.html" class="active"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </aside>
+
     <!-- Main Content -->
-    <main class="main-content">
-        <h1 class="page-title">Deposit Funds</h1>
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title"><i class="fas fa-money-bill-wave"></i> Deposit Funds</h1>
         
         <div class="form-container">
             <div class="form-group">
@@ -320,11 +468,15 @@
             
             <div class="form-group">
                 <label class="form-label">USDT BEP20 Address</label>
-                <div class="address-box">
-                    <div class="address">0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886</div>
-                    <button class="btn btn-outline copy-btn" id="copyAddressBtn">
-                        <i class="far fa-copy"></i> Copy
-                    </button>
+                <div class="address-container">
+                    <div class="address-box">
+                        0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886
+                    </div>
+                    <div class="copy-btn-container">
+                        <button class="btn btn-outline" id="copyAddressBtn">
+                            <i class="far fa-copy"></i> Copy Address
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -346,9 +498,7 @@
             
             <button class="btn btn-primary btn-block" id="submitDeposit">
                 <span id="submitText">Submit Deposit</span>
-                <span id="submitSpinner" class="spinner" style="display:none;">
-                    <i class="fas fa-spinner"></i>
-                </span>
+                <span id="submitSpinner" class="spinner" style="display:none;"></span>
             </button>
         </div>
         
@@ -356,73 +506,108 @@
         <div class="toast-container" id="toastContainer"></div>
     </main>
 
-    <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script>
-        // Firebase configuration
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            set 
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            storageBucket: "mywebsite-600d3.appspot.com",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
 
-        // Global variables
+        // Global Variables
         let currentUser = null;
+        let userData = null;
 
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toastContainer = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${message}</span>
-                <button class="toast-close">&times;</button>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
-            
-            // Close button
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup sidebar toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('open');
             });
+            
+            // Check if user is logged in
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    updateUserAvatar(user.email || 'User');
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            // Copy address button
+            document.getElementById('copyAddressBtn').addEventListener('click', function() {
+                const address = '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886';
+                navigator.clipboard.writeText(address)
+                    .then(() => {
+                        showToast('Address copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        showToast('Failed to copy address', 'error');
+                    });
+            });
+            
+            // Submit deposit button
+            document.getElementById('submitDeposit').addEventListener('click', function() {
+                submitDeposit();
+            });
+            
+            // Logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+        });
+
+        // Update user avatar with initials
+        function updateUserAvatar(email) {
+            const avatar = document.getElementById('userAvatar');
+            if (!avatar) return;
+            
+            // Extract initials from email or name
+            let initials = 'U';
+            if (email) {
+                const namePart = email.split('@')[0];
+                if (namePart.includes('.')) {
+                    initials = namePart.split('.').map(n => n[0]).join('').toUpperCase();
+                } else {
+                    initials = namePart.substring(0, 2).toUpperCase();
+                }
+            }
+            
+            avatar.textContent = initials;
         }
 
-        // Update UI based on auth state
-        function updateUI(user) {
-            currentUser = user;
-            const loginBtn = document.getElementById('loginBtnHeader');
-            const signupBtn = document.getElementById('signupBtnHeader');
-            const dashboardBtn = document.getElementById('dashboardBtnHeader');
-
-            if (user) {
-                loginBtn.style.display = 'none';
-                signupBtn.style.display = 'none';
-                dashboardBtn.style.display = 'inline-block';
-            } else {
-                loginBtn.style.display = 'inline-block';
-                signupBtn.style.display = 'inline-block';
-                dashboardBtn.style.display = 'none';
-                showToast('Please login to deposit funds', 'error');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
+        // Logout user
+        async function logoutUser() {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                showToast('Error logging out: ' + error.message, 'error');
             }
         }
 
@@ -432,7 +617,7 @@
         }
 
         // Process deposit submission
-        function submitDeposit() {
+        async function submitDeposit() {
             const amount = parseFloat(document.getElementById('depositAmount').value);
             const txHash = document.getElementById('transactionHash').value.trim();
             const submitBtn = document.getElementById('submitDeposit');
@@ -471,70 +656,57 @@
                 walletAddress: '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886'
             };
             
-            // Save to database
-            database.ref('deposits/' + currentUser.uid + '/' + depositId).set(depositData)
-                .then(() => {
-                    // Add to transactions
-                    database.ref('transactions/' + currentUser.uid + '/' + depositId).set({
-                        type: 'Deposit',
-                        amount: amount,
-                        status: 'Pending',
-                        date: new Date().toISOString(),
-                        details: 'USDT Deposit (BEP20)'
-                    });
-                    
-                    showToast('Deposit submitted successfully! It will be processed after confirmation.', 'success');
-                    
-                    // Reset form
-                    document.getElementById('depositAmount').value = '';
-                    document.getElementById('transactionHash').value = '';
-                })
-                .catch(error => {
-                    showToast('Error submitting deposit: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    // Reset button
-                    submitText.style.display = 'inline-block';
-                    submitSpinner.style.display = 'none';
-                    submitBtn.disabled = false;
+            try {
+                // Save to database
+                await set(ref(database, 'deposits/' + currentUser.uid + '/' + depositId), depositData);
+                
+                // Add to transactions
+                await set(ref(database, 'transactions/' + currentUser.uid + '/' + depositId), {
+                    type: 'Deposit',
+                    amount: amount,
+                    status: 'Pending',
+                    date: new Date().toISOString(),
+                    details: 'USDT Deposit (BEP20)'
                 });
+                
+                showToast('Deposit submitted successfully! It will be processed after confirmation.', 'success');
+                
+                // Reset form
+                document.getElementById('depositAmount').value = '';
+                document.getElementById('transactionHash').value = '';
+                
+            } catch (error) {
+                showToast('Error submitting deposit: ' + error.message, 'error');
+            } finally {
+                // Reset button
+                submitText.style.display = 'inline-block';
+                submitSpinner.style.display = 'none';
+                submitBtn.disabled = false;
+            }
         }
 
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auth state listener
-            auth.onAuthStateChanged(updateUI);
-
-            // Copy address button
-            document.getElementById('copyAddressBtn').addEventListener('click', function() {
-                const address = '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886';
-                navigator.clipboard.writeText(address)
-                    .then(() => {
-                        showToast('Address copied to clipboard!', 'success');
-                    })
-                    .catch(err => {
-                        showToast('Failed to copy address', 'error');
-                    });
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
             });
-
-            // Submit deposit button
-            document.getElementById('submitDeposit').addEventListener('click', function() {
-                if (!currentUser) {
-                    showToast('Please login to deposit funds', 'error');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 1500);
-                    return;
-                }
-                submitDeposit();
-            });
-
-            // Menu toggle for mobile
-            document.getElementById('menuToggle').addEventListener('click', function() {
-                // This would toggle a mobile menu if implemented
-                showToast('Mobile menu will be implemented', 'error');
-            });
-        });
+        }
     </script>
 </body>
 </html>
