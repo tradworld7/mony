@@ -582,12 +582,11 @@
             // Set account creation date
             document.getElementById('profileJoinDate').value = formatDate(userData.createdAt || userData.joinDate);
             
-            // Set referral code (using user's UID if no referralId exists)
-            const referralCode = userId; // Using UID as referral code
-            document.getElementById('profileReferralCode').value = referralCode;
+            // Set referral code (using user's UID)
+            document.getElementById('profileReferralCode').value = userId;
             
-            // Set referral link
-            const referralUrl = `${window.location.origin}/signup.html?ref=${referralCode}`;
+            // Set referral link with the exact format you specified
+            const referralUrl = `https://tradworld7.github.io/mony/signup.html?ref=${userId}`;
             document.getElementById('referralLink').value = referralUrl;
             
             // Set avatar initials
