@@ -8,17 +8,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --primary-color: #2962ff;
-            --secondary-color: #448aff;
-            --accent-color: #82b1ff;
-            --text-color: #333;
-            --light-text: #777;
-            --bg-color: #f5f7fa;
-            --card-bg: #ffffff;
-            --border-color: #e0e0e0;
-            --success-color: #4caf50;
-            --error-color: #f44336;
-            --warning-color: #ff9800;
+            --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --success-light: #e6f7fd;
+            --danger-color: #f72585;
+            --danger-light: #fde6ef;
+            --warning-color: #f8961e;
+            --warning-light: #fef3e6;
+            --info-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --gray-light: #e9ecef;
+            --white-color: #ffffff;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -29,65 +38,84 @@
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* Header Styles */
         header {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: sticky;
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: var(--header-height);
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 1.2rem;
-            font-weight: 600;
         }
 
         .logo-icon {
             font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 600;
         }
 
         .menu-toggle {
             background: none;
             border: none;
-            color: white;
             font-size: 1.5rem;
+            color: var(--dark-color);
             cursor: pointer;
             display: none;
         }
 
         /* Sidebar Styles */
         .sidebar {
-            width: 250px;
-            background-color: var(--card-bg);
-            height: 100vh;
+            background-color: var(--white-color);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
             position: fixed;
-            top: 0;
+            top: var(--header-height);
             left: 0;
-            padding-top: 70px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            z-index: 99;
-        }
-
-        .sidebar.open {
-            transform: translateX(0);
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 999;
         }
 
         .sidebar-menu {
@@ -98,39 +126,66 @@
         .sidebar-menu li a {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: var(--text-color);
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            gap: 0.8rem;
+            border-left: 3px solid transparent;
         }
 
         .sidebar-menu li a:hover {
-            background-color: var(--bg-color);
+            background-color: var(--primary-light);
             color: var(--primary-color);
         }
 
         .sidebar-menu li a.active {
-            background-color: var(--accent-color);
-            color: white;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
         }
 
         .sidebar-menu li a i {
             width: 20px;
             text-align: center;
+            font-size: 1.1rem;
         }
 
         /* Main Content Styles */
         .main-content {
-            margin-left: 250px;
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
             padding: 2rem;
-            flex: 1;
+            transition: var(--transition);
+            min-height: calc(100vh - var(--header-height));
         }
 
         .page-title {
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
-            color: var(--primary-color);
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--dark-color);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
         }
 
         /* Stats Cards */
@@ -142,30 +197,46 @@
         }
 
         .stat-card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--box-shadow);
+            text-align: center;
         }
 
         .stat-card h3 {
             font-size: 1rem;
-            color: var(--light-text);
+            color: var(--gray-color);
             margin-bottom: 0.5rem;
         }
 
         .stat-card .value {
             font-size: 1.8rem;
             font-weight: 600;
+        }
+
+        .total-referrals .value {
             color: var(--primary-color);
         }
 
-        /* Form Container Styles */
-        .form-container {
-            background-color: var(--card-bg);
-            border-radius: 8px;
+        .active-referrals .value {
+            color: var(--success-color);
+        }
+
+        .total-earnings .value {
+            color: var(--secondary-color);
+        }
+
+        .available-earnings .value {
+            color: var(--warning-color);
+        }
+
+        /* Form Styles */
+        .referral-form {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--box-shadow);
             margin-bottom: 2rem;
         }
 
@@ -177,178 +248,128 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: var(--dark-color);
         }
 
         .form-control {
             width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: var(--transition);
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
         }
 
         /* Button Styles */
         .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 4px;
             font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .btn-primary {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--white-color);
         }
 
         .btn-primary:hover {
             background-color: var(--secondary-color);
         }
 
+        .btn-success {
+            background-color: var(--success-color);
+            color: var(--white-color);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            color: var(--white-color);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--white-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: var(--border-radius);
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
-        }
-
-        .table th, .table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            min-width: 600px;
         }
 
         .table th {
-            background-color: var(--bg-color);
-            font-weight: 600;
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--gray-color);
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--gray-light);
         }
 
         .table tr:last-child td {
             border-bottom: none;
         }
 
-        /* Toast Notification Styles */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .toast {
-            padding: 1rem 1.5rem;
-            border-radius: 4px;
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            animation: slideIn 0.3s ease;
-        }
-
-        .toast.success {
-            background-color: #e8f5e9;
-            color: var(--success-color);
-            border-left: 4px solid var(--success-color);
-        }
-
-        .toast.error {
-            background-color: #ffebee;
-            color: var(--error-color);
-            border-left: 4px solid var(--error-color);
-        }
-
-        .toast-close {
-            background: none;
-            border: none;
-            color: inherit;
-            font-size: 1.2rem;
-            cursor: pointer;
-            margin-left: 1rem;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Responsive Styles */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .menu-toggle {
-                display: block;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 1rem;
-            }
-            
-            .form-container {
-                padding: 1rem;
-            }
-            
-            .table th, .table td {
-                padding: 0.75rem;
-            }
+        .table tr:hover td {
+            background-color: rgba(0, 0, 0, 0.01);
         }
 
         /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
         .status-active {
+            background-color: rgba(76, 201, 240, 0.1);
             color: var(--success-color);
-            font-weight: 500;
         }
-
         .status-pending {
+            background-color: rgba(248, 150, 30, 0.1);
             color: var(--warning-color);
-            font-weight: 500;
         }
-
         .status-inactive {
-            color: var(--error-color);
-            font-weight: 500;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: var(--light-text);
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger-color);
         }
 
         /* Progress Bar */
@@ -364,7 +385,7 @@
 
         .progress-bar {
             height: 10px;
-            background-color: #e0e0e0;
+            background-color: var(--gray-light);
             border-radius: 5px;
             overflow: hidden;
         }
@@ -376,18 +397,143 @@
             transition: width 0.3s ease;
         }
 
-        /* Flex Helpers */
-        .d-flex {
-            display: flex;
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-color);
         }
 
-        .gap-1 {
+        /* Toast Notifications Container */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
         }
 
-        /* Text Helpers */
-        .text-center {
-            text-align: center;
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            color: var(--white-color);
+            box-shadow: var(--box-shadow);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-width: 300px;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--white-color);
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .referral-form {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .input-group .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -398,6 +544,11 @@
             <i class="fas fa-chart-line logo-icon"></i>
             <span class="logo-text">Trade World</span>
         </div>
+        
+        <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">U</div>
+        </div>
+        
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
         </button>
@@ -408,10 +559,12 @@
         <ul class="sidebar-menu">
             <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
             <li><a href="referral.html" class="active"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -419,32 +572,36 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">Referral Program</h1>
+        <h1 class="page-title"><i class="fas fa-users"></i> Referral Program</h1>
         
         <!-- Stats Cards -->
         <div class="stats-container">
-            <div class="stat-card">
+            <div class="stat-card total-referrals">
                 <h3>Total Referrals</h3>
                 <div class="value" id="totalReferrals">0</div>
             </div>
-            <div class="stat-card">
+            
+            <div class="stat-card active-referrals">
                 <h3>Active Referrals</h3>
                 <div class="value" id="activeReferrals">0</div>
             </div>
-            <div class="stat-card">
+            
+            <div class="stat-card total-earnings">
                 <h3>Total Earnings</h3>
                 <div class="value" id="totalEarnings">$0.00</div>
             </div>
-            <div class="stat-card">
+            
+            <div class="stat-card available-earnings">
                 <h3>Available for Withdrawal</h3>
                 <div class="value" id="availableEarnings">$0.00</div>
             </div>
         </div>
         
-        <div class="form-container">
+        <!-- Referral Form -->
+        <div class="referral-form">
             <div class="form-group">
                 <label class="form-label">Your Referral Link</label>
-                <div class="d-flex gap-1">
+                <div class="input-group">
                     <input type="text" class="form-control" id="referralLink" readonly>
                     <button class="btn btn-primary" id="copyReferralLink">
                         <i class="fas fa-copy"></i> Copy
@@ -454,26 +611,26 @@
             
             <div class="form-group">
                 <label class="form-label">Share Via</label>
-                <div class="d-flex gap-1" style="margin-top: 0.5rem;">
-                    <button class="btn" style="background-color: #25D366; color: white;">
+                <div class="input-group">
+                    <button class="btn btn-success" id="shareWhatsApp">
                         <i class="fab fa-whatsapp"></i> WhatsApp
                     </button>
-                    <button class="btn" style="background-color: #0088cc; color: white;">
+                    <button class="btn btn-info" id="shareTelegram">
                         <i class="fab fa-telegram"></i> Telegram
                     </button>
-                    <button class="btn" style="background-color: #1DA1F2; color: white;">
+                    <button class="btn btn-warning" id="shareTwitter">
                         <i class="fab fa-twitter"></i> Twitter
                     </button>
                 </div>
             </div>
             
             <div class="form-group">
-                <h3 style="margin-top: 1.5rem; margin-bottom: 1rem;">Referral Commission Structure</h3>
-                <ul style="list-style-type: none;">
-                    <li><strong>Level 1 (Direct Referrals):</strong> 10% commission</li>
-                    <li><strong>Level 2:</strong> 2% commission</li>
-                    <li><strong>Level 3:</strong> 2% commission</li>
-                    <li><strong>Level 4:</strong> 2% commission</li>
+                <h3 style="margin-bottom: 1rem;">Referral Commission Structure</h3>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Level 1 (Direct Referrals):</strong> 10% commission</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Level 2:</strong> 2% commission</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Level 3:</strong> 2% commission</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Level 4:</strong> 2% commission</li>
                     <li><strong>Level 5:</strong> 2% commission</li>
                 </ul>
             </div>
@@ -489,7 +646,8 @@
             </div>
         </div>
         
-        <h2 class="page-title" style="margin-top: 2rem;">Your Referrals</h2>
+        <!-- Referral List -->
+        <h2 class="section-title">Your Referrals</h2>
         
         <div class="table-responsive">
             <table class="table">
@@ -515,12 +673,12 @@
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Firebase and App Scripts -->
     <script type="module">
-        // Import Firebase modules
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
         import { 
             getAuth, 
+            onAuthStateChanged, 
             signOut 
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
         import { 
@@ -532,13 +690,13 @@
             equalTo
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
-        // Firebase configuration
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            storageBucket: "mywebsite-600d3.appspot.com",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
@@ -549,94 +707,134 @@
         const auth = getAuth(app);
         const database = getDatabase(app);
 
-        // Global variables
+        // Global Variables
         let currentUser = null;
         let userData = null;
 
-        // Helper function for showing toasts
-        function showToast(message, type) {
-            const toastContainer = document.getElementById('toastContainer');
-            if (!toastContainer) return;
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup sidebar toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
             
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${message}</span>
-                <button class="toast-close">&times;</button>
-            `;
+            // Check if user is logged in
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserData(user.uid);
+                    
+                    // Update user avatar
+                    updateUserAvatar(user.email || 'User');
+                    
+                    // Setup logout
+                    document.getElementById('logoutLink').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        logoutUser();
+                    });
+                    
+                    // Update referral link
+                    updateReferralLink();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            // Setup copy referral link button
+            document.getElementById('copyReferralLink').addEventListener('click', copyReferralLink);
+            
+            // Setup share buttons
+            setupShareButtons();
+        });
 
-            toastContainer.appendChild(toast);
+        // Update user avatar with initials
+        function updateUserAvatar(email) {
+            const avatar = document.getElementById('userAvatar');
+            if (!avatar) return;
+            
+            // Extract initials from email or name
+            let initials = 'U';
+            if (email) {
+                const namePart = email.split('@')[0];
+                if (namePart.includes('.')) {
+                    initials = namePart.split('.').map(n => n[0]).join('').toUpperCase();
+                } else {
+                    initials = namePart.substring(0, 2).toUpperCase();
+                }
+            }
+            
+            avatar.textContent = initials;
+        }
 
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
+        // Update referral link
+        function updateReferralLink() {
+            if (!currentUser) return;
+            const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser.uid}`;
+            document.getElementById('referralLink').value = referralLink;
+        }
 
-            // Close button
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
+        // Copy referral link to clipboard
+        function copyReferralLink() {
+            const referralInput = document.getElementById('referralLink');
+            referralInput.select();
+            document.execCommand('copy');
+            showToast('Referral link copied to clipboard!', 'success');
+        }
+
+        // Setup share buttons
+        function setupShareButtons() {
+            if (!currentUser) return;
+            
+            const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser.uid}`;
+            const shareText = `Join Trade World using my referral link and earn together! ${referralLink}`;
+            
+            // WhatsApp
+            document.getElementById('shareWhatsApp').addEventListener('click', () => {
+                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+            });
+            
+            // Telegram
+            document.getElementById('shareTelegram').addEventListener('click', () => {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join Trade World with my referral link!')}`, '_blank');
+            });
+            
+            // Twitter
+            document.getElementById('shareTwitter').addEventListener('click', () => {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
             });
         }
 
-        // Format timestamp
-        function formatDate(timestamp) {
-            if (!timestamp) return 'N/A';
-            const date = new Date(timestamp);
-            return date.toLocaleDateString();
-        }
-
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD'
-            }).format(amount || 0);
-        }
-
-        // Logout user
-        async function logoutUser() {
-            try {
-                await signOut(auth);
-                showToast('Successfully logged out.', 'success');
-                window.location.href = 'login.html';
-            } catch (error) {
-                showToast('Error logging out: ' + error.message, 'error');
-            }
-        }
-
-        // Load user data from database
+        // Load user data from Firebase
         function loadUserData(userId) {
             const userRef = ref(database, 'users/' + userId);
             
             onValue(userRef, (snapshot) => {
                 userData = snapshot.val();
                 if (userData) {
-                    updateStats(userData);
-                    loadReferralData(userId);
+                    updateReferralStats(userData);
+                    loadReferrals(userId);
                 }
-            }, {
-                onlyOnce: false
+            }, (error) => {
+                console.error("Error loading user data:", error);
+                showToast('Error loading user data', 'error');
             });
         }
 
-        // Update stats cards
-        function updateStats(userData) {
+        // Update referral stats
+        function updateReferralStats(data) {
             // Total referrals
-            const totalRefs = userData.referrals ? Object.keys(userData.referrals).length : 0;
+            const totalRefs = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
             document.getElementById('totalReferrals').textContent = totalRefs;
             
             // Active referrals (assuming all are active for this example)
             document.getElementById('activeReferrals').textContent = totalRefs;
             
-            // Total earnings (sum of all referral earnings)
-            let totalEarnings = 0;
-            if (userData.referralEarnings) {
-                totalEarnings = Object.values(userData.referralEarnings).reduce((sum, val) => sum + val, 0);
-            }
-            document.getElementById('totalEarnings').textContent = formatCurrency(totalEarnings);
+            // Total earnings
+            const totalEarnings = data.referralEarnings || 0;
+            document.getElementById('totalEarnings').textContent = `$${totalEarnings.toFixed(2)}`;
             
-            // Available for withdrawal (assuming all earnings are available)
-            document.getElementById('availableEarnings').textContent = formatCurrency(totalEarnings);
+            // Available for withdrawal (same as total earnings in this case)
+            document.getElementById('availableEarnings').textContent = `$${totalEarnings.toFixed(2)}`;
             
             // Update progress bar
             const progressPercent = Math.min(100, (totalRefs / 10) * 100);
@@ -644,130 +842,86 @@
             document.getElementById('referralProgressText').textContent = `${totalRefs}/10 referrals`;
         }
 
-        // Load referral data
-        function loadReferralData(userId) {
-            const referralList = document.getElementById('referralList');
-            if (!referralList) return;
-
+        // Load referrals
+        function loadReferrals(userId) {
             const referralsQuery = query(
                 ref(database, 'users'),
                 orderByChild('referredBy'),
                 equalTo(userId)
             );
-
+            
             onValue(referralsQuery, (snapshot) => {
                 const referrals = snapshot.val();
+                const tbody = document.getElementById('referralList');
+                tbody.innerHTML = '';
                 
-                if (!referrals || Object.keys(referrals).length === 0) {
-                    referralList.innerHTML = `
+                if (!referrals) {
+                    tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="empty-state">You have no referrals yet. Share your link to grow your team!</td>
                         </tr>
                     `;
                     return;
                 }
-
-                referralList.innerHTML = '';
-                let totalEarnings = 0;
                 
-                Object.entries(referrals).forEach(([uid, user]) => {
-                    const earnings = userData.referralEarnings?.[uid] || 0;
-                    totalEarnings += earnings;
-                    
+                // Convert to array
+                const referralsArray = Object.entries(referrals).map(([id, user]) => ({ id, ...user }));
+                
+                // Add each referral to the table
+                referralsArray.forEach(user => {
                     const row = document.createElement('tr');
+                    
+                    const joinDate = new Date(user.createdAt || Date.now()).toLocaleDateString();
+                    const investment = user.investments ? Object.values(user.investments).reduce((sum, inv) => sum + (inv.amount || 0), 0) : 0;
+                    const earnings = investment * 0.10; // 10% commission for direct referrals
+                    
                     row.innerHTML = `
-                        <td>${user.fullName || user.email || 'User'}</td>
-                        <td>${formatDate(user.joinDate)}</td>
-                        <td class="status-active">Active</td>
-                        <td>${formatCurrency(user.totalInvestment || 0)}</td>
-                        <td>${formatCurrency(earnings)}</td>
+                        <td>${user.name || user.email || 'User'}</td>
+                        <td>${joinDate}</td>
+                        <td><span class="badge status-active">Active</span></td>
+                        <td>$${investment.toFixed(2)}</td>
+                        <td>$${earnings.toFixed(2)}</td>
                         <td>Level 1</td>
                     `;
-                    referralList.appendChild(row);
+                    
+                    tbody.appendChild(row);
                 });
-
-                // Add total row
-                const totalRow = document.createElement('tr');
-                totalRow.style.fontWeight = 'bold';
-                totalRow.style.backgroundColor = 'var(--bg-color)';
-                totalRow.innerHTML = `
-                    <td colspan="4">Total</td>
-                    <td>${formatCurrency(totalEarnings)}</td>
-                    <td></td>
-                `;
-                referralList.appendChild(totalRow);
             });
         }
 
-        // Initialize the referral page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Menu toggle functionality
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            
-            if (menuToggle && sidebar) {
-                menuToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('open');
-                });
+        // Logout user
+        async function logoutUser() {
+            try {
+                await signOut(auth);
+                showToast('Logged out successfully', 'success');
+                window.location.href = 'login.html';
+            } catch (error) {
+                showToast('Error logging out: ' + error.message, 'error');
             }
+        }
 
-            // Check auth state
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    currentUser = user;
-                    updateReferralLink();
-                    loadUserData(user.uid);
-                    
-                    // Set up logout
-                    document.getElementById('logoutLink').addEventListener('click', (e) => {
-                        e.preventDefault();
-                        logoutUser();
-                    });
-                } else {
-                    window.location.href = 'login.html';
-                }
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
             });
-            
-            // Set up copy referral link
-            document.getElementById('copyReferralLink').addEventListener('click', copyReferralLinkToClipboard);
-            
-            // Set up social share buttons
-            setupShareButtons();
-            
-            function updateReferralLink() {
-                if (!currentUser) return;
-                const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser.uid}`;
-                document.getElementById('referralLink').value = referralLink;
-            }
-            
-            function copyReferralLinkToClipboard() {
-                const referralInput = document.getElementById('referralLink');
-                referralInput.select();
-                document.execCommand('copy');
-                showToast('Referral link copied to clipboard!', 'success');
-            }
-            
-            function setupShareButtons() {
-                if (!currentUser) return;
-                const referralLink = `https://tradworld7.github.io/mony/signup.html?ref=${currentUser.uid}`;
-                const shareMessage = `Join Trade World using my referral link and earn together! ${referralLink}`;
-                
-                // WhatsApp
-                document.querySelector('.btn[style*="background-color: #25D366"]').addEventListener('click', () => {
-                    window.open(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`, '_blank');
-                });
-                
-                // Telegram
-                document.querySelector('.btn[style*="background-color: #0088cc"]').addEventListener('click', () => {
-                    window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join Trade World with my referral link!')}`, '_blank');
-                });
-                
-                // Twitter
-                document.querySelector('.btn[style*="background-color: #1DA1F2"]').addEventListener('click', () => {
-                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`, '_blank');
-                });
-            }
-        });
+        }
     </script>
 </body>
 </html>
