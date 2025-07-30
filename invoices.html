@@ -11,62 +11,300 @@
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #3a7bd5;
-            --secondary-color: #00d2ff;
-            --dark-color: #2c3e50;
+            --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --success-light: #e6f7fd;
+            --danger-color: #f72585;
+            --danger-light: #fde6ef;
+            --warning-color: #f8961e;
+            --warning-light: #fef3e6;
+            --info-color: #4895ef;
             --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --gray-light: #e9ecef;
+            --white-color: #ffffff;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
-        
-        .sidebar {
-            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
-            color: white;
-            height: 100vh;
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             position: fixed;
-            width: 250px;
-            padding-top: 20px;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: var(--header-height);
         }
-        
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        
-        .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 5px;
-            border-radius: 5px;
-            padding: 10px 15px;
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
         }
-        
-        .nav-link:hover, .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
         }
-        
-        .nav-link i {
-            margin-right: 10px;
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--white-color);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 999;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: var(--transition);
+            gap: 0.8rem;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu li a i {
             width: 20px;
             text-align: center;
+            font-size: 1.1rem;
         }
-        
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: var(--transition);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-title i {
+            color: var(--primary-color);
+        }
+
+        /* Card Styles */
         .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
             border: none;
         }
-        
+
         .card-header {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            padding: 1rem 1.5rem;
         }
-        
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--border-radius);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--gray-color);
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--gray-light);
+            vertical-align: middle;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tr:hover td {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-completed {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+
+        .status-pending {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-cancelled {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger-color);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline-primary {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        /* Invoice Modal */
         .invoice-modal {
             position: fixed;
             top: 0;
@@ -77,282 +315,274 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 1100;
         }
 
         .invoice-modal-content {
-            background: white;
-            width: 80%;
-            max-width: 900px;
+            background: var(--white-color);
+            width: 90%;
+            max-width: 800px;
             max-height: 90vh;
             overflow: auto;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
         }
 
         .invoice-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-light);
         }
 
         .close-invoice {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 1.5rem;
+            color: var(--gray-color);
             cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-invoice:hover {
+            color: var(--dark-color);
         }
 
         .invoice-modal-footer {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-light);
         }
 
+        /* Invoice Content */
         .invoice-container {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 100%;
         }
 
         .invoice-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
         .invoice-addresses {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
         .invoice-items {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
         .invoice-items th {
             text-align: left;
-            padding: 10px;
-            background: #f5f5f5;
-            border-bottom: 1px solid #ddd;
+            padding: 0.8rem;
+            background: var(--gray-light);
+            border-bottom: 1px solid var(--gray-color);
         }
 
         .invoice-items td {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--gray-light);
         }
 
         .invoice-items .total td {
-            border-top: 2px solid #333;
-            font-weight: bold;
+            border-top: 2px solid var(--dark-color);
+            font-weight: 600;
         }
 
         .invoice-footer {
             text-align: center;
-            margin-top: 30px;
-            color: #777;
-            font-size: 0.9em;
+            margin-top: 2rem;
+            color: var(--gray-color);
+            font-size: 0.9rem;
         }
-        
-        .table-responsive {
-            overflow-x: auto;
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
-        
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            color: var(--white-color);
+            box-shadow: var(--box-shadow);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-width: 300px;
         }
-        
-        .logo h3 {
-            font-weight: bold;
-            margin-bottom: 0;
+
+        .toast.success {
+            background-color: var(--success-color);
         }
-        
-        .user-profile {
-            text-align: center;
-            margin-bottom: 20px;
+
+        .toast.error {
+            background-color: var(--danger-color);
         }
-        
-        .user-profile img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid white;
-            margin-bottom: 10px;
+
+        .toast.warning {
+            background-color: var(--warning-color);
         }
-        
-        .user-profile h5 {
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        
-        .user-profile p {
-            font-size: 0.8rem;
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
             opacity: 0.8;
-            margin-bottom: 0;
+            transition: var(--transition);
         }
 
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .toast-close:hover {
+            opacity: 1;
         }
 
-        .status-active {
-            background-color: #d4edda;
-            color: #155724;
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
         }
 
-        .status-completed {
-            background-color: #cce5ff;
-            color: #004085;
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+
+            .invoice-addresses {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
         }
 
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
+        @media (max-width: 576px) {
+            header {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .invoice-modal-footer {
+                flex-direction: column;
+            }
+
+            .invoice-modal-footer .btn {
+                width: 100%;
+            }
         }
 
-        .status-cancelled {
-            background-color: #f8d7da;
-            color: #721c24;
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
+    <!-- Header -->
+    <header>
         <div class="logo">
-            <h3>TradeWorld</h3>
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
         </div>
         
-        <div class="user-profile">
-            <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" id="userProfileImage">
-            <h5 id="sidebarUserName">User</h5>
-            <p id="sidebarUserEmail">user@example.com</p>
+        <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">U</div>
         </div>
         
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="index.html">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="profile.html">
-                    <i class="fas fa-user"></i> My Profile
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="packages.html">
-                    <i class="fas fa-box-open"></i> Investment Packages
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="deposit.html">
-                    <i class="fas fa-wallet"></i> Deposit Funds
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="withdrawal.html">
-                    <i class="fas fa-money-bill-wave"></i> Withdraw Funds
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="transfer.html">
-                    <i class="fas fa-exchange-alt"></i> Transfer Funds
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="invoices.html">
-                    <i class="fas fa-file-invoice-dollar"></i> My Invoices
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="trading-history.html">
-                    <i class="fas fa-history"></i> Transaction History
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="referral.html">
-                    <i class="fas fa-users"></i> Referral Program
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="team-structure.html">
-                    <i class="fas fa-sitemap"></i> Team Structure
-                </a>
-            </li>
-            <li class="nav-item mt-3">
-                <a class="nav-link" href="#" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </li>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
+            <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html" class="active"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
+            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
-    </div>
+    </aside>
 
     <!-- Main Content -->
-    <div class="main-content">
-        <div class="container-fluid">
-            <div class="row mb-4">
-                <div class="col-12">
-                    <h2 class="fw-bold"><i class="fas fa-file-invoice-dollar me-2"></i> My Invoices</h2>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Invoices</li>
-                        </ol>
-                    </nav>
-                </div>
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title"><i class="fas fa-file-invoice-dollar"></i> My Invoices</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-list me-2"></i> Invoice History</h5>
             </div>
-            
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i> Invoice History</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Invoice #</th>
-                                            <th>Date</th>
-                                            <th>Package</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="invoiceList">
-                                        <tr>
-                                            <td colspan="6" class="text-center">Loading invoices...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date & Time</th>
+                                <th>Package</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceList">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Loading invoices...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Invoice Modal -->
     <div class="invoice-modal" id="invoiceModal" style="display: none;">
@@ -369,7 +599,7 @@
                         <p id="invoiceNumber">#INV-0001</p>
                     </div>
                     <div class="text-end">
-                        <img src="https://via.placeholder.com/150x50?text=TradeWorld" alt="Company Logo" style="height: 50px;">
+                        <img src="https://via.placeholder.com/150x50?text=TradeWorld" alt="TradeWorld Logo" style="height: 40px;">
                         <p>Invoice Date: <span id="invoiceDate">01 Jan 2023</span></p>
                     </div>
                 </div>
@@ -388,7 +618,7 @@
                         <p><strong id="customerName">John Doe</strong></p>
                         <p id="customerEmail">john.doe@example.com</p>
                         <p id="customerId">User ID: U123456</p>
-                        <p>Invoice Status: <span class="status-badge status-active" id="invoiceStatus">Active</span></p>
+                        <p>Invoice Status: <span class="badge status-active" id="invoiceStatus">Active</span></p>
                     </div>
                 </div>
                 
@@ -417,34 +647,31 @@
                 
                 <div class="invoice-footer">
                     <p>Thank you for your investment with TradeWorld</p>
-                    <p>Maturity Date: <span id="maturityDate">31 Jan 2023</span></p>
                     <p>For any questions regarding this invoice, please contact our support team</p>
                 </div>
             </div>
             
             <div class="invoice-modal-footer">
-                <button class="btn btn-secondary" id="printInvoice">
-                    <i class="fas fa-print me-2"></i> Print
+                <button class="btn btn-outline-primary" id="printInvoice">
+                    <i class="fas fa-print me-1"></i> Print
                 </button>
                 <button class="btn btn-primary" id="downloadInvoice">
-                    <i class="fas fa-download me-2"></i> Download PDF
+                    <i class="fas fa-download me-1"></i> Download PDF
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Firebase and other JS -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <!-- jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // Initialize Firebase
@@ -460,10 +687,7 @@
         };
 
         // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
+        const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
         const { jsPDF } = window.jspdf;
@@ -471,15 +695,64 @@
         let currentUser = null;
         let userData = null;
 
-        // Auth state listener
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                loadUserData(user.uid);
-            } else {
-                window.location.href = "login.html";
-            }
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup sidebar toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+            
+            // Check if user is logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserData(user.uid);
+                    
+                    // Update user avatar
+                    updateUserAvatar(user.email || 'User');
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            // Setup logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+            
+            // Close invoice modal
+            document.getElementById('closeInvoiceModal').addEventListener('click', () => {
+                document.getElementById('invoiceModal').style.display = 'none';
+            });
+            
+            // Print invoice
+            document.getElementById('printInvoice').addEventListener('click', () => {
+                window.print();
+            });
+            
+            // Download invoice as PDF
+            document.getElementById('downloadInvoice').addEventListener('click', generatePdf);
         });
+
+        // Update user avatar with initials
+        function updateUserAvatar(email) {
+            const avatar = document.getElementById('userAvatar');
+            if (!avatar) return;
+            
+            // Extract initials from email or name
+            let initials = 'U';
+            if (email) {
+                const namePart = email.split('@')[0];
+                if (namePart.includes('.')) {
+                    initials = namePart.split('.').map(n => n[0]).join('').toUpperCase();
+                } else {
+                    initials = namePart.substring(0, 2).toUpperCase();
+                }
+            }
+            
+            avatar.textContent = initials;
+        }
 
         // Load user data
         function loadUserData(uid) {
@@ -489,10 +762,6 @@
                 userData = snapshot.val();
                 
                 if (userData) {
-                    // Update sidebar user info
-                    document.getElementById('sidebarUserName').textContent = userData.name || 'User';
-                    document.getElementById('sidebarUserEmail').textContent = userData.email || 'user@example.com';
-                    
                     // Load invoices
                     loadInvoices(uid);
                 }
@@ -511,17 +780,19 @@
                 if (invoices) {
                     // Convert to array and sort by date (newest first)
                     const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
-                    invoicesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    invoicesArray.sort((a, b) => b.timestamp - a.timestamp);
                     
                     invoicesArray.forEach(invoice => {
                         const row = document.createElement('tr');
                         
-                        // Format date
-                        const invoiceDate = new Date(invoice.date);
+                        // Format date and time
+                        const invoiceDate = new Date(invoice.timestamp || invoice.date || Date.now());
                         const formattedDate = invoiceDate.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
-                            day: 'numeric'
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
                         });
                         
                         // Determine status class
@@ -535,7 +806,7 @@
                             <td>${formattedDate}</td>
                             <td>${invoice.packageName || 'Investment Package'}</td>
                             <td>$${invoice.amount?.toFixed(2) || '0.00'}</td>
-                            <td><span class="status-badge ${statusClass}">${invoice.status || 'pending'}</span></td>
+                            <td><span class="badge ${statusClass}">${invoice.status || 'pending'}</span></td>
                             <td>
                                 <button class="btn btn-sm btn-outline-primary view-invoice" data-invoice-id="${invoice.id}">
                                     <i class="fas fa-eye"></i> View
@@ -556,7 +827,7 @@
                 } else {
                     invoiceList.innerHTML = `
                         <tr>
-                            <td colspan="6" class="text-center">No invoices found</td>
+                            <td colspan="6" class="text-center text-muted">No invoices found</td>
                         </tr>
                     `;
                 }
@@ -574,13 +845,17 @@
                     // Update modal with invoice data
                     document.getElementById('invoiceNumber').textContent = invoice.invoiceNumber || 'INV-' + invoiceId.substring(0, 8);
                     
-                    const invoiceDate = new Date(invoice.date);
+                    // Set invoice date with proper formatting
+                    const invoiceDate = new Date(invoice.timestamp || invoice.date || Date.now());
                     document.getElementById('invoiceDate').textContent = invoiceDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
                     });
                     
+                    // Update customer info
                     document.getElementById('customerName').textContent = userData.name || 'User';
                     document.getElementById('customerEmail').textContent = userData.email || '';
                     document.getElementById('customerId').textContent = 'User ID: ' + currentUser.uid.substring(0, 8);
@@ -588,30 +863,21 @@
                     // Set status with appropriate class
                     const statusElement = document.getElementById('invoiceStatus');
                     statusElement.textContent = invoice.status || 'active';
-                    statusElement.className = 'status-badge ';
+                    statusElement.className = 'badge ';
                     
                     if (invoice.status === 'active') statusElement.classList.add('status-active');
                     else if (invoice.status === 'completed') statusElement.classList.add('status-completed');
                     else if (invoice.status === 'cancelled') statusElement.classList.add('status-cancelled');
                     else statusElement.classList.add('status-pending');
                     
+                    // Update package details
                     document.getElementById('packageDescription').textContent = invoice.packageName || 'Investment Package';
                     document.getElementById('packageAmount').textContent = '$' + (invoice.amount?.toFixed(2) || '0.00');
                     
+                    // Calculate and show expected return
                     const expectedReturn = invoice.returnAmount || (invoice.amount * 2) || 0;
                     document.getElementById('expectedReturn').textContent = '$' + expectedReturn.toFixed(2);
                     document.getElementById('totalAmount').textContent = '$' + (invoice.amount?.toFixed(2) || '0.00');
-                    
-                    if (invoice.maturityDate) {
-                        const maturityDate = new Date(invoice.maturityDate);
-                        document.getElementById('maturityDate').textContent = maturityDate.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        });
-                    } else {
-                        document.getElementById('maturityDate').textContent = 'N/A';
-                    }
                     
                     // Show modal
                     document.getElementById('invoiceModal').style.display = 'flex';
@@ -619,18 +885,8 @@
             });
         }
 
-        // Close invoice modal
-        document.getElementById('closeInvoiceModal').addEventListener('click', () => {
-            document.getElementById('invoiceModal').style.display = 'none';
-        });
-
-        // Print invoice
-        document.getElementById('printInvoice').addEventListener('click', () => {
-            window.print();
-        });
-
-        // Download invoice as PDF
-        document.getElementById('downloadInvoice').addEventListener('click', () => {
+        // Generate PDF from invoice
+        function generatePdf() {
             const invoiceContent = document.getElementById('invoiceContent');
             const invoiceNumber = document.getElementById('invoiceNumber').textContent;
             
@@ -656,43 +912,32 @@
                 }
                 
                 pdf.save(`${invoiceNumber}.pdf`);
+                showToast('Invoice downloaded successfully', 'success');
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                showToast('Failed to generate PDF', 'error');
             });
-        });
+        }
 
-        // Logout button
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            auth.signOut().then(() => {
+        // Logout user
+        async function logoutUser() {
+            try {
+                await auth.signOut();
+                showToast('Logged out successfully', 'success');
                 window.location.href = 'login.html';
-            }).catch((error) => {
+            } catch (error) {
                 showToast('Error logging out: ' + error.message, 'error');
-            });
-        });
+            }
+        }
 
         // Show toast notification
-        function showToast(message, type = 'success') {
+        function showToast(message, type) {
             const toastContainer = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.style.cssText = `
-                padding: 12px 16px;
-                margin-bottom: 8px;
-                background-color: ${type === 'success' ? '#28a745' : '#dc3545'};
-                color: white;
-                border-radius: 4px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                animation: slideIn 0.3s ease forwards;
-            `;
-            
             toast.innerHTML = `
                 <span>${message}</span>
-                <button class="toast-close" style="
-                    background: none;
-                    border: none;
-                    color: white;
-                    margin-left: 10px;
-                    cursor: pointer;
-                ">&times;</button>
+                <button class="toast-close">&times;</button>
             `;
             
             toastContainer.appendChild(toast);
@@ -707,16 +952,6 @@
                 toast.remove();
             });
         }
-
-        // Animation for toast
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
