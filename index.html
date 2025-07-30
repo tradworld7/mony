@@ -522,48 +522,6 @@
             color: var(--danger-color);
         }
 
-        /* Team Structure Styles */
-        .team-structure {
-            background-color: var(--white-color);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            box-shadow: var(--box-shadow);
-            margin-bottom: 2rem;
-        }
-        
-        .team-structure h3 {
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            position: relative;
-            padding-bottom: 0.5rem;
-        }
-        
-        .team-structure h3::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50px;
-            height: 3px;
-            background-color: var(--primary-color);
-            border-radius: 3px;
-        }
-        
-        .team-structure ul {
-            list-style: none;
-        }
-        
-        .team-structure li {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--gray-light);
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .team-structure li:last-child {
-            border-bottom: none;
-        }
-
         /* Toast Notifications Container */
         .toast-container {
             position: fixed;
@@ -791,7 +749,6 @@
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -853,12 +810,6 @@
                     <i class="fas fa-info-circle"></i> From all 5 levels
                 </div>
             </div>
-        </div>
-        
-        <!-- Team Structure Section -->
-        <div class="team-structure" id="teamStructure">
-            <h3>Your Team Structure</h3>
-            <p class="text-muted">No team members yet</p>
         </div>
         
         <!-- Transfer Funds Section -->
@@ -1055,7 +1006,7 @@
         const database = getDatabase(app);
 
         // Admin details
-        const ADMIN_ID = "ZYbqxrCmK6OTDYSntqq0SDS6Gpg1";
+        const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
         const ADMIN_NAME = "Ramesh kumar Verma";
 
         // Commission rates
@@ -1347,11 +1298,6 @@
                     updateDashboardUI(userData);
                     localStorage.setItem('tradeWorldUser', JSON.stringify(userData));
                     
-                    // Load team structure if available
-                    if (userData.teamStructure) {
-                        updateTeamStructureUI(userData.teamStructure);
-                    }
-                    
                     // Update user avatar with name if available
                     if (userData.name) {
                         updateUserAvatar(userData.name);
@@ -1384,21 +1330,6 @@
             loadRecentTransactions();
         }
 
-        function updateTeamStructureUI(teamStructure) {
-            const teamStructureDiv = document.getElementById('teamStructure');
-            if (!teamStructureDiv) return;
-            
-            let html = '<h3>Your Team Structure</h3><ul>';
-            
-            for (let level = 1; level <= 5; level++) {
-                const count = teamStructure[`level${level}`] || 0;
-                html += `<li>Level ${level}: <strong>${count}</strong> members</li>`;
-            }
-            
-            html += '</ul>';
-            teamStructureDiv.innerHTML = html;
-        }
-
         function loadRecentTransactions() {
             if (!currentUser) return;
             
@@ -1422,7 +1353,13 @@
                 transactionsArray.slice(0, 5).forEach(tx => {
                     const row = document.createElement('tr');
                     
-                    const date = new Date(tx.timestamp).toLocaleDateString();
+                    const date = new Date(tx.timestamp).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
                     const type = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
                     const amount = `$${tx.amount?.toFixed(2) || '0.00'}`;
                     const status = tx.status ? tx.status.charAt(0).toUpperCase() + tx.status.slice(1) : 'Completed';
@@ -1523,8 +1460,13 @@
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Add to trading pool (70%)
-                updates[`system/tradingPool`] = (await getValue('system/tradingPool')) + tradingPool;
+                // 7. Distribute trading profit (70%) to all active users
+                const activeUsers = await getActiveUsers();
+                const profitPerUser = tradingPool / activeUsers.length;
+                
+                activeUsers.forEach(userId => {
+                    updates[`users/${userId}/tradingProfit`] = (userData.tradingProfit || 0) + profitPerUser;
+                });
                 
                 // Execute all updates
                 await update(ref(database), updates);
@@ -1537,6 +1479,23 @@
                 console.error('Package purchase error:', error);
                 showToast('Failed to purchase package', 'error');
                 return false;
+            }
+        }
+
+        // Get all active users (for profit distribution)
+        async function getActiveUsers() {
+            try {
+                const snapshot = await get(ref(database, 'users'));
+                if (!snapshot.exists()) return [];
+                
+                const users = snapshot.val();
+                return Object.keys(users).filter(uid => {
+                    // Consider a user active if they have at least one investment
+                    return users[uid].investments && Object.keys(users[uid].investments).length > 0;
+                });
+            } catch (error) {
+                console.error('Error getting active users:', error);
+                return [];
             }
         }
 
