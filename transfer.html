@@ -4,8 +4,360 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fund Transfer | Trade World</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./assets/css/transfer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --success-light: #e6f7fd;
+            --danger-color: #f72585;
+            --danger-light: #fde6ef;
+            --warning-color: #f8961e;
+            --warning-light: #fef3e6;
+            --info-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --gray-light: #e9ecef;
+            --white-color: #ffffff;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: var(--header-height);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--white-color);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 999;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: var(--transition);
+            gap: 0.8rem;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu li a.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: var(--transition);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form Styles */
+        .form-container {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .card {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            border: 1px solid var(--gray-light);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Toast Notifications Container */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            color: var(--white-color);
+            box-shadow: var(--box-shadow);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-width: 300px;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--white-color);
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .form-container {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            header {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -14,6 +366,11 @@
             <i class="fas fa-chart-line logo-icon"></i>
             <span class="logo-text">Trade World</span>
         </div>
+        
+        <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">U</div>
+        </div>
+        
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
         </button>
@@ -24,11 +381,12 @@
         <ul class="sidebar-menu">
             <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
             <li><a href="transfer.html" class="active"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-sitemap"></i> Team Structure</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -36,7 +394,7 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">Transfer Funds</h1>
+        <h1 class="page-title"><i class="fas fa-exchange-alt"></i> Transfer Funds</h1>
         
         <div class="form-container">
             <div class="form-group">
@@ -56,17 +414,249 @@
                 </div>
             </div>
             
-            <button class="btn btn-primary" id="submitTransfer">Transfer Funds</button>
+            <button id="submitTransfer" class="btn btn-primary btn-block">
+                <i class="fas fa-paper-plane"></i> Transfer Funds
+            </button>
         </div>
     </main>
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="./assets/js/transfer.js"></script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            onValue, 
+            update,
+            get
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
+            authDomain: "mywebsite-600d3.firebaseapp.com",
+            databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mywebsite-600d3",
+            storageBucket: "mywebsite-600d3.appspot.com",
+            messagingSenderId: "584485288598",
+            appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
+            measurementId: "G-GQ9J9QH42J"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Global Variables
+        let currentUser = null;
+        let userData = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup sidebar toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+            
+            // Check if user is logged in
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserData(user.uid);
+                    
+                    // Update user avatar
+                    updateUserAvatar(user.email || 'User');
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            // Setup transfer button
+            document.getElementById('submitTransfer').addEventListener('click', async function() {
+                const btn = document.getElementById('submitTransfer');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Processing...';
+                
+                await transferFunds();
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Transfer Funds';
+            });
+            
+            // Setup logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+        });
+
+        // Update user avatar with initials
+        function updateUserAvatar(email) {
+            const avatar = document.getElementById('userAvatar');
+            if (!avatar) return;
+            
+            // Extract initials from email or name
+            let initials = 'U';
+            if (email) {
+                const namePart = email.split('@')[0];
+                if (namePart.includes('.')) {
+                    initials = namePart.split('.').map(n => n[0]).join('').toUpperCase();
+                } else {
+                    initials = namePart.substring(0, 2).toUpperCase();
+                }
+            }
+            
+            avatar.textContent = initials;
+        }
+
+        // Load user data from Firebase
+        function loadUserData(userId) {
+            const userRef = ref(database, 'users/' + userId);
+            
+            onValue(userRef, (snapshot) => {
+                userData = snapshot.val();
+                if (userData) {
+                    // Update balance display
+                    document.getElementById('currentBalance').textContent = `$${(userData.balance || 0).toFixed(2)}`;
+                }
+            }, (error) => {
+                console.error("Error loading user data:", error);
+                showToast('Error loading user data', 'error');
+            });
+        }
+
+        // Transfer funds to another user
+        async function transferFunds() {
+            if (!currentUser || !userData) {
+                showToast('Please login first', 'error');
+                return false;
+            }
+            
+            const recipientId = document.getElementById('recipientId').value.trim();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            
+            // Validate inputs
+            if (!recipientId) {
+                showToast('Please enter recipient ID', 'error');
+                return false;
+            }
+            
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return false;
+            }
+            
+            // Can't transfer to yourself
+            if (recipientId === currentUser.uid) {
+                showToast('Cannot transfer to yourself', 'error');
+                return false;
+            }
+            
+            // Check available balance
+            if (amount > (userData.balance || 0)) {
+                showToast('Insufficient balance', 'error');
+                return false;
+            }
+            
+            try {
+                // Check if recipient exists
+                const recipientSnapshot = await get(ref(database, `users/${recipientId}`));
+                if (!recipientSnapshot.exists()) {
+                    showToast('Recipient not found', 'error');
+                    return false;
+                }
+                
+                const recipientData = recipientSnapshot.val();
+                
+                // Prepare all updates
+                const updates = {};
+                const transactionId = Date.now().toString();
+                const timestamp = Date.now();
+                
+                // Deduct from sender
+                updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - amount;
+                
+                // Add to recipient
+                updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
+                
+                // Add transaction records
+                updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
+                    type: 'transfer',
+                    amount: amount,
+                    status: 'completed',
+                    timestamp: timestamp,
+                    details: `Transfer to ${recipientData.name || 'User'}`,
+                    recipientId: recipientId
+                };
+                
+                updates[`users/${recipientId}/transactions/${transactionId}_received`] = {
+                    type: 'transfer',
+                    amount: amount,
+                    status: 'completed',
+                    timestamp: timestamp,
+                    details: `Transfer from ${userData.name || 'User'}`,
+                    senderId: currentUser.uid
+                };
+                
+                // Execute updates
+                await update(ref(database), updates);
+                
+                // Clear form
+                document.getElementById('recipientId').value = '';
+                document.getElementById('transferAmount').value = '';
+                
+                showToast(`Successfully transferred $${amount.toFixed(2)}`, 'success');
+                return true;
+                
+            } catch (error) {
+                console.error('Transfer error:', error);
+                showToast('Failed to transfer funds', 'error');
+                return false;
+            }
+        }
+
+        // Logout user
+        async function logoutUser() {
+            try {
+                await signOut(auth);
+                showToast('Logged out successfully', 'success');
+                window.location.href = 'login.html';
+            } catch (error) {
+                showToast('Error logging out: ' + error.message, 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+            
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+        }
+    </script>
 </body>
 </html>
