@@ -517,7 +517,10 @@
         import { 
             getDatabase, 
             ref, 
-            set 
+            set,
+            update,
+            push,
+            get
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -650,7 +653,7 @@
             const depositData = {
                 amount: amount,
                 txHash: txHash,
-                status: 'Pending',
+                status: 'pending',
                 date: new Date().toISOString(),
                 userId: currentUser.uid,
                 walletAddress: '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886'
@@ -658,14 +661,22 @@
             
             try {
                 // Save to database
-                await set(ref(database, 'deposits/' + currentUser.uid + '/' + depositId), depositData);
+                await set(ref(database, 'deposits/' + depositId), depositData);
+                
+                // Add to user's deposits
+                await set(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), {
+                    amount: amount,
+                    txHash: txHash,
+                    status: 'pending',
+                    date: new Date().toISOString()
+                });
                 
                 // Add to transactions
                 await set(ref(database, 'transactions/' + currentUser.uid + '/' + depositId), {
-                    type: 'Deposit',
+                    type: 'deposit',
                     amount: amount,
-                    status: 'Pending',
-                    date: new Date().toISOString(),
+                    status: 'pending',
+                    timestamp: Date.now(),
                     details: 'USDT Deposit (BEP20)'
                 });
                 
@@ -682,6 +693,34 @@
                 submitText.style.display = 'inline-block';
                 submitSpinner.style.display = 'none';
                 submitBtn.disabled = false;
+            }
+        }
+
+        // Function to approve deposit (to be called from admin panel)
+        async function approveDeposit(depositId, userId, amount) {
+            try {
+                const updates = {};
+                
+                // Update deposit status
+                updates[`deposits/${depositId}/status`] = 'completed';
+                updates[`users/${userId}/deposits/${depositId}/status`] = 'completed';
+                
+                // Update user balance
+                const userRef = ref(database, `users/${userId}`);
+                const userSnapshot = await get(userRef);
+                const currentBalance = userSnapshot.val().balance || 0;
+                updates[`users/${userId}/balance`] = currentBalance + amount;
+                
+                // Update transaction status
+                updates[`transactions/${userId}/${depositId}/status`] = 'completed';
+                
+                // Execute all updates
+                await update(ref(database), updates);
+                
+                return true;
+            } catch (error) {
+                console.error('Error approving deposit:', error);
+                return false;
             }
         }
 
