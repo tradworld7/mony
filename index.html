@@ -1009,11 +1009,12 @@
         const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
         const ADMIN_NAME = "Ramesh kumar Verma";
 
-        // Commission rates
+        // Commission rates - Updated as requested
         const COMMISSION_RATES = {
-            admin: 0.10,    // 10% to admin
+            admin: 0.30,    // 30% to admin (changed from 10%)
             direct: 0.10,   // 10% to direct referrer
-            levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
+            levels: [0.02, 0.02, 0.02, 0.02, 0.02], // 2% each for levels 1-5
+            tradingPool: 0.50 // 50% to trading pool (changed from 70%)
         };
 
         // Global Variables
@@ -1315,7 +1316,7 @@
             // Update balance
             document.getElementById('userBalance').textContent = `$${(data.balance || 0).toFixed(2)}`;
             
-            // Update trading profit
+            // Update trading profit - now accumulates properly
             document.getElementById('tradingProfit').textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
             
             // Update referrals
@@ -1360,10 +1361,24 @@
                         hour: '2-digit',
                         minute: '2-digit'
                     });
+                    
                     const type = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
                     const amount = `$${tx.amount?.toFixed(2) || '0.00'}`;
                     const status = tx.status ? tx.status.charAt(0).toUpperCase() + tx.status.slice(1) : 'Completed';
-                    const details = tx.details || '';
+                    
+                    // Enhanced transaction details
+                    let details = tx.details || '';
+                    if (tx.type === 'transfer') {
+                        if (tx.recipientId) {
+                            details = `Transfer to ${tx.recipientName || 'User'}`;
+                        } else if (tx.senderId) {
+                            details = `Received from ${tx.senderName || 'User'}`;
+                        }
+                    } else if (tx.type === 'investment') {
+                        details = `Purchased ${tx.packageName || 'Package'}`;
+                    } else if (tx.type === 'referral') {
+                        details = `Referral commission from ${tx.fromUserName || 'User'}`;
+                    }
                     
                     row.innerHTML = `
                         <td>${date}</td>
@@ -1409,9 +1424,9 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate total commission (30%)
+                // Calculate total commission (50%) - updated as requested
                 const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
-                const tradingPool = packageAmount - totalCommission;
+                const tradingPool = packageAmount * COMMISSION_RATES.tradingPool; // 50% to trading pool
                 
                 // Prepare all updates
                 const updates = {};
@@ -1440,17 +1455,19 @@
                     status: 'completed',
                     timestamp: Date.now(),
                     userId: currentUser.uid,
-                    details: `Purchased ${invoiceData.packageName}`
+                    details: `Purchased ${invoiceData.packageName}`,
+                    packageName: invoiceData.packageName
                 };
                 updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
                     type: 'investment',
                     amount: packageAmount,
                     status: 'completed',
                     timestamp: Date.now(),
-                    details: `Purchased ${invoiceData.packageName}`
+                    details: `Purchased ${invoiceData.packageName}`,
+                    packageName: invoiceData.packageName
                 };
                 
-                // 5. Add admin commission (10%)
+                // 5. Add admin commission (30%) - updated from 10%
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (await getValue(`users/${ADMIN_ID}/tradingProfit`)) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
@@ -1460,12 +1477,12 @@
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Distribute trading profit (70%) to all active users
+                // 7. Distribute trading profit (50%) to all active users - updated from 70%
                 const activeUsers = await getActiveUsers();
                 const profitPerUser = tradingPool / activeUsers.length;
                 
                 activeUsers.forEach(userId => {
-                    updates[`users/${userId}/tradingProfit`] = (userData.tradingProfit || 0) + profitPerUser;
+                    updates[`users/${userId}/tradingProfit`] = (await getValue(`users/${userId}/tradingProfit`)) + profitPerUser;
                 });
                 
                 // Execute all updates
@@ -1545,7 +1562,9 @@
                     amount: commission,
                     status: 'completed',
                     timestamp: Date.now(),
-                    details: `Level ${currentLevel} referral commission from ${userData.name}`
+                    details: `Level ${currentLevel} referral commission from ${userData.name}`,
+                    fromUserId: currentUser.uid,
+                    fromUserName: userData.name
                 };
                 
                 // If referrer has an upline, continue recursively
@@ -1602,14 +1621,15 @@
                 // Add to recipient
                 updates[`users/${recipientId}/balance`] = (recipientData.balance || 0) + amount;
                 
-                // Add transaction records
+                // Add transaction records with names
                 updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
                     type: 'transfer',
                     amount: amount,
                     status: 'completed',
                     timestamp: timestamp,
                     details: `Transfer to ${recipientData.name || 'User'}`,
-                    recipientId: recipientId
+                    recipientId: recipientId,
+                    recipientName: recipientData.name
                 };
                 
                 updates[`users/${recipientId}/transactions/${transactionId}_received`] = {
@@ -1618,7 +1638,8 @@
                     status: 'completed',
                     timestamp: timestamp,
                     details: `Transfer from ${userData.name || 'User'}`,
-                    senderId: currentUser.uid
+                    senderId: currentUser.uid,
+                    senderName: userData.name
                 };
                 
                 // Execute updates
