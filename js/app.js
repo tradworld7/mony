@@ -652,18 +652,16 @@ async function purchasePackage(amount) {
 
     // Commission structure
     const directReferralCommission = amount * 0.10;
-    const adminCommission = amount * 0.10;
+    const adminCommission = amount * 0.30;
     const level2Commission = amount * 0.02;
     const level3Commission = amount * 0.02;
     const level4Commission = amount * 0.02;
     const level5Commission = amount * 0.02;
-    const tradingPool = amount * 0.70;
-    const userProfit = amount * 0.02;
+    const tradingPool = amount * 0.50;
 
     // User updates
-    updates[`users/${uid}/balance`] = currentBalance - amount + userProfit;
-    updates[`users/${uid}/tradingProfit`] = (userData.tradingProfit || 0) + userProfit;
-
+    updates[`users/${uid}/balance`] = currentBalance - amount;
+    
     // Investment record
     updates[`users/${uid}/investments/${packageId}`] = {
       amount,
@@ -672,7 +670,8 @@ async function purchasePackage(amount) {
       expectedReturn: amount * 2,
       maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000,
       profitEarned: 0,
-      lastProfitDate: null
+      lastProfitDate: null,
+      tradingPoolShare: tradingPool
     };
 
     // Transaction records
@@ -684,7 +683,7 @@ async function purchasePackage(amount) {
       timestamp,
       details: `Purchased package of $${amount}`,
       balanceBefore: currentBalance,
-      balanceAfter: currentBalance - amount + userProfit
+      balanceAfter: currentBalance - amount
     };
 
     updates[`users/${uid}/transactions/${txId}`] = {
@@ -694,10 +693,10 @@ async function purchasePackage(amount) {
       timestamp,
       details: `Purchased package of $${amount}`,
       balanceBefore: currentBalance,
-      balanceAfter: currentBalance - amount + userProfit
+      balanceAfter: currentBalance - amount
     };
 
-    // Admin commission
+    // Admin commission (30%)
     updates[`users/${ADMIN_USER_ID}/balance`] = firebase.database.ServerValue.increment(adminCommission);
     updates[`users/${ADMIN_USER_ID}/adminEarnings`] = firebase.database.ServerValue.increment(adminCommission);
     
@@ -712,7 +711,7 @@ async function purchasePackage(amount) {
       balanceAfter: firebase.database.ServerValue.increment(adminCommission)
     };
 
-    // Trading pool
+    // Trading pool (50%)
     updates[`system/tradingPool`] = firebase.database.ServerValue.increment(tradingPool);
     updates[`system/poolTransactions/${txId}`] = {
       userId: uid,
@@ -721,10 +720,10 @@ async function purchasePackage(amount) {
       details: `Contribution from ${uid} package purchase`
     };
 
-    // Distribute trading pool to active users
-    await distributeTradingPool(tradingPool, timestamp, updates);
+    // Distribute trading pool to active users based on their investment shares
+    await distributeTradingPool(uid, tradingPool, timestamp, updates);
 
-    // Referral commissions
+    // Referral commissions (10% direct + 2% each for levels 2-5)
     if (userData.referredBy) {
       await handleReferralCommissions(userData.referredBy, uid, amount, timestamp, updates);
     }
@@ -743,39 +742,59 @@ async function purchasePackage(amount) {
   }
 }
 
-// Distribute trading pool to active users
-async function distributeTradingPool(amount, timestamp, updates) {
+// Distribute trading pool to active users based on their investment shares
+async function distributeTradingPool(investorId, amount, timestamp, updates) {
   try {
-    // Get all active users
+    // Get all active users with their investments
     const snapshot = await database.ref("users")
       .orderByChild("accountStatus")
       .equalTo("active")
       .once("value");
     
     const users = snapshot.val() || {};
-    const activeUsers = Object.keys(users).filter(uid => {
-      return users[uid].investments && Object.keys(users[uid].investments).length > 0;
+    let totalInvestmentPool = 0;
+    const userShares = {};
+    
+    // Calculate each user's share of the trading pool
+    Object.keys(users).forEach(uid => {
+      const user = users[uid];
+      if (user.investments) {
+        let userTotalShare = 0;
+        Object.values(user.investments).forEach(inv => {
+          if (inv.status === "active" && inv.tradingPoolShare) {
+            userTotalShare += inv.tradingPoolShare;
+          }
+        });
+        
+        if (userTotalShare > 0) {
+          userShares[uid] = userTotalShare;
+          totalInvestmentPool += userTotalShare;
+        }
+      }
     });
     
-    if (activeUsers.length > 0) {
-      const sharePerUser = amount / activeUsers.length;
-      
-      activeUsers.forEach(uid => {
-        updates[`users/${uid}/tradingPoolEarnings`] = 
-          firebase.database.ServerValue.increment(sharePerUser);
+    if (totalInvestmentPool > 0) {
+      // Distribute the amount proportionally to all active investors
+      Object.keys(userShares).forEach(uid => {
+        const share = userShares[uid];
+        const distributionAmount = (share / totalInvestmentPool) * amount;
+        
+        // Update user's trading profit (accumulated)
+        updates[`users/${uid}/tradingProfit`] = 
+          firebase.database.ServerValue.increment(distributionAmount);
         
         updates[`users/${uid}/balance`] = 
-          firebase.database.ServerValue.increment(sharePerUser);
+          firebase.database.ServerValue.increment(distributionAmount);
           
         const txId = database.ref().child("transactions").push().key;
         updates[`users/${uid}/transactions/${txId}`] = {
           type: "trading_pool",
-          amount: sharePerUser,
+          amount: distributionAmount,
           status: "completed",
           timestamp,
-          details: `Trading pool distribution`,
+          details: `Trading pool distribution from ${investorId}`,
           balanceBefore: users[uid].balance || 0,
-          balanceAfter: (users[uid].balance || 0) + sharePerUser
+          balanceAfter: (users[uid].balance || 0) + distributionAmount
         };
       });
     }
@@ -785,7 +804,7 @@ async function distributeTradingPool(amount, timestamp, updates) {
   }
 }
 
-// Handle referral commissions
+// Handle referral commissions (10% direct + 2% each for 5 levels)
 async function handleReferralCommissions(referrerId, userId, amount, timestamp, updates) {
   try {
     // Get referrer data
