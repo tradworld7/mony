@@ -643,6 +643,14 @@
             color: var(--gray-color);
         }
 
+        .text-success {
+            color: var(--success-color);
+        }
+
+        .text-danger {
+            color: var(--danger-color);
+        }
+
         /* Animations */
         @keyframes slideIn {
             from {
@@ -731,6 +739,7 @@
         
         <div class="user-profile" id="userProfile">
             <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userName">User</span>
         </div>
         
         <button class="menu-toggle" id="menuToggle">
@@ -911,62 +920,6 @@
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Login Modal -->
-    <div id="loginModal" class="auth-container" style="display: none;">
-        <div class="auth-card">
-            <h2 class="auth-title">Login to Your Account</h2>
-            <form id="loginForm">
-                <div class="form-group mb-3">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-                    <span id="loginBtnText">Login</span>
-                    <span id="loginSpinner" class="spinner" style="display: none;"></span>
-                </button>
-            </form>
-            <div class="auth-footer">
-                Don't have an account? <a href="#" id="showSignup">Sign up</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup Modal -->
-    <div id="signupModal" class="auth-container" style="display: none;">
-        <div class="auth-card">
-            <h2 class="auth-title">Create New Account</h2>
-            <form id="signupForm">
-                <div class="form-group mb-3">
-                    <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" class="form-control" placeholder="Enter your full name" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="signupPassword">Password (min 6 characters)</label>
-                    <input type="password" id="signupPassword" class="form-control" placeholder="Create a password" minlength="6" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="signupReferral">Referral ID (optional)</label>
-                    <input type="text" id="signupReferral" class="form-control" placeholder="Enter referral ID if any">
-                </div>
-                <button type="submit" class="btn btn-primary w-100" id="signupBtn">
-                    <span id="signupBtnText">Sign Up</span>
-                    <span id="signupSpinner" class="spinner" style="display: none;"></span>
-                </button>
-            </form>
-            <div class="auth-footer">
-                Already have an account? <a href="#" id="showLogin">Login</a>
-            </div>
-        </div>
-    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
