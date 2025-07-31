@@ -844,7 +844,8 @@
                     walletAddress: walletAddress,
                     status: 'pending',
                     timestamp: timestamp,
-                    name: userData.name || 'User'
+                    name: userData.name || 'User',
+                    email: currentUser.email || ''
                 };
                 
                 // Calculate new balances after withdrawal
