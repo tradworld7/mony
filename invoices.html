@@ -785,8 +785,8 @@
                     invoicesArray.forEach(invoice => {
                         const row = document.createElement('tr');
                         
-                        // Format date and time
-                        const invoiceDate = new Date(invoice.timestamp || invoice.date || Date.now());
+                        // Format date and time using the timestamp saved with the invoice
+                        const invoiceDate = new Date(invoice.timestamp || Date.now());
                         const formattedDate = invoiceDate.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -845,8 +845,8 @@
                     // Update modal with invoice data
                     document.getElementById('invoiceNumber').textContent = invoice.invoiceNumber || 'INV-' + invoiceId.substring(0, 8);
                     
-                    // Set invoice date with proper formatting
-                    const invoiceDate = new Date(invoice.timestamp || invoice.date || Date.now());
+                    // Set invoice date with proper formatting using the saved timestamp
+                    const invoiceDate = new Date(invoice.timestamp || Date.now());
                     document.getElementById('invoiceDate').textContent = invoiceDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
