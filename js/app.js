@@ -391,7 +391,7 @@ async function loadPackagesData(uid) {
             <ul class="package-features">
               ${pkg.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}
             </ul>
-            <button class="btn btn-primary" data-package="${pkg.price}">Buy Now</button>
+            <button class="btn btn-primary" data-package="${pkg.price}" data-name="${pkg.name}">Buy Now</button>
           `;
           packagesContainer.appendChild(packageCard);
         });
@@ -402,7 +402,8 @@ async function loadPackagesData(uid) {
     document.querySelectorAll("[data-package]").forEach(btn => {
       btn.addEventListener("click", () => {
         const amount = parseFloat(btn.getAttribute("data-package"));
-        purchasePackage(amount);
+        const packageName = btn.getAttribute("data-name");
+        purchasePackage(amount, packageName);
       });
     });
     
@@ -619,7 +620,7 @@ async function loadDepositData(uid) {
 }
 
 // Package purchase function
-async function purchasePackage(amount) {
+async function purchasePackage(amount, packageName) {
   if (!currentUser || !userData) {
     showToast("Please wait, user data is loading...", "error");
     return;
@@ -671,7 +672,21 @@ async function purchasePackage(amount) {
       maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000,
       profitEarned: 0,
       lastProfitDate: null,
-      tradingPoolShare: tradingPool
+      tradingPoolShare: tradingPool,
+      packageName: packageName || `$${amount} Package`
+    };
+
+    // Invoice record
+    updates[`users/${uid}/invoices/${packageId}`] = {
+      invoiceId: packageId,
+      userId: uid,
+      amount: amount,
+      expectedReturn: amount * 2,
+      purchaseDate: timestamp,
+      maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000,
+      status: "active",
+      packageName: packageName || `$${amount} Package`,
+      timestamp: timestamp
     };
 
     // Transaction records
@@ -681,7 +696,7 @@ async function purchasePackage(amount) {
       amount: -amount,
       status: "completed",
       timestamp,
-      details: `Purchased package of $${amount}`,
+      details: `Purchased ${packageName || 'package'} of $${amount}`,
       balanceBefore: currentBalance,
       balanceAfter: currentBalance - amount
     };
@@ -691,7 +706,7 @@ async function purchasePackage(amount) {
       amount: -amount,
       status: "completed",
       timestamp,
-      details: `Purchased package of $${amount}`,
+      details: `Purchased ${packageName || 'package'} of $${amount}`,
       balanceBefore: currentBalance,
       balanceAfter: currentBalance - amount
     };
@@ -1234,8 +1249,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       const amount = parseFloat(btn.getAttribute("data-package"));
+      const packageName = btn.getAttribute("data-name");
       if (!isNaN(amount)) {
-        purchasePackage(amount);
+        purchasePackage(amount, packageName);
       }
     });
   });
@@ -1386,7 +1402,6 @@ function handleSignup(name, email, password, mobile, sponsorId) {
         tradingProfit: 0,
         referralEarnings: 0,
         teamEarnings: 0,
-        tradingPoolEarnings: 0,
         referredBy: sponsorId || null,
         joinDate: new Date().toISOString(),
         lastActive: Date.now(),
