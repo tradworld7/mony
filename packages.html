@@ -772,11 +772,25 @@
                 
                 // 7. Distribute trading profit (70%) to all active users
                 const activeUsers = await getActiveUsers();
-                const profitPerUser = tradingPool / activeUsers.length;
-                
-                activeUsers.forEach(userId => {
-                    updates[`users/${userId}/tradingProfit`] = (userData.tradingProfit || 0) + profitPerUser;
-                });
+                if (activeUsers.length > 0) {
+                    const profitPerUser = tradingPool / activeUsers.length;
+                    
+                    // First get current profits for all users
+                    const usersData = await Promise.all(
+                        activeUsers.map(async userId => {
+                            const snapshot = await get(ref(database, `users/${userId}/tradingProfit`));
+                            return {
+                                userId,
+                                currentProfit: snapshot.val() || 0
+                            };
+                        })
+                    );
+                    
+                    // Then update each user's profit by adding the new amount
+                    usersData.forEach(user => {
+                        updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + profitPerUser;
+                    });
+                }
                 
                 // Execute all updates
                 await update(ref(database), updates);
