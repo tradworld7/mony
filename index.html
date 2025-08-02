@@ -1452,7 +1452,8 @@
                 
                 // 5. Add admin commission (10%)
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
-                updates[`users/${ADMIN_ID}/tradingProfit`] = (await getValue(`users/${ADMIN_ID}/tradingProfit`)) + adminCommission;
+                const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
+                updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
                 // 6. Process referral commissions (if any)
@@ -1462,11 +1463,14 @@
                 
                 // 7. Distribute trading profit (70%) to all active users
                 const activeUsers = await getActiveUsers();
-                const profitPerUser = tradingPool / activeUsers.length;
-                
-                activeUsers.forEach(userId => {
-                    updates[`users/${userId}/tradingProfit`] = (userData.tradingProfit || 0) + profitPerUser;
-                });
+                if (activeUsers.length > 0) {
+                    const profitPerUser = tradingPool / activeUsers.length;
+                    
+                    activeUsers.forEach(userId => {
+                        const currentProfit = userData.tradingProfit || 0;
+                        updates[`users/${userId}/tradingProfit`] = currentProfit + profitPerUser;
+                    });
+                }
                 
                 // Execute all updates
                 await update(ref(database), updates);
