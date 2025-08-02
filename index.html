@@ -1450,7 +1450,7 @@
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 
-                // 5. Add admin commission (10%)
+                // 5. Add admin commission (30%)
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
@@ -1461,14 +1461,25 @@
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Distribute trading profit (70%) to all active users
+                // 7. Distribute trading profit (50%) to all active users
                 const activeUsers = await getActiveUsers();
                 if (activeUsers.length > 0) {
                     const profitPerUser = tradingPool / activeUsers.length;
                     
-                    activeUsers.forEach(userId => {
-                        const currentProfit = userData.tradingProfit || 0;
-                        updates[`users/${userId}/tradingProfit`] = currentProfit + profitPerUser;
+                    // First get current profits for all users
+                    const usersData = await Promise.all(
+                        activeUsers.map(async userId => {
+                            const snapshot = await get(ref(database, `users/${userId}/tradingProfit`));
+                            return {
+                                userId,
+                                currentProfit: snapshot.val() || 0
+                            };
+                        })
+                    );
+                    
+                    // Then update each user's profit by adding the new amount
+                    usersData.forEach(user => {
+                        updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + profitPerUser;
                     });
                 }
                 
