@@ -784,8 +784,10 @@
                         ...invoice,
                         // Use the Firebase push ID as the invoice number if not specified
                         invoiceNumber: invoice.invoiceNumber || 'INV-' + id.substring(0, 8),
-                        // Preserve the original creation timestamp
-                        timestamp: invoice.timestamp || invoice.date || Date.now()
+                        // Convert Firebase timestamp to milliseconds if it's an object
+                        timestamp: typeof invoice.timestamp === 'object' ? 
+                                 (invoice.timestamp.seconds * 1000 + Math.round(invoice.timestamp.nanoseconds / 1000000)) : 
+                                 (invoice.timestamp || invoice.date || Date.now())
                     }));
                     
                     // Sort by timestamp (newest first)
@@ -794,7 +796,7 @@
                     invoicesArray.forEach(invoice => {
                         const row = document.createElement('tr');
                         
-                        // Format date and time from the preserved timestamp
+                        // Format date and time from the timestamp
                         const invoiceDate = new Date(invoice.timestamp);
                         const formattedDate = invoiceDate.toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -854,8 +856,13 @@
                     // Update modal with invoice data
                     document.getElementById('invoiceNumber').textContent = invoice.invoiceNumber || 'INV-' + invoiceId.substring(0, 8);
                     
-                    // Set invoice date with proper formatting from the preserved timestamp
-                    const invoiceDate = new Date(invoice.timestamp || invoice.date || Date.now());
+                    // Convert Firebase timestamp to milliseconds if it's an object
+                    const invoiceTimestamp = typeof invoice.timestamp === 'object' ? 
+                                          (invoice.timestamp.seconds * 1000 + Math.round(invoice.timestamp.nanoseconds / 1000000)) : 
+                                          (invoice.timestamp || invoice.date || Date.now());
+                    
+                    // Set invoice date with proper formatting
+                    const invoiceDate = new Date(invoiceTimestamp);
                     document.getElementById('invoiceDate').textContent = invoiceDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
