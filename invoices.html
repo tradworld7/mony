@@ -778,15 +778,24 @@
                 invoiceList.innerHTML = '';
                 
                 if (invoices) {
-                    // Convert to array and sort by date (newest first)
-                    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ id, ...invoice }));
+                    // Convert to array and sort by timestamp (newest first)
+                    const invoicesArray = Object.entries(invoices).map(([id, invoice]) => ({ 
+                        id, 
+                        ...invoice,
+                        // Use the Firebase push ID as the invoice number if not specified
+                        invoiceNumber: invoice.invoiceNumber || 'INV-' + id.substring(0, 8),
+                        // Preserve the original creation timestamp
+                        timestamp: invoice.timestamp || invoice.date || Date.now()
+                    }));
+                    
+                    // Sort by timestamp (newest first)
                     invoicesArray.sort((a, b) => b.timestamp - a.timestamp);
                     
                     invoicesArray.forEach(invoice => {
                         const row = document.createElement('tr');
                         
-                        // Format date and time using the timestamp saved with the invoice
-                        const invoiceDate = new Date(invoice.timestamp || Date.now());
+                        // Format date and time from the preserved timestamp
+                        const invoiceDate = new Date(invoice.timestamp);
                         const formattedDate = invoiceDate.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -802,7 +811,7 @@
                         else if (invoice.status === 'cancelled') statusClass = 'status-cancelled';
                         
                         row.innerHTML = `
-                            <td>${invoice.invoiceNumber || 'INV-' + invoice.id.substring(0, 8)}</td>
+                            <td>${invoice.invoiceNumber}</td>
                             <td>${formattedDate}</td>
                             <td>${invoice.packageName || 'Investment Package'}</td>
                             <td>$${invoice.amount?.toFixed(2) || '0.00'}</td>
@@ -845,8 +854,8 @@
                     // Update modal with invoice data
                     document.getElementById('invoiceNumber').textContent = invoice.invoiceNumber || 'INV-' + invoiceId.substring(0, 8);
                     
-                    // Set invoice date with proper formatting using the saved timestamp
-                    const invoiceDate = new Date(invoice.timestamp || Date.now());
+                    // Set invoice date with proper formatting from the preserved timestamp
+                    const invoiceDate = new Date(invoice.timestamp || invoice.date || Date.now());
                     document.getElementById('invoiceDate').textContent = invoiceDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
