@@ -7,6 +7,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --white-color: #ffffff;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,299 +27,296 @@
         }
 
         body {
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        /* Header Styles */
         header {
+            background-color: var(--white-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: #2c3e50;
-            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
         }
 
         .auth-buttons {
             display: flex;
-            gap: 15px;
+            gap: 1rem;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 0.5rem 1rem;
             border-radius: 5px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 2px solid transparent;
             text-decoration: none;
             display: inline-block;
         }
 
-        .btn-outline {
-            border: 1px solid #3498db;
-            color: #3498db;
-            background: transparent;
-        }
-
-        .btn-outline:hover {
-            background: #3498db;
-            color: white;
-        }
-
         .btn-primary {
-            background: #3498db;
-            color: white;
-            border: none;
+            background-color: var(--primary-color);
+            color: var(--white-color);
         }
 
         .btn-primary:hover {
-            background: #2980b9;
+            background-color: var(--secondary-color);
         }
 
-        #menuToggle {
-            display: none;
-            font-size: 24px;
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
             cursor: pointer;
+            display: none;
         }
 
-        .signup-container {
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: calc(100vh - 100px);
-            padding: 40px 0;
+            justify-content: center;
         }
 
-        .signup-form {
-            background: white;
-            padding: 40px;
+        .auth-page {
+            background-color: #f5f7fa;
+        }
+
+        .form-container {
+            background-color: var(--white-color);
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
             width: 100%;
             max-width: 500px;
         }
 
-        .signup-form h2 {
-            margin-bottom: 20px;
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
             text-align: center;
-            color: #2c3e50;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
             font-weight: 500;
         }
 
-        .form-group input {
+        .form-control {
             width: 100%;
-            padding: 12px 15px;
+            padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 16px;
-            transition: border 0.3s ease;
+            font-size: 1rem;
         }
 
-        .form-group input:focus {
-            border-color: #3498db;
-            outline: none;
+        .form-text {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--gray-color);
         }
 
-        .password-field {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #7f8c8d;
-        }
-
-        #signupBtn {
+        .btn-block {
+            display: block;
             width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            margin-top: 10px;
+            padding: 0.75rem;
         }
 
-        .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .login-link {
+        .text-center {
             text-align: center;
-            margin-top: 20px;
-            color: #7f8c8d;
         }
 
-        .login-link a {
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-
-        #toastContainer {
+        /* Toast Notifications Container */
+        .toast-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .toast {
-            padding: 15px 20px;
-            margin-bottom: 10px;
+            padding: 1rem 1.5rem;
             border-radius: 5px;
-            color: white;
+            color: var(--white-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease forwards;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            justify-content: space-between;
         }
 
         .toast.success {
-            background: #27ae60;
+            background-color: var(--success-color);
         }
 
         .toast.error {
-            background: #e74c3c;
+            background-color: var(--danger-color);
         }
 
         .toast-close {
-            background: transparent;
+            background: none;
             border: none;
-            color: white;
-            font-size: 18px;
+            color: var(--white-color);
             cursor: pointer;
-            margin-left: 15px;
+            font-size: 1rem;
         }
 
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Styles */
         @media (max-width: 768px) {
             .auth-buttons {
                 display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 70px;
-                right: 20px;
-                background: white;
-                padding: 15px;
-                border-radius: 5px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-                width: 200px;
             }
-
-            .auth-buttons.show {
-                display: flex;
-            }
-
-            #menuToggle {
+            
+            .menu-toggle {
                 display: block;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <a href="index.html" class="logo">Trade World</a>
-            <div class="auth-buttons" id="authButtons">
-                <a href="login.html" class="btn btn-outline">Login</a>
-                <a href="signup.html" class="btn btn-primary">Sign Up</a>
-            </div>
-            <i class="fas fa-bars" id="menuToggle"></i>
-        </header>
-    </div>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="signup.html" class="btn btn-primary">Sign Up</a>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
 
-    <div class="signup-container">
-        <div class="signup-form">
-            <h2>Create Your Account</h2>
-            <form id="signupForm">
-                <div class="form-group">
-                    <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" placeholder="Enter your full name" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupMobile">Mobile Number</label>
-                    <input type="tel" id="signupMobile" placeholder="Enter your mobile number" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupEmail">Email Address</label>
-                    <input type="email" id="signupEmail" placeholder="Enter your email address" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <div class="password-field">
-                        <input type="password" id="signupPassword" placeholder="Create a password" required>
-                        <i class="fas fa-eye password-toggle" id="togglePassword"></i>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="signupConfirmPassword">Confirm Password</label>
-                    <div class="password-field">
-                        <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
-                        <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="sponsorId">Sponsor ID (Optional)</label>
-                    <input type="text" id="sponsorId" placeholder="Enter sponsor ID if any">
-                </div>
-                <button type="button" class="btn btn-primary" id="signupBtn">
-                    <span id="signupBtnText">Sign Up</span>
-                    <div class="spinner" id="signupBtnSpinner"></div>
-                </button>
-            </form>
-            <div class="login-link">
-                Already have an account? <a href="login.html">Login here</a>
+    <!-- Main Content -->
+    <main class="main-content auth-page">
+        <div class="form-container">
+            <h1 class="page-title">Create New Account</h1>
+            
+            <div class="form-group">
+                <label class="form-label">Sponsor ID</label>
+                <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
+                <small class="form-text">This will be auto-filled if you came through a referral link</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="signupName" placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" class="form-control" id="signupMobile" placeholder="Enter your mobile number">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="signupPassword" placeholder="Create a password">
+                <small class="form-text">Password must be at least 8 characters long</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm your password">
+            </div>
+            
+            <button class="btn btn-primary btn-block" id="signupBtn">
+                <span id="signupBtnText">Create Account</span>
+                <span id="signupBtnSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
+            
+            <div class="form-group text-center" style="margin-top: 1.5rem;">
+                <p>Already have an account? <a href="login.html">Login</a></p>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div id="toastContainer"></div>
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase and App Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
     <script>
-        // Firebase configuration - matches index.html
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -320,10 +329,7 @@
         };
 
         // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
 
@@ -339,10 +345,12 @@
             
             toastContainer.appendChild(toast);
             
+            // Auto remove after 5 seconds
             setTimeout(() => {
                 toast.remove();
             }, 5000);
             
+            // Close button
             toast.querySelector('.toast-close').addEventListener('click', () => {
                 toast.remove();
             });
@@ -358,50 +366,42 @@
             }
         }
 
-        // Create user data in database - matches index.html structure
-        async function createUserData(userId, userData) {
+        // Create user data in database
+        async function createUserData(userId, email, name, mobile, sponsorId) {
+            const userData = {
+                name: name,
+                email: email,
+                mobileNumber: mobile,
+                balance: 0,
+                deposits: 0,
+                tradingProfit: 0,
+                referralEarnings: 0,
+                teamEarnings: 0,
+                referredBy: sponsorId || null,
+                joinDate: new Date().toISOString(),
+                lastActive: Date.now(),
+                accountStatus: "active",
+                kycVerified: false,
+                walletAddress: "",
+                withdrawals: 0,
+                teamStructure: {
+                    level1Count: 0,
+                    level2Count: 0,
+                    level3Count: 0,
+                    level4Count: 0,
+                    level5Count: 0
+                },
+                uid: userId
+            };
+            
             try {
-                // Default user data structure matching index.html
-                const defaultUserData = {
-        name,
-        email,
-        mobileNumber: mobile,
-        balance: 0,
-        tradingProfit: 0,
-        referralEarnings: 0,
-        teamEarnings: 0,
-        referredBy: sponsorId || null,
-        joinDate: new Date().toISOString(),
-        lastActive: Date.now(),
-        accountStatus: "active",
-        kycVerified: false,
-        walletAddress: "",
-        uid: 
-        teamStructure: {
-          level1Count: 0,
-          level2Count: 0,
-          level3Count: 0,
-          level4Count: 0,
-          level5Count: 0
-                    },
-                    lastActive: Date.now(),
-                    accountStatus: "active",
-                    kycVerified: false,
-                    joinDate: new Date().toISOString()
-                };
-                
-                await database.ref('users/' + userId).set(defaultUserData);
+                await database.ref('users/' + userId).set(userData);
                 
                 // If there's a sponsor, update sponsor's referrals
-                if (userData.sponsorId) {
-                    await database.ref(`users/${userData.sponsorId}/directReferrals/${userId}`).set({
+                if (sponsorId) {
+                    await database.ref(`users/${sponsorId}/referrals/${userId}`).set({
                         joinDate: new Date().toISOString(),
                         status: 'active'
-                    });
-                    
-                    // Update sponsor's team structure level1Count
-                    await database.ref(`users/${userData.sponsorId}/teamStructure/level1Count`).transaction((current) => {
-                        return (current || 0) + 1;
                     });
                 }
                 
@@ -451,16 +451,8 @@
                     displayName: name
                 });
                 
-                // Prepare user data for database
-                const userData = {
-                    name: name,
-                    email: email,
-                    mobile: mobile,
-                    sponsorId: sponsorId || null
-                };
-                
                 // Create user data in database
-                const success = await createUserData(userCredential.user.uid, userData);
+                const success = await createUserData(userCredential.user.uid, email, name, mobile, sponsorId);
                 
                 if (success) {
                     showToast('Account created successfully!', 'success');
@@ -493,27 +485,6 @@
             }
         }
 
-        // Toggle password visibility
-        function setupPasswordToggle() {
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('signupPassword');
-            
-            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-            const confirmPasswordInput = document.getElementById('signupConfirmPassword');
-            
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye-slash');
-            });
-            
-            toggleConfirmPassword.addEventListener('click', function() {
-                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                confirmPasswordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye-slash');
-            });
-        }
-
         // Initialize the signup page
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user came from a referral link
@@ -522,21 +493,12 @@
             // Set up signup button
             document.getElementById('signupBtn').addEventListener('click', signupUser);
             
-            // Set up password toggle
-            setupPasswordToggle();
-            
             // Set up menu toggle for mobile
             document.getElementById('menuToggle').addEventListener('click', function() {
-                const authButtons = document.getElementById('authButtons');
-                authButtons.classList.toggle('show');
-            });
-            
-            // Prevent form submission on enter
-            document.getElementById('signupForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+                const authButtons = document.querySelector('.auth-buttons');
+                authButtons.style.display = authButtons.style.display === 'flex' ? 'none' : 'flex';
             });
         });
     </script>
 </body>
 </html>
-
