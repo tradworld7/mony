@@ -1185,31 +1185,31 @@
                 const user = userCredential.user;
                 
                const userRef = ref(database, 'users/' + user.uid);
-                const userData = {
-                    uid: user.uid,
-                    name: name,
-                    email: email,
-                    balance: 0,
-                    tradingProfit: 0,
-                    referralEarnings: 0,
-                    teamEarnings: 0,
-                    createdAt: Date.now(),
-                    lastActive: Date.now(),
-                    teamStructure: {
-                        level1: 0,
-                        level2: 0,
-                        level3: 0,
-                        level4: 0,
-                        level5: 0
-                    },
-                    deposits: {},
-                    withdrawals: {},
-                    investments: {},
-                    invoices: {},
-                    transactions: {},
-                    directReferrals: {}
-                };
-                
+                   // Create user data in database
+      return database.ref("users/" + user.uid).set({
+        name,
+        email,
+        mobileNumber: mobile,
+        balance: 0,
+        tradingProfit: 0,
+        referralEarnings: 0,
+        teamEarnings: 0,
+        referredBy: sponsorId || null,
+        joinDate: new Date().toISOString(),
+        lastActive: Date.now(),
+        accountStatus: "active",
+        kycVerified: false,
+        walletAddress: "",
+        uid: 
+        teamStructure: {
+          level1Count: 0,
+          level2Count: 0,
+          level3Count: 0,
+          level4Count: 0,
+          level5Count: 0
+        }
+      });
+    })
                 // Add referral data if provided
                 if (referralId) {
                     userData.referredBy = referralId;
@@ -1683,3 +1683,4 @@
     </script>
 </body>
 </html>
+
