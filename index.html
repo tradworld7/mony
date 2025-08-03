@@ -985,8 +985,7 @@
             set, 
             update, 
             push, 
-            get,
-            child 
+            get 
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -1168,8 +1167,6 @@
         async function loginUser(email, password) {
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                // Update last active timestamp
-                await update(ref(database, `users/${userCredential.user.uid}/lastActive`), Date.now());
                 // User logged in
                 showToast('Login successful!', 'success');
                 document.getElementById('loginModal').style.display = 'none';
@@ -1187,8 +1184,7 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Create user data in database with proper structure
-                const userRef = ref(database, 'users/' + user.uid);
+               const userRef = ref(database, 'users/' + user.uid);
                 const userData = {
                     uid: user.uid,
                     name: name,
@@ -1312,9 +1308,6 @@
                     if (userData.name) {
                         updateUserAvatar(userData.name);
                     }
-                    
-                    // Update last active timestamp
-                    update(ref(database, `users/${userId}/lastActive`), Date.now());
                 }
             }, (error) => {
                 console.error("Error loading user data:", error);
@@ -1407,15 +1400,13 @@
 
             try {
                 // Create invoice
-                const invoiceId = push(child(ref(database), 'invoices')).key;
+                const invoiceId = push(ref(database, 'invoices')).key;
                 const purchaseDate = new Date().toISOString();
                 const maturityDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
                 
                 const invoiceData = {
                     invoiceId,
                     userId: currentUser.uid,
-                    userName: userData.name,
-                    userEmail: userData.email,
                     amount: packageAmount,
                     expectedReturn: packageAmount * 2,
                     purchaseDate,
@@ -1440,8 +1431,7 @@
                     purchaseDate: purchaseDate,
                     status: 'active',
                     expectedReturn: packageAmount * 2,
-                    maturityDate: maturityDate,
-                    packageName: getPackageName(packageAmount)
+                    maturityDate: maturityDate
                 };
                 
                 // 3. Add invoice
@@ -1449,14 +1439,13 @@
                 updates[`invoices/${invoiceId}`] = invoiceData;
                 
                 // 4. Add transaction record
-                const transactionId = push(child(ref(database), 'transactions')).key;
+                const transactionId = push(ref(database, 'transactions')).key;
                 updates[`transactions/${transactionId}`] = {
                     type: 'investment',
                     amount: packageAmount,
                     status: 'completed',
                     timestamp: Date.now(),
                     userId: currentUser.uid,
-                    userName: userData.name,
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
@@ -1467,11 +1456,11 @@
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 
-                // 5. Add admin commission (10%)
+                // 5. Add admin commission (30%)
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
-                updates[`system/adminEarnings`] = (await getValue('system/adminEarnings') || 0 + adminCommission;
+                updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
                 // 6. Process referral commissions (if any)
                 if (userData.referredBy) {
@@ -1571,7 +1560,7 @@
                 updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
                 
                 // Add transaction record for referrer
-                const transactionId = push(child(ref(database), 'transactions')).key;
+                const transactionId = push(ref(database, 'transactions')).key;
                 updates[`users/${referrerId}/transactions/${transactionId}`] = {
                     type: 'referral',
                     amount: commission,
@@ -1625,7 +1614,7 @@
                 
                 // Prepare updates
                 const updates = {};
-                const transactionId = push(child(ref(database), 'transactions')).key;
+                const transactionId = push(ref(database, 'transactions')).key;
                 const timestamp = Date.now();
                 
                 // Deduct from sender
