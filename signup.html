@@ -363,23 +363,26 @@
             try {
                 // Default user data structure matching index.html
                 const defaultUserData = {
-                    name: userData.name,
-                    email: userData.email,
-                    mobile: userData.mobile,
-                    balance: 0,
-                    tradingProfit: 0,
-                    referralEarnings: 0,
-                    teamEarnings: 0,
-                    tradingPoolEarnings: 0,
-                    referredBy: userData.sponsorId || null,
-                    transactions: {},
-                    directReferrals: {},
-                    teamStructure: {
-                        level1Count: 0,
-                        level2Count: 0,
-                        level3Count: 0,
-                        level4Count: 0,
-                        level5Count: 0
+        name,
+        email,
+        mobileNumber: mobile,
+        balance: 0,
+        tradingProfit: 0,
+        referralEarnings: 0,
+        teamEarnings: 0,
+        referredBy: sponsorId || null,
+        joinDate: new Date().toISOString(),
+        lastActive: Date.now(),
+        accountStatus: "active",
+        kycVerified: false,
+        walletAddress: "",
+        uid: 
+        teamStructure: {
+          level1Count: 0,
+          level2Count: 0,
+          level3Count: 0,
+          level4Count: 0,
+          level5Count: 0
                     },
                     lastActive: Date.now(),
                     accountStatus: "active",
@@ -536,3 +539,4 @@
     </script>
 </body>
 </html>
+
