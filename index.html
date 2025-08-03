@@ -626,6 +626,50 @@
             display: inline-block;
         }
 
+        /* Admin Panel Styles */
+        .admin-container {
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: var(--transition);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .admin-card {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-stat {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-stat-label {
+            font-size: 1rem;
+            color: var(--gray-color);
+        }
+
         /* Utility Classes */
         .text-center {
             text-align: center;
@@ -909,6 +953,90 @@
         </div>
     </main>
 
+    <!-- Admin Panel Content (hidden by default) -->
+    <div class="admin-container" id="adminPanel" style="display: none;">
+        <h1 class="page-title"><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+        
+        <div class="admin-stats">
+            <div class="admin-stat">
+                <div class="admin-stat-value" id="totalUsers">0</div>
+                <div class="admin-stat-label">Total Users</div>
+            </div>
+            <div class="admin-stat">
+                <div class="admin-stat-value" id="totalInvestments">$0</div>
+                <div class="admin-stat-label">Total Investments</div>
+            </div>
+            <div class="admin-stat">
+                <div class="admin-stat-value" id="totalProfit">$0</div>
+                <div class="admin-stat-label">System Profit</div>
+            </div>
+            <div class="admin-stat">
+                <div class="admin-stat-value" id="activePackages">0</div>
+                <div class="admin-stat-label">Active Packages</div>
+            </div>
+        </div>
+        
+        <div class="admin-card">
+            <h2 class="section-title">Recent Transactions</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>User</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTransactions">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Loading transactions...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="admin-card">
+            <h2 class="section-title">User Management</h2>
+            <div class="form-group">
+                <label for="searchUser">Search User</label>
+                <input type="text" id="searchUser" class="form-control" placeholder="Enter user ID or email">
+            </div>
+            <button id="searchUserBtn" class="btn btn-primary mt-3">
+                <i class="fas fa-search"></i> Search
+            </button>
+            
+            <div id="userDetails" class="mt-3" style="display: none;">
+                <h3>User Details</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="adminUserName" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" id="adminUserEmail" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Balance</label>
+                        <input type="text" id="adminUserBalance" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Trading Profit</label>
+                        <input type="text" id="adminUserProfit" class="form-control">
+                    </div>
+                </div>
+                <button id="updateUserBtn" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update User
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -932,6 +1060,30 @@
             </form>
             <div class="auth-footer">
                 Don't have an account? <a href="#" id="showSignup">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="auth-container" style="display: none;">
+        <div class="auth-card">
+            <h2 class="auth-title">Admin Login</h2>
+            <form id="adminLoginForm">
+                <div class="form-group mb-3">
+                    <label for="adminLoginEmail">Admin Email</label>
+                    <input type="email" id="adminLoginEmail" class="form-control" placeholder="Enter admin email" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="adminLoginPassword">Password</label>
+                    <input type="password" id="adminLoginPassword" class="form-control" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="adminLoginBtn">
+                    <span id="adminLoginBtnText">Login as Admin</span>
+                    <span id="adminLoginSpinner" class="spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <div class="auth-footer">
+                Regular user? <a href="#" id="showRegularLogin">User Login</a>
             </div>
         </div>
     </div>
@@ -1005,13 +1157,13 @@
         const auth = getAuth(app);
         const database = getDatabase(app);
 
-        // Admin details
-        const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
-        const ADMIN_NAME = "Ramesh kumar Verma";
+        // Admin credentials (for demo purposes - in production use Firebase Authentication)
+        const ADMIN_EMAIL = "admin@tradeworld.com";
+        const ADMIN_PASSWORD = "admin123";
 
         // Commission rates
         const COMMISSION_RATES = {
-            admin: 0.10,    // 10% to admin
+            admin: 0.30,    // 30% to admin
             direct: 0.10,   // 10% to direct referrer
             levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
         };
@@ -1019,6 +1171,7 @@
         // Global Variables
         let currentUser = null;
         let userData = null;
+        let isAdmin = false;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1031,17 +1184,26 @@
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
-                    loadUserData(user.uid);
                     
-                    // Hide auth modals if showing
-                    document.getElementById('loginModal').style.display = 'none';
-                    document.getElementById('signupModal').style.display = 'none';
-                    
-                    // Show main content
-                    document.getElementById('mainContent').style.display = 'block';
-                    
-                    // Update user avatar
-                    updateUserAvatar(user.email || 'User');
+                    // Check if this is admin login
+                    if (user.email === ADMIN_EMAIL) {
+                        isAdmin = true;
+                        showAdminPanel();
+                        loadAdminData();
+                    } else {
+                        isAdmin = false;
+                        loadUserData(user.uid);
+                        
+                        // Hide auth modals if showing
+                        document.getElementById('loginModal').style.display = 'none';
+                        document.getElementById('signupModal').style.display = 'none';
+                        
+                        // Show main content
+                        document.getElementById('mainContent').style.display = 'block';
+                        
+                        // Update user avatar
+                        updateUserAvatar(user.email || 'User');
+                    }
                 } else {
                     // Show login modal if not on auth pages
                     if (!window.location.pathname.includes('login.html') && 
@@ -1092,6 +1254,12 @@
                 document.getElementById('loginModal').style.display = 'flex';
             });
             
+            document.getElementById('showRegularLogin')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('adminLoginModal').style.display = 'none';
+                document.getElementById('loginModal').style.display = 'flex';
+            });
+            
             // Setup login form
             document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1111,6 +1279,41 @@
                 loginBtn.disabled = false;
                 loginBtnText.textContent = 'Login';
                 loginSpinner.style.display = 'none';
+            });
+            
+            // Setup admin login form
+            document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('adminLoginEmail').value;
+                const password = document.getElementById('adminLoginPassword').value;
+                
+                const adminLoginBtn = document.getElementById('adminLoginBtn');
+                const adminLoginBtnText = document.getElementById('adminLoginBtnText');
+                const adminLoginSpinner = document.getElementById('adminLoginSpinner');
+                
+                adminLoginBtn.disabled = true;
+                adminLoginBtnText.textContent = 'Logging in...';
+                adminLoginSpinner.style.display = 'inline-block';
+                
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    if (email === ADMIN_EMAIL) {
+                        showToast('Admin login successful!', 'success');
+                        document.getElementById('adminLoginModal').style.display = 'none';
+                        isAdmin = true;
+                        showAdminPanel();
+                        loadAdminData();
+                    } else {
+                        await signOut(auth);
+                        showToast('Invalid admin credentials', 'error');
+                    }
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                
+                adminLoginBtn.disabled = false;
+                adminLoginBtnText.textContent = 'Login as Admin';
+                adminLoginSpinner.style.display = 'none';
             });
             
             // Setup signup form
@@ -1135,7 +1338,217 @@
                 signupBtnText.textContent = 'Sign Up';
                 signupSpinner.style.display = 'none';
             });
+            
+            // Setup admin search user button
+            document.getElementById('searchUserBtn')?.addEventListener('click', async () => {
+                const searchTerm = document.getElementById('searchUser').value.trim();
+                if (!searchTerm) {
+                    showToast('Please enter user ID or email', 'error');
+                    return;
+                }
+                
+                try {
+                    // Search by user ID
+                    const snapshot = await get(ref(database, `users/${searchTerm}`));
+                    if (snapshot.exists()) {
+                        displayUserDetails(snapshot.val());
+                        return;
+                    }
+                    
+                    // If not found by ID, search by email
+                    const usersSnapshot = await get(ref(database, 'users'));
+                    if (usersSnapshot.exists()) {
+                        const users = usersSnapshot.val();
+                        const foundUser = Object.values(users).find(user => 
+                            user.email && user.email.toLowerCase() === searchTerm.toLowerCase()
+                        );
+                        
+                        if (foundUser) {
+                            displayUserDetails(foundUser);
+                            return;
+                        }
+                    }
+                    
+                    showToast('User not found', 'error');
+                    document.getElementById('userDetails').style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Error searching user:', error);
+                    showToast('Error searching user', 'error');
+                }
+            });
+            
+            // Setup admin update user button
+            document.getElementById('updateUserBtn')?.addEventListener('click', async () => {
+                const userId = document.getElementById('searchUser').value.trim();
+                if (!userId) {
+                    showToast('No user selected', 'error');
+                    return;
+                }
+                
+                try {
+                    const balance = parseFloat(document.getElementById('adminUserBalance').value) || 0;
+                    const profit = parseFloat(document.getElementById('adminUserProfit').value) || 0;
+                    
+                    await update(ref(database, `users/${userId}`), {
+                        balance: balance,
+                        tradingProfit: profit
+                    });
+                    
+                    showToast('User updated successfully', 'success');
+                } catch (error) {
+                    console.error('Error updating user:', error);
+                    showToast('Error updating user', 'error');
+                }
+            });
+            
+            // Add admin login link to user login modal
+            const loginFooter = document.querySelector('#loginModal .auth-footer');
+            if (loginFooter) {
+                const adminLink = document.createElement('div');
+                adminLink.className = 'mt-2';
+                adminLink.innerHTML = '<a href="#" id="showAdminLogin">Admin Login</a>';
+                loginFooter.appendChild(adminLink);
+                
+                document.getElementById('showAdminLogin').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('adminLoginModal').style.display = 'flex';
+                });
+            }
         });
+
+        // Show admin panel and hide user content
+        function showAdminPanel() {
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('sidebar').style.display = 'none';
+            document.getElementById('menuToggle').style.display = 'none';
+            
+            // Update header for admin
+            document.querySelector('.logo-text').textContent = 'Trade World - Admin';
+        }
+
+        // Load admin dashboard data
+        async function loadAdminData() {
+            try {
+                // Load total users
+                const usersSnapshot = await get(ref(database, 'users'));
+                const totalUsers = usersSnapshot.exists() ? Object.keys(usersSnapshot.val()).length : 0;
+                document.getElementById('totalUsers').textContent = totalUsers;
+                
+                // Load total investments
+                const invoicesSnapshot = await get(ref(database, 'invoices'));
+                let totalInvestments = 0;
+                if (invoicesSnapshot.exists()) {
+                    Object.values(invoicesSnapshot.val()).forEach(inv => {
+                        totalInvestments += inv.amount || 0;
+                    });
+                }
+                document.getElementById('totalInvestments').textContent = `$${totalInvestments.toFixed(2)}`;
+                
+                // Load system profit
+                const systemProfit = await getValue('system/adminEarnings') || 0;
+                document.getElementById('totalProfit').textContent = `$${systemProfit.toFixed(2)}`;
+                
+                // Load active packages
+                const activePackages = await countActivePackages();
+                document.getElementById('activePackages').textContent = activePackages;
+                
+                // Load recent transactions
+                loadAdminTransactions();
+                
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showToast('Error loading admin data', 'error');
+            }
+        }
+
+        // Count active packages
+        async function countActivePackages() {
+            try {
+                const snapshot = await get(ref(database, 'invoices'));
+                if (!snapshot.exists()) return 0;
+                
+                const invoices = snapshot.val();
+                return Object.values(invoices).filter(inv => inv.status === 'active').length;
+            } catch (error) {
+                console.error('Error counting active packages:', error);
+                return 0;
+            }
+        }
+
+        // Load admin transactions
+        async function loadAdminTransactions() {
+            try {
+                const snapshot = await get(ref(database, 'transactions'));
+                const tbody = document.getElementById('adminTransactions');
+                tbody.innerHTML = '';
+                
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No transactions yet</td></tr>';
+                    return;
+                }
+                
+                // Convert to array and sort by timestamp
+                const transactions = Object.entries(snapshot.val()).map(([id, tx]) => ({ id, ...tx }));
+                transactions.sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Show only last 10 transactions
+                transactions.slice(0, 10).forEach(async tx => {
+                    const row = document.createElement('tr');
+                    
+                    const date = new Date(tx.timestamp).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Get user name
+                    let userName = 'User';
+                    if (tx.userId) {
+                        const userSnapshot = await get(ref(database, `users/${tx.userId}`));
+                        if (userSnapshot.exists()) {
+                            userName = userSnapshot.val().name || 'User';
+                        }
+                    }
+                    
+                    const type = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+                    const amount = `$${tx.amount?.toFixed(2) || '0.00'}`;
+                    const details = tx.details || '';
+                    
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${userName}</td>
+                        <td>${type}</td>
+                        <td>${amount}</td>
+                        <td>${details}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Error loading admin transactions:', error);
+                showToast('Error loading transactions', 'error');
+            }
+        }
+
+        // Display user details in admin panel
+        function displayUserDetails(user) {
+            document.getElementById('adminUserName').value = user.name || '';
+            document.getElementById('adminUserEmail').value = user.email || '';
+            document.getElementById('adminUserBalance').value = user.balance || 0;
+            document.getElementById('adminUserProfit').value = user.tradingProfit || 0;
+            
+            // Update search field with user ID
+            document.getElementById('searchUser').value = user.uid;
+            
+            // Show user details section
+            document.getElementById('userDetails').style.display = 'block';
+        }
 
         // Update user avatar with initials
         function updateUserAvatar(email) {
@@ -1159,8 +1572,10 @@
         // Show login modal
         function showLoginModal() {
             document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('loginModal').style.display = 'flex';
             document.getElementById('signupModal').style.display = 'none';
+            document.getElementById('adminLoginModal').style.display = 'none';
         }
 
         // Login user
@@ -1409,9 +1824,9 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate total commission (30%)
+                // Calculate total commission (30% to admin, 20% to referrals)
                 const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
-                const tradingPool = packageAmount - totalCommission;
+                const tradingPool = packageAmount * 0.50; // 50% to trading pool
                 
                 // Prepare all updates
                 const updates = {};
@@ -1452,8 +1867,6 @@
                 
                 // 5. Add admin commission (30%)
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
-                const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
-                updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
                 // 6. Process referral commissions (if any)
