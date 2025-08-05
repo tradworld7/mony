@@ -1042,6 +1042,9 @@
                     
                     // Update user avatar
                     updateUserAvatar(user.email || 'User');
+                    
+                    // Check for referral parameter in URL
+                    checkReferralFromURL();
                 } else {
                     // Show login modal if not on auth pages
                     if (!window.location.pathname.includes('login.html') && 
@@ -1137,6 +1140,24 @@
             });
         });
 
+        // Check for referral parameter in URL
+        function checkReferralFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refId = urlParams.get('ref');
+            
+            if (refId && currentUser) {
+                // Save the referral if it's not already set
+                if (!userData.referredBy) {
+                    update(ref(database, `users/${currentUser.uid}`), {
+                        referredBy: refId
+                    });
+                    
+                    // Update referrer's team structure
+                    updateReferrerTeamStructure(refId, currentUser.uid);
+                }
+            }
+        }
+
         // Update user avatar with initials
         function updateUserAvatar(email) {
             const avatar = document.getElementById('userAvatar');
@@ -1184,14 +1205,13 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-               const userRef = ref(database, 'users/' + user.uid);
+                const userRef = ref(database, 'users/' + user.uid);
                 const userData = {
                     uid: user.uid,
                     name: name,
                     email: email,
                     balance: 0,
                     tradingProfit: 0,
-                    directreferrals: 0,
                     referralEarnings: 0,
                     teamEarnings: 0,
                     createdAt: Date.now(),
@@ -1245,7 +1265,10 @@
                 const referrerData = referrerSnapshot.val();
                 
                 // Add new user to referrer's direct referrals
-                updates[`users/${referrerId}/directReferrals/${newUserId}`] = true;
+                updates[`users/${referrerId}/directReferrals/${newUserId}`] = {
+                    userId: newUserId,
+                    joinedAt: Date.now()
+                };
                 
                 // Update team structure counts
                 updates[`users/${referrerId}/teamStructure/level1`] = (referrerData.teamStructure?.level1 || 0) + 1;
