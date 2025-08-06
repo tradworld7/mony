@@ -1348,7 +1348,7 @@
             // Update trading profit
             document.getElementById('tradingProfit').textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
             
-            // Update referrals
+            // Update referrals - now properly counting direct referrals
             const referralCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
             document.getElementById('directReferrals').textContent = referralCount;
             document.getElementById('referralProfit').textContent = `$${(data.referralEarnings || 0).toFixed(2)}`;
