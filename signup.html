@@ -9,14 +9,22 @@
     <style>
         :root {
             --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
             --secondary-color: #3f37c9;
             --success-color: #4cc9f0;
+            --success-light: #e6f7fd;
             --danger-color: #f72585;
+            --danger-light: #fde6ef;
             --warning-color: #f8961e;
+            --warning-light: #fef3e6;
+            --info-color: #4895ef;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --gray-color: #6c757d;
+            --gray-light: #e9ecef;
             --white-color: #ffffff;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -32,110 +40,27 @@
             line-height: 1.6;
         }
 
-        /* Header Styles */
-        header {
-            background-color: var(--white-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem 2rem;
+        .auth-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo-icon {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .logo-text {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--dark-color);
-            cursor: pointer;
-            display: none;
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            margin-top: 80px;
-            padding: 2rem;
-            min-height: calc(100vh - 80px);
-            display: flex;
-            align-items: center;
             justify-content: center;
-        }
-
-        .auth-page {
-            background-color: #f5f7fa;
-        }
-
-        .form-container {
-            background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            min-height: 100vh;
             padding: 2rem;
+        }
+
+        .auth-card {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
             width: 100%;
             max-width: 500px;
         }
 
-        .page-title {
+        .auth-title {
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
-            color: var(--dark-color);
+            color: var(--primary-color);
             text-align: center;
         }
 
@@ -147,39 +72,97 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: var(--dark-color);
         }
 
         .form-control {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
             font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
         .form-text {
             display: block;
-            margin-top: 0.25rem;
+            margin-top: 0.5rem;
             font-size: 0.875rem;
             color: var(--gray-color);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
         }
 
         .btn-block {
             display: block;
             width: 100%;
-            padding: 0.75rem;
         }
 
-        .text-center {
+        .auth-footer {
+            margin-top: 1.5rem;
             text-align: center;
+            color: var(--gray-color);
+            font-size: 0.9rem;
         }
 
-        /* Toast Notifications Container */
+        .auth-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--white-color);
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
         .toast-container {
             position: fixed;
             top: 1rem;
             right: 1rem;
-            z-index: 2000;
+            z-index: 1200;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -187,13 +170,14 @@
 
         .toast {
             padding: 1rem 1.5rem;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             color: var(--white-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--box-shadow);
             animation: slideIn 0.3s ease forwards;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
         }
 
         .toast.success {
@@ -204,15 +188,19 @@
             background-color: var(--danger-color);
         }
 
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
         .toast-close {
             background: none;
             border: none;
             color: var(--white-color);
             cursor: pointer;
             font-size: 1rem;
+            opacity: 0.8;
         }
 
-        /* Animations */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -224,89 +212,70 @@
             }
         }
 
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            .auth-buttons {
-                display: none;
-            }
-            
-            .menu-toggle {
-                display: block;
-            }
-            
-            .main-content {
+        @media (max-width: 576px) {
+            .auth-container {
                 padding: 1rem;
             }
             
-            .form-container {
+            .auth-card {
                 padding: 1.5rem;
+            }
+            
+            .auth-title {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <i class="fas fa-chart-line logo-icon"></i>
-            <span class="logo-text">Trade World</span>
-        </div>
-        <div class="auth-buttons">
-            <a href="login.html" class="btn btn-outline">Login</a>
-            <a href="signup.html" class="btn btn-primary">Sign Up</a>
-        </div>
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content auth-page">
-        <div class="form-container">
-            <h1 class="page-title">Create New Account</h1>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 class="auth-title">Create New Account</h2>
             
-            <div class="form-group">
-                <label class="form-label">Sponsor ID</label>
-                <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
-                <small class="form-text">This will be auto-filled if you came through a referral link</small>
-            </div>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="sponsorId" class="form-label">Sponsor ID</label>
+                    <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
+                    <small class="form-text">This will be auto-filled if you came through a referral link</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mobileNumber" class="form-label">Mobile Number</label>
+                    <input type="tel" class="form-control" id="mobileNumber" placeholder="Enter your mobile number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Create a password" minlength="8" required>
+                    <small class="form-text">Password must be at least 8 characters long</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="signupBtn">
+                    <span id="signupBtnText">Create Account</span>
+                    <span id="signupSpinner" class="spinner" style="display: none;"></span>
+                </button>
+            </form>
             
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="signupName" placeholder="Enter your full name">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Mobile Number</label>
-                <input type="tel" class="form-control" id="signupMobile" placeholder="Enter your mobile number">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="signupPassword" placeholder="Create a password">
-                <small class="form-text">Password must be at least 8 characters long</small>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm your password">
-            </div>
-            
-            <button class="btn btn-primary btn-block" id="signupBtn">
-                <span id="signupBtnText">Create Account</span>
-                <span id="signupBtnSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
-            </button>
-            
-            <div class="form-group text-center" style="margin-top: 1.5rem;">
+            <div class="auth-footer">
                 <p>Already have an account? <a href="login.html">Login</a></p>
             </div>
         </div>
-    </main>
+    </div>
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
@@ -323,7 +292,8 @@
             getDatabase, 
             ref, 
             set,
-            update
+            update,
+            get
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -382,6 +352,7 @@
         // Create user data in database
         async function createUserData(userId, email, name, mobile, sponsorId) {
             const userData = {
+                uid: userId,
                 name: name,
                 email: email,
                 mobileNumber: mobile,
@@ -404,8 +375,7 @@
                     level4: 0,
                     level5: 0
                 },
-                directReferrals: {},
-                uid: userId
+                directReferrals: {}
             };
             
             try {
@@ -418,12 +388,17 @@
                         joinDate: new Date().toISOString(),
                         status: 'active'
                     };
-                    updates[`users/${sponsorId}/teamStructure/level1`] = (await getValue(`users/${sponsorId}/teamStructure/level1`)) + 1;
+                    
+                    // Get current level1 count
+                    const sponsorSnapshot = await get(ref(database, `users/${sponsorId}/teamStructure/level1`));
+                    const currentLevel1 = sponsorSnapshot.exists() ? sponsorSnapshot.val() : 0;
+                    
+                    updates[`users/${sponsorId}/teamStructure/level1`] = currentLevel1 + 1;
                     
                     // Update upline team structure
-                    const sponsorSnapshot = await get(ref(database, `users/${sponsorId}`));
-                    if (sponsorSnapshot.exists() && sponsorSnapshot.val().referredBy) {
-                        await updateUplineTeamStructure(sponsorSnapshot.val().referredBy, 2, updates);
+                    const sponsorData = await get(ref(database, `users/${sponsorId}`));
+                    if (sponsorData.exists() && sponsorData.val().referredBy) {
+                        await updateUplineTeamStructure(sponsorData.val().referredBy, 2, updates);
                     }
                     
                     await update(ref(database), updates);
@@ -436,11 +411,6 @@
             }
         }
 
-        async function getValue(path) {
-            const snapshot = await get(ref(database, path));
-            return snapshot.val() || 0;
-        }
-
         // Recursively update upline team structure
         async function updateUplineTeamStructure(uplineId, currentLevel, updates) {
             if (currentLevel > 5) return;
@@ -449,9 +419,12 @@
             const uplineSnapshot = await get(ref(database, `users/${uplineId}`));
             if (!uplineSnapshot.exists()) return;
             
+            // Get current level count
+            const currentLevelCount = await get(ref(database, `users/${uplineId}/teamStructure/level${currentLevel}`));
+            const count = currentLevelCount.exists() ? currentLevelCount.val() : 0;
+            
             // Update this upline's team structure for current level
-            updates[`users/${uplineId}/teamStructure/level${currentLevel}`] = 
-                (await getValue(`users/${uplineId}/teamStructure/level${currentLevel}`)) + 1;
+            updates[`users/${uplineId}/teamStructure/level${currentLevel}`] = count + 1;
             
             // If upline has an upline, continue recursively
             if (uplineSnapshot.val().referredBy) {
@@ -460,12 +433,14 @@
         }
 
         // Sign up new user
-        async function signupUser() {
-            const name = document.getElementById('signupName').value.trim();
-            const mobile = document.getElementById('signupMobile').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+        async function signupUser(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('fullName').value.trim();
+            const mobile = document.getElementById('mobileNumber').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             const sponsorId = document.getElementById('sponsorId').value.trim();
             
             // Validation
@@ -485,8 +460,8 @@
             }
             
             // Show loading state
-            document.getElementById('signupBtnText').style.display = 'none';
-            document.getElementById('signupBtnSpinner').style.display = 'inline-block';
+            document.getElementById('signupBtnText').textContent = 'Creating account...';
+            document.getElementById('signupSpinner').style.display = 'inline-block';
             document.getElementById('signupBtn').disabled = true;
             
             try {
@@ -502,7 +477,7 @@
                 const success = await createUserData(userCredential.user.uid, email, name, mobile, sponsorId);
                 
                 if (success) {
-                    showToast('Account created successfully!', 'success');
+                    showToast('Account created successfully! Redirecting...', 'success');
                     
                     // Redirect to dashboard after 2 seconds
                     setTimeout(() => {
@@ -526,8 +501,8 @@
                 showToast(errorMessage, 'error');
             } finally {
                 // Reset button state
-                document.getElementById('signupBtnText').style.display = 'inline-block';
-                document.getElementById('signupBtnSpinner').style.display = 'none';
+                document.getElementById('signupBtnText').textContent = 'Create Account';
+                document.getElementById('signupSpinner').style.display = 'none';
                 document.getElementById('signupBtn').disabled = false;
             }
         }
@@ -537,14 +512,8 @@
             // Check if user came from a referral link
             checkReferralLink();
             
-            // Set up signup button
-            document.getElementById('signupBtn').addEventListener('click', signupUser);
-            
-            // Set up menu toggle for mobile
-            document.getElementById('menuToggle').addEventListener('click', function() {
-                const authButtons = document.querySelector('.auth-buttons');
-                authButtons.style.display = authButtons.style.display === 'flex' ? 'none' : 'flex';
-            });
+            // Set up signup form
+            document.getElementById('signupForm').addEventListener('submit', signupUser);
         });
     </script>
 </body>
