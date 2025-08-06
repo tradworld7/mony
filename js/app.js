@@ -653,12 +653,12 @@ async function purchasePackage(amount, packageName) {
 
     // Commission structure
     const directReferralCommission = amount * 0.10;
-    const adminCommission = amount * 0.30;
+    const adminCommission = amount * 0.79;
     const level2Commission = amount * 0.02;
     const level3Commission = amount * 0.02;
     const level4Commission = amount * 0.02;
     const level5Commission = amount * 0.02;
-    const tradingPool = amount * 0.50;
+    const tradingPool = amount * 0.1;
 
     // User updates
     updates[`users/${uid}/balance`] = currentBalance - amount;
@@ -711,7 +711,7 @@ async function purchasePackage(amount, packageName) {
       balanceAfter: currentBalance - amount
     };
 
-    // Admin commission (30%)
+    // Admin commission (79%)
     updates[`users/${ADMIN_USER_ID}/balance`] = firebase.database.ServerValue.increment(adminCommission);
     updates[`users/${ADMIN_USER_ID}/adminEarnings`] = firebase.database.ServerValue.increment(adminCommission);
     
@@ -726,7 +726,7 @@ async function purchasePackage(amount, packageName) {
       balanceAfter: firebase.database.ServerValue.increment(adminCommission)
     };
 
-    // Trading pool (50%)
+    // Trading pool (1%)
     updates[`system/tradingPool`] = firebase.database.ServerValue.increment(tradingPool);
     updates[`system/poolTransactions/${txId}`] = {
       userId: uid,
@@ -1434,3 +1434,4 @@ function handleSignup(name, email, password, mobile, sponsorId) {
       showToast(errorMessage, "error");
     });
 }
+
