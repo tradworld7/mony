@@ -311,27 +311,40 @@
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script>
-        // Firebase configuration
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            set,
+            update
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            storageBucket: "mywebsite-600d3.appspot.com",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Admin details
+        const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
 
         // Show toast notification
         function showToast(message, type) {
@@ -375,7 +388,6 @@
                 balance: 0,
                 deposits: 0,
                 tradingProfit: 0,
-                directreferrals: 0,
                 referralEarnings: 0,
                 teamEarnings: 0,
                 referredBy: sponsorId || null,
@@ -386,30 +398,64 @@
                 walletAddress: "",
                 withdrawals: 0,
                 teamStructure: {
-                    level1Count: 0,
-                    level2Count: 0,
-                    level3Count: 0,
-                    level4Count: 0,
-                    level5Count: 0
+                    level1: 0,
+                    level2: 0,
+                    level3: 0,
+                    level4: 0,
+                    level5: 0
                 },
+                directReferrals: {},
                 uid: userId
             };
             
             try {
-                await database.ref('users/' + userId).set(userData);
+                await set(ref(database, 'users/' + userId), userData);
                 
                 // If there's a sponsor, update sponsor's referrals
                 if (sponsorId) {
-                    await database.ref(`users/${sponsorId}/referrals/${userId}`).set({
+                    const updates = {};
+                    updates[`users/${sponsorId}/directReferrals/${userId}`] = {
                         joinDate: new Date().toISOString(),
                         status: 'active'
-                    });
+                    };
+                    updates[`users/${sponsorId}/teamStructure/level1`] = (await getValue(`users/${sponsorId}/teamStructure/level1`)) + 1;
+                    
+                    // Update upline team structure
+                    const sponsorSnapshot = await get(ref(database, `users/${sponsorId}`));
+                    if (sponsorSnapshot.exists() && sponsorSnapshot.val().referredBy) {
+                        await updateUplineTeamStructure(sponsorSnapshot.val().referredBy, 2, updates);
+                    }
+                    
+                    await update(ref(database), updates);
                 }
                 
                 return true;
             } catch (error) {
                 console.error('Error creating user data:', error);
                 return false;
+            }
+        }
+
+        async function getValue(path) {
+            const snapshot = await get(ref(database, path));
+            return snapshot.val() || 0;
+        }
+
+        // Recursively update upline team structure
+        async function updateUplineTeamStructure(uplineId, currentLevel, updates) {
+            if (currentLevel > 5) return;
+            
+            // Get upline data
+            const uplineSnapshot = await get(ref(database, `users/${uplineId}`));
+            if (!uplineSnapshot.exists()) return;
+            
+            // Update this upline's team structure for current level
+            updates[`users/${uplineId}/teamStructure/level${currentLevel}`] = 
+                (await getValue(`users/${uplineId}/teamStructure/level${currentLevel}`)) + 1;
+            
+            // If upline has an upline, continue recursively
+            if (uplineSnapshot.val().referredBy) {
+                await updateUplineTeamStructure(uplineSnapshot.val().referredBy, currentLevel + 1, updates);
             }
         }
 
@@ -445,10 +491,10 @@
             
             try {
                 // Create user with email and password
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 
                 // Update user profile with name
-                await userCredential.user.updateProfile({
+                await updateProfile(userCredential.user, {
                     displayName: name
                 });
                 
@@ -503,6 +549,3 @@
     </script>
 </body>
 </html>
-
-
-
