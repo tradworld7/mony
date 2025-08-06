@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Base Styles */
         :root {
             --primary-color: #4361ee;
             --primary-light: #e6e9ff;
@@ -42,6 +41,7 @@
             background-color: #f5f7fa;
             color: var(--dark-color);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* Header Styles */
@@ -116,11 +116,6 @@
             overflow-y: auto;
             transition: var(--transition);
             z-index: 999;
-            transform: translateX(-100%);
-        }
-
-        .sidebar.open {
-            transform: translateX(0);
         }
 
         .sidebar-menu {
@@ -159,8 +154,10 @@
         /* Main Content Styles */
         .main-content {
             margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
             padding: 2rem;
             transition: var(--transition);
+            min-height: calc(100vh - var(--header-height));
         }
 
         .page-title {
@@ -174,47 +171,6 @@
 
         .page-title i {
             color: var(--primary-color);
-        }
-
-        /* Button Styles */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 2px solid transparent;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary-color);
-            color: var(--white-color);
-        }
-
-        .btn-block {
-            display: block;
-            width: 100%;
         }
 
         /* Form Styles */
@@ -253,7 +209,7 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
-        /* Address Box - Improved for mobile */
+        /* Address Box */
         .address-container {
             display: flex;
             flex-direction: column;
@@ -346,6 +302,10 @@
             background-color: var(--warning-color);
         }
 
+        .toast.info {
+            background-color: var(--info-color);
+        }
+
         .toast-close {
             background: none;
             border: none;
@@ -358,6 +318,149 @@
 
         .toast-close:hover {
             opacity: 1;
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+        
+        .step.active .step-number {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .step-title {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .step.active .step-title {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .step.completed .step-title {
+            color: var(--success-color);
+        }
+
+        /* Recent Deposits */
+        .recent-deposits {
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--gray-color);
+        }
+
+        .table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-completed {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
         }
 
         /* Animations */
@@ -378,12 +481,20 @@
 
         /* Responsive Styles */
         @media (max-width: 992px) {
-            .menu-toggle {
-                display: block;
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
             }
 
             .main-content {
                 margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
             }
         }
 
@@ -396,11 +507,6 @@
                 padding: 1.5rem;
             }
 
-            /* Improved address display for mobile */
-            .address-container {
-                flex-direction: column;
-            }
-
             .address-box {
                 padding: 0.75rem;
                 font-size: 0.9rem;
@@ -408,6 +514,10 @@
 
             .copy-btn-container {
                 margin-top: 0.5rem;
+            }
+            
+            .step-title {
+                font-size: 12px;
             }
         }
 
@@ -447,10 +557,10 @@
             <li><a href="deposit.html" class="active"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
             <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
             <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
-            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </aside>
@@ -460,16 +570,61 @@
         <h1 class="page-title"><i class="fas fa-money-bill-wave"></i> Deposit Funds</h1>
         
         <div class="form-container">
-            <div class="form-group">
-                <label class="form-label">Amount (USD)</label>
-                <input type="number" class="form-control" id="depositAmount" min="10" max="2000" placeholder="Enter amount between $10 and $2000">
-                <div class="error-text" id="amountError">Please enter a valid amount between $10 and $2000</div>
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Enter Amount</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Make Payment</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Verification</div>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">USDT BEP20 Address</label>
-                <div class="address-container">
-                    <div class="address-box">
+            <!-- Amount Form -->
+            <div id="amountForm">
+                <div class="form-group">
+                    <label class="form-label">Amount (USDT)</label>
+                    <input type="number" class="form-control" id="depositAmount" min="10" placeholder="Minimum $10">
+                    <div class="error-text" id="amountError">Please enter a valid amount (minimum $10)</div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="btn btn-primary" id="continueBtn">
+                        Continue <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Payment Instructions (Hidden Initially) -->
+            <div id="paymentInstructions" style="display: none;">
+                <div class="instructions">
+                    <h3>Deposit Instructions:</h3>
+                    <ol>
+                        <li>Send <strong>exactly</strong> the amount shown below in USDT (BEP20) to our wallet address</li>
+                        <li>Use only the <strong>BEP20 network</strong> (Binance Smart Chain)</li>
+                        <li>After completing the transaction, paste the transaction hash below</li>
+                        <li>Click "Submit Deposit" to automatically verify your transaction</li>
+                        <li>Your balance will be updated immediately after verification</li>
+                    </ol>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Amount to Send</label>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control text-center fw-bold" id="paymentAmount" readonly>
+                        <span class="input-group-text">USDT</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Our USDT Wallet Address (BEP20)</label>
+                    <div class="address-box" id="walletAddress">
                         0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886
                     </div>
                     <div class="copy-btn-container">
@@ -478,33 +633,45 @@
                         </button>
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Transaction Hash (TxHash)</label>
+                    <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash starting with 0x">
+                    <div class="error-text" id="hashError">Please enter a valid transaction hash (66 characters)</div>
+                </div>
+                
+                <button class="btn btn-primary btn-block" id="submitDeposit">
+                    <span id="submitText">Submit Deposit</span>
+                    <span id="submitSpinner" class="spinner" style="display:none;"></span>
+                </button>
             </div>
-            
-            <div class="instructions">
-                <h3>Deposit Instructions:</h3>
-                <ol>
-                    <li>Enter the amount you want to deposit (minimum $10, maximum $2000)</li>
-                    <li>Send the exact amount in USDT (BEP20) to the address above</li>
-                    <li>After transaction is complete, paste the transaction hash below</li>
-                    <li>Click "Submit Deposit" to verify your transaction</li>
-                </ol>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Transaction Hash</label>
-                <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash">
-                <div class="error-text" id="hashError">Please enter a valid transaction hash</div>
-            </div>
-            
-            <button class="btn btn-primary btn-block" id="submitDeposit">
-                <span id="submitText">Submit Deposit</span>
-                <span id="submitSpinner" class="spinner" style="display:none;"></span>
-            </button>
         </div>
         
-        <!-- Toast Notifications Container -->
-        <div class="toast-container" id="toastContainer"></div>
+        <!-- Recent Deposits -->
+        <div class="recent-deposits">
+            <h3><i class="fas fa-history me-2"></i>Recent Deposits</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>TxHash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="depositHistory">
+                        <tr>
+                            <td colspan="4" class="text-center">Loading deposit history...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
+    
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -520,7 +687,12 @@
             set,
             update,
             push,
-            get
+            get,
+            query,
+            orderByChild,
+            equalTo,
+            onChildAdded,
+            increment
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -542,7 +714,9 @@
 
         // Global Variables
         let currentUser = null;
-        let userData = null;
+        const BSCSCAN_API_KEY = '2TTVCJ4H9QQ6WABQIV8WGGHH3C5DPFVTVM';
+        const MERCHANT_WALLET = '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886';
+        const USDT_CONTRACT = '0x55d398326f99059fF775485246999027B3197955';
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -556,27 +730,53 @@
                 if (user) {
                     currentUser = user;
                     updateUserAvatar(user.email || 'User');
+                    setupPaymentPolling();
+                    loadDepositHistory();
                 } else {
                     window.location.href = 'login.html';
                 }
             });
             
+            // Continue button
+            document.getElementById('continueBtn').addEventListener('click', function() {
+                const amount = parseFloat(document.getElementById('depositAmount').value);
+                
+                if (isNaN(amount) {
+                    document.getElementById('amountError').style.display = 'block';
+                    return;
+                }
+                
+                if (amount < 10) {
+                    document.getElementById('amountError').style.display = 'block';
+                    return;
+                }
+                
+                // Show payment instructions
+                document.getElementById('paymentAmount').value = amount.toFixed(2);
+                document.getElementById('amountForm').style.display = 'none';
+                document.getElementById('paymentInstructions').style.display = 'block';
+                
+                // Update step indicator
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step2').classList.add('active');
+            });
+            
             // Copy address button
             document.getElementById('copyAddressBtn').addEventListener('click', function() {
-                const address = '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886';
+                const address = MERCHANT_WALLET;
                 navigator.clipboard.writeText(address)
                     .then(() => {
-                        showToast('Address copied to clipboard!', 'success');
+                        showToast('Wallet address copied! Please send USDT', 'success');
+                        document.getElementById('transactionHash').focus();
                     })
                     .catch(err => {
-                        showToast('Failed to copy address', 'error');
+                        showToast('Error copying address', 'error');
                     });
             });
             
             // Submit deposit button
-            document.getElementById('submitDeposit').addEventListener('click', function() {
-                submitDeposit();
-            });
+            document.getElementById('submitDeposit').addEventListener('click', submitDeposit);
             
             // Logout
             document.getElementById('logoutLink').addEventListener('click', (e) => {
@@ -584,6 +784,250 @@
                 logoutUser();
             });
         });
+
+        // Process deposit submission with automatic verification
+        async function submitDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const txHash = document.getElementById('transactionHash').value.trim();
+            const submitBtn = document.getElementById('submitDeposit');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            // Validate inputs
+            if (isNaN(amount)) {
+                document.getElementById('amountError').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('amountError').style.display = 'none';
+            }
+
+            if (!txHash || txHash.length !== 66) {
+                document.getElementById('hashError').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('hashError').style.display = 'none';
+            }
+
+            // Show loading state
+            submitText.textContent = 'Verifying...';
+            submitSpinner.style.display = 'inline-block';
+            submitBtn.disabled = true;
+
+            try {
+                // Create deposit record
+                const depositId = Date.now();
+                const depositData = {
+                    amount: amount,
+                    txHash: txHash,
+                    status: 'pending',
+                    date: new Date().toISOString(),
+                    userId: currentUser.uid,
+                    walletAddress: MERCHANT_WALLET
+                };
+                
+                // Save to database
+                await set(ref(database, 'deposits/' + depositId), depositData);
+                await set(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), depositData);
+                
+                // Verify transaction
+                const verification = await verifyTransactionWithBSCScan(txHash, amount);
+                
+                if (verification.success) {
+                    // Update balance
+                    await update(ref(database, 'users/' + currentUser.uid), {
+                        balance: increment(amount)
+                    });
+                    
+                    // Update deposit status
+                    await update(ref(database, 'deposits/' + depositId), { status: 'completed' });
+                    await update(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), { 
+                        status: 'completed',
+                        verifiedAt: new Date().toISOString()
+                    });
+                    
+                    // Add transaction record
+                    await set(ref(database, 'transactions/' + currentUser.uid + '/' + depositId), {
+                        type: 'deposit',
+                        amount: amount,
+                        status: 'completed',
+                        timestamp: Date.now(),
+                        details: 'USDT Deposit (BEP20)'
+                    });
+                    
+                    // Update step indicator
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step2').classList.add('completed');
+                    document.getElementById('step3').classList.add('active');
+                    
+                    showToast(`$${amount} deposit successfully verified! Balance updated.`, 'success');
+                    
+                    // Reset form
+                    document.getElementById('depositAmount').value = '';
+                    document.getElementById('transactionHash').value = '';
+                    
+                    // Reload deposit history
+                    loadDepositHistory();
+                } else {
+                    showToast('Payment verification failed. Please try again later.', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                submitText.textContent = 'Submit Deposit';
+                submitSpinner.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Verify transaction with BSCScan API
+        async function verifyTransactionWithBSCScan(txHash, expectedAmount) {
+            try {
+                showToast('🔍 Verifying transaction with BSCScan...', 'info');
+                
+                // 1. Check transaction status
+                const statusUrl = `https://api.bscscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`;
+                const statusRes = await fetch(statusUrl);
+                const statusData = await statusRes.json();
+                
+                if (statusData.status !== '1') {
+                    throw new Error('Transaction not completed yet');
+                }
+
+                // 2. Get transaction details
+                const txUrl = `https://api.bscscan.com/api?module=proxy&action=eth_getTransactionReceipt&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`;
+                const txRes = await fetch(txUrl);
+                const txData = await txRes.json();
+                
+                // 3. Find USDT transfer log
+                const transferLog = txData.result.logs.find(log => 
+                    log.address.toLowerCase() === USDT_CONTRACT.toLowerCase() &&
+                    log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+                );
+                
+                if (!transferLog) throw new Error('USDT transfer not found');
+                
+                // 4. Decode transfer details
+                const toAddress = '0x' + transferLog.topics[2].substring(26);
+                const transferredAmount = parseInt(transferLog.data, 16) / 10**18;
+                
+                // 5. Verify recipient and amount
+                if (toAddress.toLowerCase() !== MERCHANT_WALLET.toLowerCase()) {
+                    throw new Error('Payment sent to wrong address');
+                }
+                
+                if (Math.abs(transferredAmount - expectedAmount) > 0.01) {
+                    throw new Error(`Amount mismatch: Expected ${expectedAmount} USDT, received ${transferredAmount} USDT`);
+                }
+                
+                return { success: true, amount: transferredAmount };
+                
+            } catch (error) {
+                console.error('Verification error:', error);
+                throw error;
+            }
+        }
+
+        // Setup automatic polling for pending deposits
+        function setupPaymentPolling() {
+            setInterval(async () => {
+                if (!currentUser) return;
+                
+                const pendingRef = query(
+                    ref(database, 'users/' + currentUser.uid + '/deposits'),
+                    orderByChild('status'),
+                    equalTo('pending')
+                );
+                
+                const snapshot = await get(pendingRef);
+                snapshot.forEach(async (child) => {
+                    const deposit = child.val();
+                    try {
+                        const verification = await verifyTransactionWithBSCScan(deposit.txHash, deposit.amount);
+                        if (verification.success) {
+                            await update(ref(database, 'users/' + currentUser.uid), {
+                                balance: increment(verification.amount)
+                            });
+                            await update(ref(database, 'users/' + currentUser.uid + '/deposits/' + child.key), {
+                                status: 'completed',
+                                verifiedAt: new Date().toISOString()
+                            });
+                            await set(ref(database, 'transactions/' + currentUser.uid + '/' + child.key), {
+                                type: 'deposit',
+                                amount: verification.amount,
+                                status: 'completed',
+                                timestamp: Date.now(),
+                                details: 'USDT Deposit (BEP20)'
+                            });
+                            
+                            showToast(`$${verification.amount} deposit automatically verified!`, 'success');
+                            loadDepositHistory();
+                        }
+                    } catch (error) {
+                        console.log('Verification incomplete:', error.message);
+                    }
+                });
+            }, 60000); // Check every 60 seconds
+        }
+
+        // Load deposit history
+        async function loadDepositHistory() {
+            if (!currentUser) return;
+            
+            const historyRef = query(
+                ref(database, 'users/' + currentUser.uid + '/deposits'),
+                orderByChild('date')
+            );
+            
+            const snapshot = await get(historyRef);
+            const historyBody = document.getElementById('depositHistory');
+            
+            if (snapshot.exists()) {
+                historyBody.innerHTML = '';
+                
+                // Convert to array and sort by date (newest first)
+                const deposits = [];
+                snapshot.forEach(child => {
+                    deposits.push(child.val());
+                });
+                
+                deposits.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Display last 5 deposits
+                deposits.slice(0, 5).forEach(deposit => {
+                    const row = document.createElement('tr');
+                    
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = new Date(deposit.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    const amountCell = document.createElement('td');
+                    amountCell.textContent = '$' + deposit.amount.toFixed(2);
+                    
+                    const statusCell = document.createElement('td');
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = deposit.status === 'completed' ? 'status-badge status-completed' : 'status-badge status-pending';
+                    statusBadge.textContent = deposit.status === 'completed' ? 'Completed' : 'Pending';
+                    statusCell.appendChild(statusBadge);
+                    
+                    const hashCell = document.createElement('td');
+                    hashCell.textContent = deposit.txHash.substring(0, 10) + '...' + deposit.txHash.substring(56);
+                    
+                    row.appendChild(dateCell);
+                    row.appendChild(amountCell);
+                    row.appendChild(statusCell);
+                    row.appendChild(hashCell);
+                    historyBody.appendChild(row);
+                });
+            } else {
+                historyBody.innerHTML = '<tr><td colspan="4" class="text-center">No deposits yet</td></tr>';
+            }
+        }
 
         // Update user avatar with initials
         function updateUserAvatar(email) {
@@ -611,116 +1055,6 @@
                 window.location.href = 'login.html';
             } catch (error) {
                 showToast('Error logging out: ' + error.message, 'error');
-            }
-        }
-
-        // Validate transaction hash (basic validation)
-        function validateTransactionHash(hash) {
-            return hash.length === 66 || hash.length === 64;
-        }
-
-        // Process deposit submission
-        async function submitDeposit() {
-            const amount = parseFloat(document.getElementById('depositAmount').value);
-            const txHash = document.getElementById('transactionHash').value.trim();
-            const submitBtn = document.getElementById('submitDeposit');
-            const submitText = document.getElementById('submitText');
-            const submitSpinner = document.getElementById('submitSpinner');
-            
-            // Validate amount
-            if (isNaN(amount) || amount < 10 || amount > 2000) {
-                document.getElementById('amountError').style.display = 'block';
-                return;
-            } else {
-                document.getElementById('amountError').style.display = 'none';
-            }
-            
-            // Validate transaction hash
-            if (!validateTransactionHash(txHash)) {
-                document.getElementById('hashError').style.display = 'block';
-                return;
-            } else {
-                document.getElementById('hashError').style.display = 'none';
-            }
-            
-            // Show loading state
-            submitText.style.display = 'none';
-            submitSpinner.style.display = 'inline-block';
-            submitBtn.disabled = true;
-            
-            // Create deposit record
-            const depositId = Date.now();
-            const depositData = {
-                amount: amount,
-                txHash: txHash,
-                status: 'pending',
-                date: new Date().toISOString(),
-                userId: currentUser.uid,
-                walletAddress: '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886'
-            };
-            
-            try {
-                // Save to database
-                await set(ref(database, 'deposits/' + depositId), depositData);
-                
-                // Add to user's deposits
-                await set(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), {
-                    amount: amount,
-                    txHash: txHash,
-                    status: 'pending',
-                    date: new Date().toISOString()
-                });
-                
-                // Add to transactions
-                await set(ref(database, 'transactions/' + currentUser.uid + '/' + depositId), {
-                    type: 'deposit',
-                    amount: amount,
-                    status: 'pending',
-                    timestamp: Date.now(),
-                    details: 'USDT Deposit (BEP20)'
-                });
-                
-                showToast('Deposit submitted successfully! It will be processed after confirmation.', 'success');
-                
-                // Reset form
-                document.getElementById('depositAmount').value = '';
-                document.getElementById('transactionHash').value = '';
-                
-            } catch (error) {
-                showToast('Error submitting deposit: ' + error.message, 'error');
-            } finally {
-                // Reset button
-                submitText.style.display = 'inline-block';
-                submitSpinner.style.display = 'none';
-                submitBtn.disabled = false;
-            }
-        }
-
-        // Function to approve deposit (to be called from admin panel)
-        async function approveDeposit(depositId, userId, amount) {
-            try {
-                const updates = {};
-                
-                // Update deposit status
-                updates[`deposits/${depositId}/status`] = 'completed';
-                updates[`users/${userId}/deposits/${depositId}/status`] = 'completed';
-                
-                // Update user balance
-                const userRef = ref(database, `users/${userId}`);
-                const userSnapshot = await get(userRef);
-                const currentBalance = userSnapshot.val().balance || 0;
-                updates[`users/${userId}/balance`] = currentBalance + amount;
-                
-                // Update transaction status
-                updates[`transactions/${userId}/${depositId}/status`] = 'completed';
-                
-                // Execute all updates
-                await update(ref(database), updates);
-                
-                return true;
-            } catch (error) {
-                console.error('Error approving deposit:', error);
-                return false;
             }
         }
 
