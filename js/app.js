@@ -711,7 +711,7 @@ async function purchasePackage(amount, packageName) {
       balanceAfter: currentBalance - amount
     };
 
-    // Admin commission (79%)
+    // Admin commission (70%)
     updates[`users/${ADMIN_USER_ID}/balance`] = firebase.database.ServerValue.increment(adminCommission);
     updates[`users/${ADMIN_USER_ID}/adminEarnings`] = firebase.database.ServerValue.increment(adminCommission);
     
@@ -726,7 +726,7 @@ async function purchasePackage(amount, packageName) {
       balanceAfter: firebase.database.ServerValue.increment(adminCommission)
     };
 
-    // Trading pool (1%)
+    // Trading pool (10%)
     updates[`system/tradingPool`] = firebase.database.ServerValue.increment(tradingPool);
     updates[`system/poolTransactions/${txId}`] = {
       userId: uid,
@@ -1434,4 +1434,5 @@ function handleSignup(name, email, password, mobile, sponsorId) {
       showToast(errorMessage, "error");
     });
 }
+
 
