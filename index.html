@@ -1011,7 +1011,7 @@
 
         // Commission rates
         const COMMISSION_RATES = {
-            admin: 0.70,    // 70% to admin
+            admin: 0.50,    // 50% to admin
             direct: 0.10,   // 10% to direct referrer
             levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
         };
@@ -1439,7 +1439,7 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate total commission (70%)
+                // Calculate total commission (50%)
                 const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
                 const tradingPool = packageAmount - totalCommission;
                 
@@ -1491,7 +1491,7 @@
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Distribute trading profit (10%) to all active users
+                // 7. Distribute trading profit (20%) to all active users
                 const activeUsers = await getActiveUsers();
                 if (activeUsers.length > 0) {
                     const profitPerUser = tradingPool / activeUsers.length;
@@ -1707,6 +1707,7 @@
     </script>
 </body>
 </html>
+
 
 
 
