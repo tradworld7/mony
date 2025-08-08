@@ -786,24 +786,33 @@
 
         // Load withdrawal history with real-time status updates
         function loadWithdrawalHistory(userId) {
-            const withdrawalsRef = ref(database, `users/${userId}/withdrawals`);
+            const withdrawalsRef = ref(database, `withdrawals`);
             
             onValue(withdrawalsRef, (snapshot) => {
-                const withdrawals = snapshot.val();
+                const allWithdrawals = snapshot.val();
                 const tbody = document.getElementById('withdrawalHistory');
                 tbody.innerHTML = '';
                 
-                if (!withdrawals) {
+                if (!allWithdrawals) {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No withdrawals yet</td></tr>';
                     return;
                 }
                 
-                // Convert to array and sort by timestamp
-                const withdrawalsArray = Object.entries(withdrawals).map(([id, wd]) => ({ id, ...wd }));
-                withdrawalsArray.sort((a, b) => b.timestamp - a.timestamp);
+                // Filter withdrawals for this user
+                const userWithdrawals = Object.entries(allWithdrawals)
+                    .filter(([id, wd]) => wd.userId === userId)
+                    .map(([id, wd]) => ({ id, ...wd }));
+                
+                if (userWithdrawals.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No withdrawals yet</td></tr>';
+                    return;
+                }
+                
+                // Sort by timestamp (newest first)
+                userWithdrawals.sort((a, b) => b.timestamp - a.timestamp);
                 
                 // Display all withdrawals with real-time status
-                withdrawalsArray.forEach(wd => {
+                userWithdrawals.forEach(wd => {
                     const row = document.createElement('tr');
                     
                     const date = new Date(wd.timestamp).toLocaleDateString('en-US', {
@@ -886,7 +895,9 @@
                     status: 'pending',
                     timestamp: timestamp,
                     name: userData.name || 'User',
-                    email: currentUser.email || ''
+                    email: currentUser.email || '',
+                    approvedAt: null,
+                    rejectedAt: null
                 };
                 
                 // Calculate new balances after withdrawal
@@ -900,6 +911,9 @@
                 
                 // Prepare updates
                 const updates = {};
+                
+                // Add to global withdrawals
+                updates[`withdrawals/${withdrawalId}`] = withdrawalData;
                 
                 // Add to user's withdrawals
                 updates[`users/${currentUser.uid}/withdrawals/${withdrawalId}`] = withdrawalData;
