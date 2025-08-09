@@ -505,13 +505,13 @@
             5: document.getElementById('level5Earnings')
         };
 
-        // Commission percentages for each level (10% for L1, 2% for L2, etc.)
+        // Commission percentages updated as per requirements
         const commissionRates = {
-            1: 10, // 10% for Level 1
+            1: 10, // 10% for Level 1 (Direct referrals)
             2: 2,  // 2% for Level 2
-            3: 1,  // 1% for Level 3
-            4: 0.5,// 0.5% for Level 4
-            5: 0.5 // 0.5% for Level 5
+            3: 2,  // 2% for Level 3
+            4: 2,  // 2% for Level 4
+            5: 2   // 2% for Level 5
         };
 
         // Toggle Sidebar
@@ -550,11 +550,27 @@
                 const allUsersSnapshot = await database.ref('users').once('value');
                 const allUsers = allUsersSnapshot.val() || {};
                 
-                // Build referral tree
+                // Get direct referrals (Level 1) - only users who were directly referred by current user
+                const directReferrals = [];
+                for (const uid in allUsers) {
+                    if (allUsers[uid].referredBy === userId) {
+                        directReferrals.push(uid);
+                    }
+                }
+                
+                // Process direct referrals (Level 1)
+                for (const uid of directReferrals) {
+                    if (allUsers[uid]) {
+                        await processTeamMember(uid, 1, levelStats, allUsers);
+                    }
+                }
+                levelStats[1].count = directReferrals.length;
+                
+                // Now process other levels (2-5) using the referral tree
                 const referralTree = buildReferralTree(allUsers, userId);
                 
-                // Process each level
-                for (let level = 1; level <= 5; level++) {
+                // Process each level from 2 to 5
+                for (let level = 2; level <= 5; level++) {
                     const levelUsers = getUsersAtLevel(referralTree, level);
                     levelStats[level].count = levelUsers.length;
                     
@@ -624,7 +640,9 @@
         // Get all user IDs at a specific level in the referral tree
         function getUsersAtLevel(tree, targetLevel, currentLevel = 1, result = []) {
             if (currentLevel === targetLevel) {
-                result.push(tree.userId);
+                if (tree.userId !== currentUser.uid) { // Exclude current user from the list
+                    result.push(tree.userId);
+                }
                 return result;
             }
             
@@ -667,6 +685,8 @@
                 if (level > 1 && userData.referredBy) {
                     const referrerData = allUsers[userData.referredBy];
                     referrerName = referrerData?.name || referrerData?.email || "Unknown";
+                } else if (level === 1) {
+                    referrerName = "You";
                 }
                 
                 // Add to members list for this level
@@ -676,7 +696,7 @@
                     joinDate: formattedDate,
                     investment: totalInvestment,
                     earnings,
-                    referredBy: level === 1 ? "You" : referrerName
+                    referredBy: referrerName
                 });
                 
             } catch (error) {
@@ -775,5 +795,3 @@
     </script>
 </body>
 </html>
-
-
