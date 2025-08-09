@@ -1013,10 +1013,10 @@
         let currentUser = null;
         let userData = null;
         let systemSettings = {
-            adminCommission: 0.70,
+            adminCommission: 0.60,
             directCommission: 0.10,
             levelCommissions: [0.02, 0.02, 0.02, 0.02, 0.02],
-            tradingProfitPool: 0.10
+            tradingProfitPool: 0.20
         };
 
         // Initialize app
@@ -1559,11 +1559,11 @@
                         // Add transaction record for profit distribution
                         const transactionId = push(ref(database, 'transactions')).key;
                         updates[`users/${investor.userId}/transactions/${transactionId}`] = {
-                            type: 'profit',
+                            type: 'Trading profit',
                             amount: share,
                             status: 'completed',
                             timestamp: Date.now(),
-                            details: 'Trading profit distribution'
+                            details: 'Today Trading profit'
                         };
                     }
                 });
@@ -1741,5 +1741,6 @@
     </script>
 </body>
 </html>
+
 
 
