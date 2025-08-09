@@ -900,15 +900,6 @@
                     rejectedAt: null
                 };
                 
-                // Calculate new balances after withdrawal
-                const newTradingProfit = type === 'trading' 
-                    ? (userData.tradingProfit || 0) - amount 
-                    : (userData.tradingProfit || 0);
-                    
-                const newReferralEarnings = type === 'referral'
-                    ? (userData.referralEarnings || 0) - amount
-                    : (userData.referralEarnings || 0);
-                
                 // Prepare updates
                 const updates = {};
                 
@@ -921,9 +912,13 @@
                 // Add to admin's pending withdrawals
                 updates[`admin/pendingWithdrawals/${withdrawalId}`] = withdrawalData;
                 
-                // Update user's balance IMMEDIATELY
-                updates[`users/${currentUser.uid}/tradingProfit`] = newTradingProfit;
-                updates[`users/${currentUser.uid}/referralEarnings`] = newReferralEarnings;
+                // Update the correct balance based on withdrawal type
+                // FIXED: Now only updates the specific balance type (tradingProfit or referralEarnings)
+                if (type === 'trading') {
+                    updates[`users/${currentUser.uid}/tradingProfit`] = (userData.tradingProfit || 0) - amount;
+                } else {
+                    updates[`users/${currentUser.uid}/referralEarnings`] = (userData.referralEarnings || 0) - amount;
+                }
                 
                 // Execute all updates atomically
                 await update(ref(database), updates);
@@ -978,4 +973,3 @@
     </script>
 </body>
 </html>
-
