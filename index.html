@@ -994,7 +994,7 @@
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.appspot.com",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
@@ -1006,19 +1006,18 @@
         const database = getDatabase(app);
 
         // Admin details
-        const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
+        const ADMIN_ID = "QXKfDkvQxjO9a4AKQXS4XdRp2i32";
         const ADMIN_NAME = "Ramesh kumar Verma";
-
-        // Commission rates
-        const COMMISSION_RATES = {
-            admin: 0.70,    // 70% to admin
-            direct: 0.10,   // 10% to direct referrer
-            levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
-        };
 
         // Global Variables
         let currentUser = null;
         let userData = null;
+        let systemSettings = {
+            adminCommission: 0.60,
+            directCommission: 0.10,
+            levelCommissions: [0.02, 0.02, 0.02, 0.02, 0.02],
+            tradingProfitPool: 0.20
+        };
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1027,31 +1026,34 @@
                 document.getElementById('sidebar').classList.toggle('open');
             });
             
-            // Check if user is logged in
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    loadUserData(user.uid);
-                    
-                    // Hide auth modals if showing
-                    document.getElementById('loginModal').style.display = 'none';
-                    document.getElementById('signupModal').style.display = 'none';
-                    
-                    // Show main content
-                    document.getElementById('mainContent').style.display = 'block';
-                    
-                    // Update user avatar
-                    updateUserAvatar(user.email || 'User');
-                    
-                    // Check for referral parameter in URL
-                    checkReferralFromURL();
-                } else {
-                    // Show login modal if not on auth pages
-                    if (!window.location.pathname.includes('login.html') && 
-                        !window.location.pathname.includes('signup.html')) {
-                        showLoginModal();
+            // Load system settings first
+            loadSystemSettings().then(() => {
+                // Check if user is logged in
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        loadUserData(user.uid);
+                        
+                        // Hide auth modals if showing
+                        document.getElementById('loginModal').style.display = 'none';
+                        document.getElementById('signupModal').style.display = 'none';
+                        
+                        // Show main content
+                        document.getElementById('mainContent').style.display = 'block';
+                        
+                        // Update user avatar
+                        updateUserAvatar(user.email || 'User');
+                        
+                        // Check for referral parameter in URL
+                        checkReferralFromURL();
+                    } else {
+                        // Show login modal if not on auth pages
+                        if (!window.location.pathname.includes('login.html') && 
+                            !window.location.pathname.includes('signup.html')) {
+                            showLoginModal();
+                        }
                     }
-                }
+                });
             });
             
             // Setup package purchase buttons
@@ -1140,6 +1142,19 @@
             });
         });
 
+        // Load system settings
+        async function loadSystemSettings() {
+            try {
+                const settingsSnapshot = await get(ref(database, 'system/settings'));
+                if (settingsSnapshot.exists()) {
+                    systemSettings = settingsSnapshot.val();
+                }
+            } catch (error) {
+                console.error("Error loading settings:", error);
+                showToast('Error loading system settings', 'error');
+            }
+        }
+
         // Check for referral parameter in URL
         function checkReferralFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1214,6 +1229,7 @@
                     tradingProfit: 0,
                     referralEarnings: 0,
                     teamEarnings: 0,
+                    totalInvestment: 0,
                     createdAt: Date.now(),
                     lastActive: Date.now(),
                     teamStructure: {
@@ -1302,7 +1318,7 @@
                 (uplineData.teamStructure?.[`level${currentLevel}`] || 0) + 1;
             
             // If upline has an upline, continue recursively
-            if (uplineData.referredBy) {
+            if (uplineData.referredBy && currentLevel < 5) {
                 await updateUplineTeamStructure(uplineData.referredBy, currentLevel + 1, updates);
             }
         }
@@ -1439,9 +1455,12 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate total commission (70%)
-                const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
-                const tradingPool = packageAmount - totalCommission;
+                // Calculate commissions
+                const adminCommission = packageAmount * systemSettings.adminCommission;
+                const directCommission = packageAmount * systemSettings.directCommission;
+                const levelCommissions = systemSettings.levelCommissions.map(rate => packageAmount * rate);
+                const totalCommissions = adminCommission + directCommission + levelCommissions.reduce((a, b) => a + b, 0);
+                const tradingPool = packageAmount - totalCommissions;
                 
                 // Prepare all updates
                 const updates = {};
@@ -1449,7 +1468,7 @@
                 // 1. Deduct from user balance
                 updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - packageAmount;
                 
-                // 2. Add to investments
+                // 2. Add to investments and update total investment
                 updates[`users/${currentUser.uid}/investments/${invoiceId}`] = {
                     amount: packageAmount,
                     purchaseDate: purchaseDate,
@@ -1457,6 +1476,7 @@
                     expectedReturn: packageAmount * 2,
                     maturityDate: maturityDate
                 };
+                updates[`users/${currentUser.uid}/totalInvestment`] = (userData.totalInvestment || 0) + packageAmount;
                 
                 // 3. Add invoice
                 updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
@@ -1480,8 +1500,7 @@
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 
-                // 5. Add admin commission (70%)
-                const adminCommission = packageAmount * COMMISSION_RATES.admin;
+                // 5. Add admin commission
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
@@ -1491,27 +1510,8 @@
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Distribute trading profit (10%) to all active users
-                const activeUsers = await getActiveUsers();
-                if (activeUsers.length > 0) {
-                    const profitPerUser = tradingPool / activeUsers.length;
-                    
-                    // First get current profits for all users
-                    const usersData = await Promise.all(
-                        activeUsers.map(async userId => {
-                            const snapshot = await get(ref(database, `users/${userId}/tradingProfit`));
-                            return {
-                                userId,
-                                currentProfit: snapshot.val() || 0
-                            };
-                        })
-                    );
-                    
-                    // Then update each user's profit by adding the new amount
-                    usersData.forEach(user => {
-                        updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + profitPerUser;
-                    });
-                }
+                // 7. Distribute trading profit to all investors proportionally
+                await distributeTradingProfit(tradingPool, updates);
                 
                 // Execute all updates
                 await update(ref(database), updates);
@@ -1527,35 +1527,51 @@
             }
         }
 
-        // Get all active users (for profit distribution)
-        async function getActiveUsers() {
+        // Distribute trading profit proportionally based on investments
+        async function distributeTradingProfit(amount, updates) {
             try {
-                const snapshot = await get(ref(database, 'users'));
-                if (!snapshot.exists()) return [];
+                const usersSnapshot = await get(ref(database, 'users'));
+                if (!usersSnapshot.exists()) return;
                 
-                const users = snapshot.val();
-                return Object.keys(users).filter(uid => {
-                    // Consider a user active if they have at least one investment
-                    return users[uid].investments && Object.keys(users[uid].investments).length > 0;
+                const users = usersSnapshot.val();
+                const activeInvestors = [];
+                let totalInvestment = 0;
+                
+                // Find all active investors and calculate total investment
+                Object.entries(users).forEach(([userId, userData]) => {
+                    if (userData.totalInvestment > 0) {
+                        activeInvestors.push({
+                            userId,
+                            totalInvestment: userData.totalInvestment || 0
+                        });
+                        totalInvestment += userData.totalInvestment || 0;
+                    }
                 });
+                
+                if (totalInvestment === 0) return;
+                
+                // Calculate and distribute profit proportionally
+                activeInvestors.forEach(investor => {
+                    const share = (investor.totalInvestment / totalInvestment) * amount;
+                    if (share > 0) {
+                        updates[`users/${investor.userId}/tradingProfit`] = (users[investor.userId].tradingProfit || 0) + share;
+                        
+                        // Add transaction record for profit distribution
+                        const transactionId = push(ref(database, 'transactions')).key;
+                        updates[`users/${investor.userId}/transactions/${transactionId}`] = {
+                            type: 'Trading Profit',
+                            amount: share,
+                            status: 'completed',
+                            timestamp: Date.now(),
+                            details: 'Trading profit distribution'
+                        };
+                    }
+                });
+                
             } catch (error) {
-                console.error('Error getting active users:', error);
-                return [];
+                console.error('Error distributing trading profit:', error);
+                throw error;
             }
-        }
-
-        function getPackageName(amount) {
-            switch(amount) {
-                case 10: return 'Starter Package';
-                case 30: return 'Standard Package';
-                case 100: return 'Premium Package';
-                default: return 'Custom Package';
-            }
-        }
-
-        async function getValue(path) {
-            const snapshot = await get(ref(database, path));
-            return snapshot.val() || 0;
         }
 
         // Process multi-level referral commissions
@@ -1571,26 +1587,30 @@
             // Calculate commission based on level
             let commissionRate = 0;
             if (currentLevel === 1) {
-                commissionRate = COMMISSION_RATES.direct; // 10% for direct referrer
+                commissionRate = systemSettings.directCommission; // Direct referral commission (10%)
             } else if (currentLevel <= 5) {
-                commissionRate = COMMISSION_RATES.levels[currentLevel-2]; // 2% for levels 2-5
+                commissionRate = systemSettings.levelCommissions[currentLevel-2]; // Level commission (2% each)
             }
             
             const commission = packageAmount * commissionRate;
             
             if (commission > 0) {
                 // Update referrer's earnings
-                updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
+                if (currentLevel === 1) {
+                    updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
+                }
                 updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
                 
                 // Add transaction record for referrer
                 const transactionId = push(ref(database, 'transactions')).key;
                 updates[`users/${referrerId}/transactions/${transactionId}`] = {
-                    type: 'referral',
+                    type: currentLevel === 1 ? 'referral' : 'team',
                     amount: commission,
                     status: 'completed',
                     timestamp: Date.now(),
-                    details: `Level ${currentLevel} referral commission from ${userData.name}`
+                    details: currentLevel === 1 
+                        ? `Direct referral commission from ${userData.name || 'User'}` 
+                        : `Level ${currentLevel} team commission from ${userData.name || 'User'}`
                 };
                 
                 // If referrer has an upline, continue recursively
@@ -1682,6 +1702,20 @@
             }
         }
 
+        function getPackageName(amount) {
+            switch(amount) {
+                case 10: return 'Starter Package';
+                case 30: return 'Standard Package';
+                case 100: return 'Premium Package';
+                default: return 'Custom Package';
+            }
+        }
+
+        async function getValue(path) {
+            const snapshot = await get(ref(database, path));
+            return snapshot.val() || 0;
+        }
+
         // Show toast notification
         function showToast(message, type) {
             const toastContainer = document.getElementById('toastContainer');
@@ -1707,5 +1741,3 @@
     </script>
 </body>
 </html>
-
-
