@@ -9,22 +9,14 @@
     <style>
         :root {
             --primary-color: #4361ee;
-            --primary-light: #e6e9ff;
             --secondary-color: #3f37c9;
             --success-color: #4cc9f0;
-            --success-light: #e6f7fd;
             --danger-color: #f72585;
-            --danger-light: #fde6ef;
             --warning-color: #f8961e;
-            --warning-light: #fef3e6;
-            --info-color: #4895ef;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --gray-color: #6c757d;
-            --gray-light: #e9ecef;
             --white-color: #ffffff;
-            --border-radius: 10px;
-            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -40,76 +32,52 @@
             line-height: 1.6;
         }
 
-        .auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .auth-card {
+        /* Header Styles */
+        header {
             background-color: var(--white-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 500px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
-        .auth-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
             color: var(--primary-color);
-            text-align: center;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
             color: var(--dark-color);
         }
 
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--gray-light);
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        .form-text {
-            display: block;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--gray-color);
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 1rem;
+            display: inline-block;
         }
 
         .btn-primary {
@@ -121,48 +89,97 @@
             background-color: var(--secondary-color);
         }
 
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-
-        .auth-footer {
-            margin-top: 1.5rem;
-            text-align: center;
-            color: var(--gray-color);
-            font-size: 0.9rem;
-        }
-
-        .auth-footer a {
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--primary-color);
             color: var(--primary-color);
-            text-decoration: none;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-page {
+            background-color: #f5f7fa;
+        }
+
+        .form-container {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
             font-weight: 500;
         }
 
-        .auth-footer a:hover {
-            text-decoration: underline;
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
         }
 
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: var(--white-color);
-            animation: spin 1s ease-in-out infinite;
-            display: inline-block;
+        .form-text {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--gray-color);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .btn-block {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
         }
 
-        /* Toast Notifications */
+        .text-center {
+            text-align: center;
+        }
+
+        /* Toast Notifications Container */
         .toast-container {
             position: fixed;
             top: 1rem;
             right: 1rem;
-            z-index: 1200;
+            z-index: 2000;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
@@ -170,14 +187,13 @@
 
         .toast {
             padding: 1rem 1.5rem;
-            border-radius: var(--border-radius);
+            border-radius: 5px;
             color: var(--white-color);
-            box-shadow: var(--box-shadow);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.3s ease forwards;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
         }
 
         .toast.success {
@@ -188,19 +204,15 @@
             background-color: var(--danger-color);
         }
 
-        .toast.warning {
-            background-color: var(--warning-color);
-        }
-
         .toast-close {
             background: none;
             border: none;
             color: var(--white-color);
             cursor: pointer;
             font-size: 1rem;
-            opacity: 0.8;
         }
 
+        /* Animations */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -212,109 +224,126 @@
             }
         }
 
-        @media (max-width: 576px) {
-            .auth-container {
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .auth-buttons {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .main-content {
                 padding: 1rem;
             }
             
-            .auth-card {
+            .form-container {
                 padding: 1.5rem;
-            }
-            
-            .auth-title {
-                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2 class="auth-title">Create New Account</h2>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+            <span class="logo-text">Trade World</span>
+        </div>
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="signup.html" class="btn btn-primary">Sign Up</a>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content auth-page">
+        <div class="form-container">
+            <h1 class="page-title">Create New Account</h1>
             
-            <form id="signupForm">
-                <div class="form-group">
-                    <label for="sponsorId" class="form-label">Sponsor ID</label>
-                    <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
-                    <small class="form-text">This will be auto-filled if you came through a referral link</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="fullName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="mobileNumber" class="form-label">Mobile Number</label>
-                    <input type="tel" class="form-control" id="mobileNumber" placeholder="Enter your mobile number" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Create a password" minlength="8" required>
-                    <small class="form-text">Password must be at least 8 characters long</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirmPassword" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary btn-block" id="signupBtn">
-                    <span id="signupBtnText">Create Account</span>
-                    <span id="signupSpinner" class="spinner" style="display: none;"></span>
-                </button>
-            </form>
+            <div class="form-group">
+                <label class="form-label">Sponsor ID</label>
+                <input type="text" class="form-control" id="sponsorId" value="TW1381" readonly>
+                <small class="form-text">This will be auto-filled if you came through a referral link</small>
+            </div>
             
-            <div class="auth-footer">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="signupName" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" class="form-control" id="signupMobile" placeholder="Enter your mobile number" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="signupPassword" placeholder="Create a password" minlength="8" required>
+                <small class="form-text">Password must be at least 8 characters long</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm your password" required>
+            </div>
+            
+            <button class="btn btn-primary btn-block" id="signupBtn">
+                <span id="signupBtnText">Create Account</span>
+                <span id="signupBtnSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
+            
+            <div class="form-group text-center" style="margin-top: 1.5rem;">
                 <p>Already have an account? <a href="login.html">Login</a></p>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword,
-            updateProfile
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
-        import { 
-            getDatabase, 
-            ref, 
-            set,
-            update,
-            get
-        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
-
-        // Your web app's Firebase configuration
+    <!-- Firebase and App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.appspot.com",
+            storageBucket: "mywebsite-600d3.firebasestorage.app",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
 
         // Admin details
         const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
+        const ADMIN_NAME = "Ramesh kumar Verma";
+
+        // System settings
+        const systemSettings = {
+            adminCommission: 0.60,
+            directCommission: 0.10,
+            levelCommissions: [0.02, 0.02, 0.02, 0.02, 0.02],
+            tradingProfitPool: 0.20
+        };
 
         // Show toast notification
         function showToast(message, type) {
@@ -349,65 +378,30 @@
             }
         }
 
-        // Create user data in database
-        async function createUserData(userId, email, name, mobile, sponsorId) {
-            const userData = {
-                uid: userId,
-                name: name,
-                email: email,
-                mobileNumber: mobile,
-                balance: 0,
-                deposits: 0,
-                tradingProfit: 0,
-                referralEarnings: 0,
-                teamEarnings: 0,
-                referredBy: sponsorId || null,
-                joinDate: new Date().toISOString(),
-                lastActive: Date.now(),
-                accountStatus: "active",
-                kycVerified: false,
-                walletAddress: "",
-                withdrawals: 0,
-                teamStructure: {
-                    level1: 0,
-                    level2: 0,
-                    level3: 0,
-                    level4: 0,
-                    level5: 0
-                },
-                directReferrals: {}
-            };
-            
+        // Update referrer's team structure when new user signs up
+        async function updateReferrerTeamStructure(referrerId, newUserId, updates) {
             try {
-                await set(ref(database, 'users/' + userId), userData);
+                // Get referrer data
+                const referrerSnapshot = await database.ref(`users/${referrerId}`).get();
+                if (!referrerSnapshot.exists()) return;
                 
-                // If there's a sponsor, update sponsor's referrals
-                if (sponsorId) {
-                    const updates = {};
-                    updates[`users/${sponsorId}/directReferrals/${userId}`] = {
-                        joinDate: new Date().toISOString(),
-                        status: 'active'
-                    };
-                    
-                    // Get current level1 count
-                    const sponsorSnapshot = await get(ref(database, `users/${sponsorId}/teamStructure/level1`));
-                    const currentLevel1 = sponsorSnapshot.exists() ? sponsorSnapshot.val() : 0;
-                    
-                    updates[`users/${sponsorId}/teamStructure/level1`] = currentLevel1 + 1;
-                    
-                    // Update upline team structure
-                    const sponsorData = await get(ref(database, `users/${sponsorId}`));
-                    if (sponsorData.exists() && sponsorData.val().referredBy) {
-                        await updateUplineTeamStructure(sponsorData.val().referredBy, 2, updates);
-                    }
-                    
-                    await update(ref(database), updates);
+                // Add new user to referrer's direct referrals
+                updates[`users/${referrerId}/directReferrals/${newUserId}`] = {
+                    userId: newUserId,
+                    joinedAt: Date.now()
+                };
+                
+                // Update team structure counts
+                updates[`users/${referrerId}/teamStructure/level1`] = (referrerSnapshot.val().teamStructure?.level1 || 0) + 1;
+                
+                // If referrer has an upline, update their team structure recursively
+                if (referrerSnapshot.val().referredBy) {
+                    await updateUplineTeamStructure(referrerSnapshot.val().referredBy, 2, updates);
                 }
                 
-                return true;
             } catch (error) {
-                console.error('Error creating user data:', error);
-                return false;
+                console.error('Error updating referrer team structure:', error);
+                throw error;
             }
         }
 
@@ -416,31 +410,81 @@
             if (currentLevel > 5) return;
             
             // Get upline data
-            const uplineSnapshot = await get(ref(database, `users/${uplineId}`));
+            const uplineSnapshot = await database.ref(`users/${uplineId}`).get();
             if (!uplineSnapshot.exists()) return;
             
-            // Get current level count
-            const currentLevelCount = await get(ref(database, `users/${uplineId}/teamStructure/level${currentLevel}`));
-            const count = currentLevelCount.exists() ? currentLevelCount.val() : 0;
+            const uplineData = uplineSnapshot.val();
             
             // Update this upline's team structure for current level
-            updates[`users/${uplineId}/teamStructure/level${currentLevel}`] = count + 1;
+            updates[`users/${uplineId}/teamStructure/level${currentLevel}`] = 
+                (uplineData.teamStructure?.[`level${currentLevel}`] || 0) + 1;
             
             // If upline has an upline, continue recursively
-            if (uplineSnapshot.val().referredBy) {
-                await updateUplineTeamStructure(uplineSnapshot.val().referredBy, currentLevel + 1, updates);
+            if (uplineData.referredBy && currentLevel < 5) {
+                await updateUplineTeamStructure(uplineData.referredBy, currentLevel + 1, updates);
+            }
+        }
+
+        // Create user data in database
+        async function createUserData(userId, email, name, mobile, sponsorId) {
+            const userData = {
+                uid: userId,
+                name: name,
+                email: email,
+                mobile: mobile,
+                balance: 0,
+                tradingProfit: 0,
+                referralEarnings: 0,
+                teamEarnings: 0,
+                totalInvestment: 0,
+                createdAt: Date.now(),
+                lastActive: Date.now(),
+                teamStructure: {
+                    level1: 0,
+                    level2: 0,
+                    level3: 0,
+                    level4: 0,
+                    level5: 0
+                },
+                deposits: {},
+                withdrawals: {},
+                investments: {},
+                invoices: {},
+                transactions: {},
+                directReferrals: {}
+            };
+            
+            // If there's a sponsor, set the referredBy field
+            if (sponsorId) {
+                userData.referredBy = sponsorId;
+            }
+            
+            const updates = {};
+            updates[`users/${userId}`] = userData;
+            
+            try {
+                // If there's a sponsor, update sponsor's team structure
+                if (sponsorId) {
+                    await updateReferrerTeamStructure(sponsorId, userId, updates);
+                }
+                
+                // Execute all updates
+                await database.ref().update(updates);
+                
+                return true;
+            } catch (error) {
+                console.error('Error creating user data:', error);
+                throw error;
             }
         }
 
         // Sign up new user
-        async function signupUser(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('fullName').value.trim();
-            const mobile = document.getElementById('mobileNumber').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+        async function signupUser() {
+            const name = document.getElementById('signupName').value.trim();
+            const mobile = document.getElementById('signupMobile').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
             const sponsorId = document.getElementById('sponsorId').value.trim();
             
             // Validation
@@ -460,32 +504,29 @@
             }
             
             // Show loading state
-            document.getElementById('signupBtnText').textContent = 'Creating account...';
-            document.getElementById('signupSpinner').style.display = 'inline-block';
+            document.getElementById('signupBtnText').style.display = 'none';
+            document.getElementById('signupBtnSpinner').style.display = 'inline-block';
             document.getElementById('signupBtn').disabled = true;
             
             try {
                 // Create user with email and password
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 
                 // Update user profile with name
-                await updateProfile(userCredential.user, {
+                await userCredential.user.updateProfile({
                     displayName: name
                 });
                 
                 // Create user data in database
-                const success = await createUserData(userCredential.user.uid, email, name, mobile, sponsorId);
+                await createUserData(userCredential.user.uid, email, name, mobile, sponsorId);
                 
-                if (success) {
-                    showToast('Account created successfully! Redirecting...', 'success');
-                    
-                    // Redirect to dashboard after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
-                } else {
-                    showToast('Account created but profile setup failed', 'error');
-                }
+                showToast('Account created successfully!', 'success');
+                
+                // Redirect to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+                
             } catch (error) {
                 console.error('Signup error:', error);
                 
@@ -501,8 +542,8 @@
                 showToast(errorMessage, 'error');
             } finally {
                 // Reset button state
-                document.getElementById('signupBtnText').textContent = 'Create Account';
-                document.getElementById('signupSpinner').style.display = 'none';
+                document.getElementById('signupBtnText').style.display = 'inline-block';
+                document.getElementById('signupBtnSpinner').style.display = 'none';
                 document.getElementById('signupBtn').disabled = false;
             }
         }
@@ -512,8 +553,14 @@
             // Check if user came from a referral link
             checkReferralLink();
             
-            // Set up signup form
-            document.getElementById('signupForm').addEventListener('submit', signupUser);
+            // Set up signup button
+            document.getElementById('signupBtn').addEventListener('click', signupUser);
+            
+            // Set up menu toggle for mobile
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                const authButtons = document.querySelector('.auth-buttons');
+                authButtons.style.display = authButtons.style.display === 'flex' ? 'none' : 'flex';
+            });
         });
     </script>
 </body>
