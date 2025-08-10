@@ -1,4 +1,4 @@
-// Firebase configuration
+// Firebase configuration (Compatibility version for wider support)
 const firebaseConfig = {
   apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
   authDomain: "mywebsite-600d3.firebaseapp.com",
@@ -17,8 +17,6 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const database = firebase.database();
-const storage = firebase.storage();
-const functions = firebase.functions();
 
 // Constants
 const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
@@ -49,6 +47,7 @@ function handleAuthStateChange(user) {
       .then(() => {
         updateLastActive(user.uid);
         loadUserDataToUI(user.uid);
+        initPackagePurchaseButtons(); // Initialize package purchase buttons
       })
       .catch(error => {
         console.error("User data initialization failed:", error);
@@ -58,7 +57,8 @@ function handleAuthStateChange(user) {
   } else {
     currentUser = null;
     userData = null;
-    if (!window.location.pathname.includes('login.html')) {
+    if (!window.location.pathname.includes('login.html') && 
+        !window.location.pathname.includes('signup.html')) {
       window.location.href = 'login.html';
     }
   }
@@ -70,6 +70,10 @@ async function initializeUserData(uid) {
     const snapshot = await userRef.once('value');
     
     if (!snapshot.exists()) {
+      // Check for referral from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const referralId = urlParams.get('ref');
+      
       const defaultData = {
         name: currentUser.displayName || "User",
         email: currentUser.email,
@@ -78,7 +82,7 @@ async function initializeUserData(uid) {
         referralEarnings: 0,
         teamEarnings: 0,
         tradingPoolEarnings: 0,
-        referredBy: null,
+        referredBy: referralId || null,
         transactions: {},
         investments: {},
         directReferrals: {},
@@ -97,6 +101,11 @@ async function initializeUserData(uid) {
       
       await userRef.set(defaultData);
       userData = defaultData;
+      
+      // Update referrer's team if applicable
+      if (referralId) {
+        await updateReferralTeam(referralId, uid);
+      }
     } else {
       userData = snapshot.val();
     }
@@ -106,31 +115,81 @@ async function initializeUserData(uid) {
   }
 }
 
-// ==================== TRANSACTION FUNCTIONS ====================
+async function updateReferralTeam(referrerId, newUserId) {
+  try {
+    const updates = {};
+    
+    // Add to direct referrals
+    updates[`users/${referrerId}/directReferrals/${newUserId}`] = true;
+    updates[`users/${referrerId}/teamStructure/level1Count`] = firebase.database.ServerValue.increment(1);
+    
+    // Get referrer's upline
+    const referrerSnap = await database.ref(`users/${referrerId}`).once('value');
+    const referrerData = referrerSnap.val();
+    
+    // Update upline team counts
+    if (referrerData.referredBy) {
+      let currentUpline = referrerData.referredBy;
+      for (let level = 2; level <= 5; level++) {
+        if (!currentUpline) break;
+        
+        updates[`users/${currentUpline}/teamStructure/level${level}Count`] = 
+          firebase.database.ServerValue.increment(1);
+        
+        const uplineSnap = await database.ref(`users/${currentUpline}`).once('value');
+        currentUpline = uplineSnap.val().referredBy;
+      }
+    }
+    
+    await database.ref().update(updates);
+  } catch (error) {
+    console.error("Error updating referral team:", error);
+  }
+}
+
+// ==================== PACKAGE PURCHASE FUNCTIONS ====================
+
+function initPackagePurchaseButtons() {
+  document.querySelectorAll('[data-package]').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const amount = parseFloat(this.getAttribute('data-package'));
+      const originalText = this.innerHTML;
+      
+      this.disabled = true;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      
+      try {
+        await purchasePackage(amount);
+      } catch (error) {
+        console.error("Purchase error:", error);
+        showToast(error.message || "Purchase failed", "error");
+      } finally {
+        this.disabled = false;
+        this.innerHTML = originalText;
+      }
+    });
+  });
+}
 
 async function purchasePackage(amount) {
   if (!currentUser || !userData) {
-    showToast("Please wait, user data is loading...", "error");
-    return;
+    throw new Error("Please login to purchase packages");
   }
 
   amount = parseFloat(amount);
   if (isNaN(amount) || amount <= 0) {
-    showToast("Invalid package amount", "error");
-    return;
+    throw new Error("Invalid package amount");
   }
 
   if (userData.accountStatus !== "active") {
-    showToast("Your account is not active for transactions", "error");
-    return;
+    throw new Error("Your account is not active for transactions");
   }
 
   const uid = currentUser.uid;
   const currentBalance = parseFloat(userData.balance || 0);
   
   if (amount > currentBalance) {
-    showToast("Insufficient balance", "error");
-    return;
+    throw new Error("Insufficient balance");
   }
 
   try {
@@ -157,7 +216,8 @@ async function purchasePackage(amount) {
       expectedReturn: amount * 2,
       maturityDate: timestamp + 30 * 24 * 60 * 60 * 1000,
       profitEarned: 0,
-      lastProfitDate: null
+      lastProfitDate: null,
+      packageName: getPackageName(amount)
     };
 
     // Transaction records
@@ -167,7 +227,7 @@ async function purchasePackage(amount) {
       amount: -amount,
       status: "completed",
       timestamp,
-      details: `Purchased package of $${amount}`,
+      details: `Purchased ${getPackageName(amount)} package`,
       balanceBefore: currentBalance,
       balanceAfter: currentBalance - amount + userProfit
     };
@@ -177,14 +237,13 @@ async function purchasePackage(amount) {
       amount: -amount,
       status: "completed",
       timestamp,
-      details: `Purchased package of $${amount}`,
+      details: `Purchased ${getPackageName(amount)} package`,
       balanceBefore: currentBalance,
       balanceAfter: currentBalance - amount + userProfit
     };
 
     // Admin commission
     updates[`users/${ADMIN_USER_ID}/balance`] = firebase.database.ServerValue.increment(adminCommission);
-    updates[`users/${ADMIN_USER_ID}/adminEarnings`] = firebase.database.ServerValue.increment(adminCommission);
     
     const adminTxId = database.ref().child("transactions").push().key;
     updates[`users/${ADMIN_USER_ID}/transactions/${adminTxId}`] = {
@@ -192,22 +251,11 @@ async function purchasePackage(amount) {
       amount: adminCommission,
       status: "completed",
       timestamp,
-      details: `Commission from user ${uid} package purchase`,
-      balanceBefore: (await database.ref(`users/${ADMIN_USER_ID}/balance`).once("value")).val() || 0,
-      balanceAfter: firebase.database.ServerValue.increment(adminCommission)
+      details: `Commission from user ${uid} package purchase`
     };
 
     // Trading pool
     updates[`system/tradingPool`] = firebase.database.ServerValue.increment(tradingPool);
-    updates[`system/poolTransactions/${txId}`] = {
-      userId: uid,
-      amount: tradingPool,
-      timestamp,
-      details: `Contribution from ${uid} package purchase`
-    };
-
-    // Distribute trading pool to active users
-    await distributeTradingPool(tradingPool, timestamp, updates);
 
     // Referral commissions
     if (userData.referredBy) {
@@ -217,50 +265,23 @@ async function purchasePackage(amount) {
     // Execute all updates
     await database.ref().update(updates);
     
-    // Refresh data
+    // Refresh user data
     await loadUserData(uid);
-    await loadTeamStructure(uid);
     
-    showToast(`Package of $${amount.toFixed(2)} purchased successfully!`, "success");
+    showToast(`${getPackageName(amount)} purchased successfully!`, "success");
     
   } catch (error) {
     console.error("Package purchase error:", error);
-    showToast("Error processing package purchase. Please try again.", "error");
+    throw error;
   }
 }
 
-async function distributeTradingPool(amount, timestamp, updates) {
-  try {
-    const activeUsersSnapshot = await database.ref("users")
-      .orderByChild("accountStatus")
-      .equalTo("active")
-      .once("value");
-    
-    const activeUsers = activeUsersSnapshot.val() || {};
-    const activeUserIds = Object.keys(activeUsers);
-    
-    if (activeUserIds.length === 0) return;
-    
-    const sharePerUser = amount / activeUserIds.length;
-    
-    activeUserIds.forEach(uid => {
-      updates[`users/${uid}/balance`] = firebase.database.ServerValue.increment(sharePerUser);
-      updates[`users/${uid}/tradingPoolEarnings`] = firebase.database.ServerValue.increment(sharePerUser);
-      
-      const txId = database.ref().child("transactions").push().key;
-      updates[`users/${uid}/transactions/${txId}`] = {
-        type: "trading_pool_share",
-        amount: sharePerUser,
-        status: "completed",
-        timestamp,
-        details: `Trading pool distribution from system`,
-        balanceBefore: (activeUsers[uid].balance || 0),
-        balanceAfter: (activeUsers[uid].balance || 0) + sharePerUser
-      };
-    });
-    
-  } catch (error) {
-    console.error("Error distributing trading pool:", error);
+function getPackageName(amount) {
+  switch(amount) {
+    case 10: return "Starter Package";
+    case 30: return "Standard Package";
+    case 100: return "Premium Package";
+    default: return "Custom Package";
   }
 }
 
@@ -310,30 +331,40 @@ async function handleReferralCommissions(referrerId, userId, packageAmount, time
 
 // ==================== UI FUNCTIONS ====================
 
-async function loadUserDataToUI(uid) {
+async function loadUserData(uid) {
   try {
     const snapshot = await database.ref("users/" + uid).once("value");
     userData = snapshot.val();
-    
+    return userData;
+  } catch (error) {
+    console.error("Error loading user data:", error);
+    throw error;
+  }
+}
+
+async function loadUserDataToUI(uid) {
+  try {
+    const userData = await loadUserData(uid);
     if (!userData) return;
 
-    // Update UI elements
+    // Update dashboard cards
     if (document.getElementById("userBalance")) {
       document.getElementById("userBalance").textContent = `$${(userData.balance || 0).toFixed(2)}`;
     }
     if (document.getElementById("tradingProfit")) {
       document.getElementById("tradingProfit").textContent = `$${(userData.tradingProfit || 0).toFixed(2)}`;
     }
-    if (document.getElementById("referralEarnings")) {
-      document.getElementById("referralEarnings").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
+    if (document.getElementById("directReferrals")) {
+      const refCount = userData.directReferrals ? Object.keys(userData.directReferrals).length : 0;
+      document.getElementById("directReferrals").textContent = refCount;
+    }
+    if (document.getElementById("referralProfit")) {
+      document.getElementById("referralProfit").textContent = `$${(userData.referralEarnings || 0).toFixed(2)}`;
     }
     if (document.getElementById("teamEarnings")) {
       document.getElementById("teamEarnings").textContent = `$${(userData.teamEarnings || 0).toFixed(2)}`;
     }
-    if (document.getElementById("tradingPoolEarnings")) {
-      document.getElementById("tradingPoolEarnings").textContent = `$${(userData.tradingPoolEarnings || 0).toFixed(2)}`;
-    }
-    
+
     // Load transaction history
     await loadTransactionHistory(uid);
     
@@ -343,7 +374,7 @@ async function loadUserDataToUI(uid) {
   }
 }
 
-async function loadTransactionHistory(uid, limit = 10) {
+async function loadTransactionHistory(uid, limit = 5) {
   try {
     const snapshot = await database.ref(`users/${uid}/transactions`)
       .orderByChild("timestamp")
@@ -354,24 +385,30 @@ async function loadTransactionHistory(uid, limit = 10) {
     if (!container) return;
     
     container.innerHTML = "";
-    const data = snapshot.val();
+    const transactions = snapshot.val();
     
-    if (data) {
-      Object.values(data).reverse().forEach((tx) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${new Date(tx.timestamp).toLocaleString()}</td>
-          <td>${tx.type.replace(/_/g, ' ').toUpperCase()}</td>
-          <td class="${tx.amount >= 0 ? 'text-success' : 'text-danger'}">
-            $${Math.abs(tx.amount).toFixed(2)}
-          </td>
-          <td>${tx.status}</td>
-          <td>${tx.details}</td>
-          <td>$${(tx.balanceAfter || 0).toFixed(2)}</td>
-        `;
-        container.appendChild(row);
-      });
+    if (!transactions) {
+      container.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No transactions yet</td></tr>`;
+      return;
     }
+    
+    // Convert to array and sort by timestamp
+    const transactionsArray = Object.entries(transactions).map(([id, tx]) => ({ id, ...tx }));
+    transactionsArray.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Display transactions
+    transactionsArray.forEach(tx => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${new Date(tx.timestamp).toLocaleDateString()}</td>
+        <td>${tx.type.replace(/_/g, ' ')}</td>
+        <td>$${Math.abs(tx.amount).toFixed(2)}</td>
+        <td><span class="badge status-${tx.status || 'completed'}">${tx.status || 'Completed'}</span></td>
+        <td>${tx.details}</td>
+      `;
+      container.appendChild(row);
+    });
+    
   } catch (error) {
     console.error("Error loading transactions:", error);
   }
@@ -402,41 +439,56 @@ function showToast(message, type) {
 function updateLastActive(uid) {
   database.ref(`users/${uid}/lastActive`).set(Date.now());
   setInterval(() => {
-    database.ref(`users/${uid}/lastActive`).set(Date.now());
+    if (auth.currentUser?.uid === uid) {
+      database.ref(`users/${uid}/lastActive`).set(Date.now());
+    }
   }, 60000);
 }
 
 // ==================== EXPORTS ====================
 
-window.firebaseUtils = {
+window.firebaseApp = {
+  auth,
+  database,
+  currentUser: () => currentUser,
+  userData: () => userData,
   purchasePackage,
   logout: () => auth.signOut(),
-  getCurrentUser: () => currentUser,
-  getUserData: () => userData
+  initializeUser: (name, email, password, referralId) => {
+    return auth.createUserWithEmailAndPassword(email, password)
+      .then(async (userCredential) => {
+        await userCredential.user.updateProfile({ displayName: name });
+        await initializeUserData(userCredential.user.uid);
+        return userCredential.user;
+      });
+  }
 };
 
-// Initialize event listeners when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // Package purchase buttons
-  document.querySelectorAll('[data-package]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const amount = parseFloat(btn.getAttribute('data-package'));
-      if (!isNaN(amount)) {
-        purchasePackage(amount);
-      }
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize sidebar toggle
+  const menuToggle = document.getElementById('menuToggle');
+  if (menuToggle) {
+    menuToggle.addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('open');
     });
-  });
-
-  // Logout button
+  }
+  
+  // Initialize logout button if exists
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+    logoutBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      auth.signOut().catch(error => {
-        console.error("Logout error:", error);
-        showToast("Error logging out. Please try again.", "error");
+      auth.signOut().then(() => {
+        window.location.href = 'login.html';
       });
     });
+  }
+  
+  // Check for referral in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const refId = urlParams.get('ref');
+  if (refId && document.getElementById('sponsorId')) {
+    document.getElementById('sponsorId').value = refId;
   }
 });
