@@ -22,12 +22,12 @@ const database = firebase.database();
 const ADMIN_USER_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
 const COMMISSION_STRUCTURE = {
   directReferral: 0.10,    // 10% for direct referral (level 1)
-  admin: 0.10,             // 10% for admin
+  admin: 0.30,             // 30% for admin
   level2: 0.02,            // 2% for level 2
   level3: 0.02,            // 2% for level 3
   level4: 0.02,            // 2% for level 4
   level5: 0.02,            // 2% for level 5
-  tradingPool: 0.70,       // 70% for trading pool
+  tradingPool: 0.50,       // 70% for trading pool
   userProfit: 0.02         // 2% immediate profit for user
 };
 
