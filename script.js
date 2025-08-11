@@ -1,4 +1,3 @@
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { 
@@ -15,7 +14,8 @@ import {
     set, 
     update, 
     push, 
-    get 
+    get,
+    child
 } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -37,52 +37,58 @@ const database = getDatabase(app);
 
 // Admin details
 const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
-const ADMIN_NAME = "Ramesh kumar Verma";
 
-// Fixed commission rates
-const COMMISSION_RATES = {
-    admin: 0.60,       // 60% for admin
-    direct: 0.10,      // 10% for direct referral
-    levels: [0.02, 0.02, 0.02, 0.02, 0.02], // 2% each for 5 levels
-    tradingPool: 0.20  // 20% for trading profit pool
+// Fixed Commission Structure
+const COMMISSION = {
+    ADMIN: 60,        // 60% for admin
+    DIRECT: 10,       // 10% for direct referral
+    LEVELS: [2, 2, 2, 2, 2], // 2% each for 5 levels
+    TRADING_POOL: 20  // 20% for trading profit pool
 };
 
 // Global Variables
 let currentUser = null;
 let userData = null;
+let allUsersData = {};
+
+// Load all users data
+async function loadAllUsersData() {
+    const snapshot = await get(ref(database, 'users'));
+    if (snapshot.exists()) {
+        allUsersData = snapshot.val();
+    }
+}
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
-    // Setup sidebar toggle
-    document.getElementById('menuToggle').addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('open');
-    });
-    
-    // Check if user is logged in
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
-            loadUserData(user.uid);
-            
-            // Hide auth modals if showing
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('signupModal').style.display = 'none';
-            
-            // Show main content
-            document.getElementById('mainContent').style.display = 'block';
-            
-            // Update user avatar
-            updateUserAvatar(user.email || 'User');
-            
-            // Check for referral parameter in URL
-            checkReferralFromURL();
-        } else {
-            // Show login modal if not on auth pages
-            if (!window.location.pathname.includes('login.html') && 
-                !window.location.pathname.includes('signup.html')) {
-                showLoginModal();
+    // Load all users data first
+    loadAllUsersData().then(() => {
+        // Check auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData(user.uid);
+                
+                // Hide auth modals if showing
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('signupModal').style.display = 'none';
+                
+                // Show main content
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // Update user avatar
+                updateUserAvatar(user.email || 'User');
+                
+                // Check for referral parameter in URL
+                checkReferralFromURL();
+            } else {
+                // Show login modal if not on auth pages
+                if (!window.location.pathname.includes('login.html') && 
+                    !window.location.pathname.includes('signup.html')) {
+                    showLoginModal();
+                }
             }
-        }
+        });
     });
     
     // Setup package purchase buttons
@@ -380,7 +386,7 @@ function updateDashboardUI(data) {
     // Update trading profit
     document.getElementById('tradingProfit').textContent = `$${(data.tradingProfit || 0).toFixed(2)}`;
     
-    // Update referrals - now properly counting direct referrals
+    // Update referrals
     const referralCount = data.directReferrals ? Object.keys(data.directReferrals).length : 0;
     document.getElementById('directReferrals').textContent = referralCount;
     document.getElementById('referralProfit').textContent = `$${(data.referralEarnings || 0).toFixed(2)}`;
@@ -455,84 +461,56 @@ async function processPackagePurchase(packageAmount) {
     }
 
     try {
-        // Create invoice
-        const invoiceId = push(ref(database, 'invoices')).key;
-        const purchaseDate = new Date().toISOString();
-        const maturityDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-        
-        const invoiceData = {
-            invoiceId,
-            userId: currentUser.uid,
-            amount: packageAmount,
-            expectedReturn: packageAmount * 2,
-            purchaseDate,
-            maturityDate,
-            status: 'active',
-            packageName: getPackageName(packageAmount)
-        };
-        
+        await loadAllUsersData(); // Refresh all users data
+
         // Calculate commissions
-        const adminCommission = packageAmount * COMMISSION_RATES.admin;
-        const directCommission = packageAmount * COMMISSION_RATES.direct;
-        const levelCommissions = COMMISSION_RATES.levels.map(rate => packageAmount * rate);
-        const totalCommissions = adminCommission + directCommission + levelCommissions.reduce((a, b) => a + b, 0);
-        const tradingPool = packageAmount * COMMISSION_RATES.tradingPool;
-        
+        const adminAmount = (packageAmount * COMMISSION.ADMIN) / 100;
+        const directAmount = (packageAmount * COMMISSION.DIRECT) / 100;
+        const levelAmounts = COMMISSION.LEVELS.map(lvl => (packageAmount * lvl) / 100);
+        const tradingPool = (packageAmount * COMMISSION.TRADING_POOL) / 100;
+
         // Prepare all updates
         const updates = {};
-        
-        // 1. Deduct from user balance
+        const timestamp = Date.now();
+        const invoiceId = push(child(ref(database), 'invoices')).key;
+
+        // 1. Deduct from buyer
         updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - packageAmount;
         
-        // 2. Add to investments and update total investment
+        // 2. Add to investments
         updates[`users/${currentUser.uid}/investments/${invoiceId}`] = {
             amount: packageAmount,
-            purchaseDate: purchaseDate,
-            status: 'active',
-            expectedReturn: packageAmount * 2,
-            maturityDate: maturityDate
+            date: timestamp,
+            package: getPackageName(packageAmount),
+            status: 'active'
         };
         updates[`users/${currentUser.uid}/totalInvestment`] = (userData.totalInvestment || 0) + packageAmount;
-        
-        // 3. Add invoice
-        updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
-        updates[`invoices/${invoiceId}`] = invoiceData;
-        
-        // 4. Add transaction record
-        const transactionId = push(ref(database, 'transactions')).key;
-        updates[`transactions/${transactionId}`] = {
-            type: 'investment',
-            amount: packageAmount,
-            status: 'completed',
-            timestamp: Date.now(),
-            userId: currentUser.uid,
-            details: `Purchased ${invoiceData.packageName}`
-        };
-        updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
-            type: 'investment',
-            amount: packageAmount,
-            status: 'completed',
-            timestamp: Date.now(),
-            details: `Purchased ${invoiceData.packageName}`
-        };
-        
-        // 5. Add admin commission
-        const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
-        updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
-        updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
-        
-        // 6. Process referral commissions (if any)
+
+        // 3. Admin commission
+        updates[`users/${ADMIN_ID}/earnings/admin`] = (allUsersData[ADMIN_ID]?.earnings?.admin || 0) + adminAmount;
+
+        // 4. Process referrals (if any)
         if (userData.referredBy) {
             await processReferralCommissions(userData.referredBy, packageAmount, updates);
         }
-        
-        // 7. Distribute trading profit to all investors proportionally
-        await distributeTradingProfit(tradingPool, updates);
-        
+
+        // 5. Distribute trading pool
+        await distributeTradingPool(tradingPool, updates);
+
+        // 6. Add transaction records
+        const txId = push(child(ref(database), 'transactions')).key;
+        updates[`users/${currentUser.uid}/transactions/${txId}`] = {
+            type: 'investment',
+            amount: packageAmount,
+            status: 'completed',
+            timestamp: timestamp,
+            details: `Purchased ${getPackageName(packageAmount)}`
+        };
+
         // Execute all updates
         await update(ref(database), updates);
         
-        showToast(`Successfully purchased ${invoiceData.packageName}`, 'success');
+        showToast(`Successfully purchased ${getPackageName(packageAmount)}`, 'success');
         loadUserData(currentUser.uid);
         return true;
         
@@ -543,96 +521,77 @@ async function processPackagePurchase(packageAmount) {
     }
 }
 
-// Distribute trading profit proportionally based on investments
-async function distributeTradingProfit(amount, updates) {
-    try {
-        const usersSnapshot = await get(ref(database, 'users'));
-        if (!usersSnapshot.exists()) return;
-        
-        const users = usersSnapshot.val();
-        const activeInvestors = [];
-        let totalInvestment = 0;
-        
-        // Find all active investors and calculate total investment
-        Object.entries(users).forEach(([userId, userData]) => {
-            if (userData.totalInvestment > 0) {
-                activeInvestors.push({
-                    userId,
-                    totalInvestment: userData.totalInvestment || 0
-                });
-                totalInvestment += userData.totalInvestment || 0;
+// Distribute trading pool to all active investors
+async function distributeTradingPool(amount, updates) {
+    let totalInvestment = 0;
+    const investors = [];
+
+    // Calculate total investment from all users
+    Object.entries(allUsersData).forEach(([uid, user]) => {
+        if (user.investments) {
+            const userInvestment = Object.values(user.investments)
+                .reduce((sum, inv) => sum + (inv.amount || 0), 0);
+            
+            if (userInvestment > 0) {
+                totalInvestment += userInvestment;
+                investors.push({ uid, investment: userInvestment });
             }
-        });
-        
-        if (totalInvestment === 0) return;
-        
-        // Calculate and distribute profit proportionally
-        activeInvestors.forEach(investor => {
-            const share = (investor.totalInvestment / totalInvestment) * amount;
-            if (share > 0) {
-                updates[`users/${investor.userId}/tradingProfit`] = (users[investor.userId].tradingProfit || 0) + share;
-                
-                // Add transaction record for profit distribution
-                const transactionId = push(ref(database, 'transactions')).key;
-                updates[`users/${investor.userId}/transactions/${transactionId}`] = {
-                    type: 'Trading Profit',
-                    amount: share,
-                    status: 'completed',
-                    timestamp: Date.now(),
-                    details: 'Trading profit'
-                };
-            }
-        });
-        
-    } catch (error) {
-        console.error('Error distributing trading profit:', error);
-        throw error;
-    }
+        }
+    });
+
+    if (totalInvestment === 0) return;
+
+    // Distribute proportionally
+    investors.forEach(({ uid, investment }) => {
+        const share = (investment / totalInvestment) * amount;
+        if (share > 0) {
+            updates[`users/${uid}/tradingProfit`] = (allUsersData[uid]?.tradingProfit || 0) + share;
+            
+            // Add transaction record
+            const txId = push(child(ref(database), 'transactions')).key;
+            updates[`users/${uid}/transactions/${txId}`] = {
+                type: 'trading_profit',
+                amount: share,
+                status: 'completed',
+                timestamp: Date.now(),
+                details: 'Trading profit distribution'
+            };
+        }
+    });
 }
 
 // Process multi-level referral commissions
 async function processReferralCommissions(referrerId, packageAmount, updates, currentLevel = 1) {
-    if (currentLevel > 5) return;
+    if (currentLevel > 5 || !allUsersData[referrerId]) return;
 
-    // Get referrer data
-    const referrerSnapshot = await get(ref(database, `users/${referrerId}`));
-    if (!referrerSnapshot.exists()) return;
-    
-    const referrerData = referrerSnapshot.val();
-    
     // Calculate commission based on level
-    let commissionRate = 0;
+    const commission = currentLevel === 1 
+        ? (packageAmount * COMMISSION.DIRECT) / 100
+        : (packageAmount * COMMISSION.LEVELS[currentLevel-2]) / 100;
+
+    // Update referrer's earnings
     if (currentLevel === 1) {
-        commissionRate = COMMISSION_RATES.direct; // Direct referral commission (10%)
-    } else if (currentLevel <= 5) {
-        commissionRate = COMMISSION_RATES.levels[currentLevel-2]; // Level commission (2% each)
+        updates[`users/${referrerId}/referralEarnings`] = 
+            (allUsersData[referrerId]?.referralEarnings || 0) + commission;
     }
-    
-    const commission = packageAmount * commissionRate;
-    
-    if (commission > 0) {
-        // Update referrer's earnings
-        if (currentLevel === 1) {
-            updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
-        }
-        updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
-        
-        // Add transaction record for referrer
-        const transactionId = push(ref(database, 'transactions')).key;
-        updates[`users/${referrerId}/transactions/${transactionId}`] = {
-            type: currentLevel === 1 ? 'referral' : 'team',
-            amount: commission,
-            status: 'completed',
-            timestamp: Date.now(),
-            details: currentLevel === 1 
-                ? `Direct referral commission from ${userData.name || 'User'}` 
-                : `Level ${currentLevel} team commission from ${userData.name || 'User'}`
-        };
-        
-        // If referrer has an upline, continue recursively
-        if (referrerData.referredBy && currentLevel < 5) {
-            await processReferralCommissions(referrerData.referredBy, packageAmount, updates, currentLevel + 1);
-        }
+    updates[`users/${referrerId}/teamEarnings`] = 
+        (allUsersData[referrerId]?.teamEarnings || 0) + commission;
+
+    // Add transaction record
+    const txId = push(child(ref(database), 'transactions')).key;
+    updates[`users/${referrerId}/transactions/${txId}`] = {
+        type: currentLevel === 1 ? 'referral' : `level_${currentLevel}_referral`,
+        amount: commission,
+        status: 'completed',
+        timestamp: Date.now(),
+        details: currentLevel === 1 
+            ? `Direct referral commission from ${userData.name || 'User'}` 
+            : `Level ${currentLevel} team commission from ${userData.name || 'User'}`
+    };
+
+    // Process next level if available
+    if (allUsersData[referrerId]?.referredBy && currentLevel < 5) {
+        await processReferralCommissions(allUsersData[referrerId].referredBy, packageAmount, updates, currentLevel + 1);
     }
 }
 
@@ -727,11 +686,6 @@ function getPackageName(amount) {
     }
 }
 
-async function getValue(path) {
-    const snapshot = await get(ref(database, path));
-    return snapshot.val() || 0;
-}
-
 // Show toast notification
 function showToast(message, type) {
     const toastContainer = document.getElementById('toastContainer');
@@ -754,4 +708,3 @@ function showToast(message, type) {
         toast.remove();
     });
 }
-
