@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { 
@@ -578,7 +579,7 @@ async function distributeTradingProfit(amount, updates) {
                     amount: share,
                     status: 'completed',
                     timestamp: Date.now(),
-                    details: 'Trading profit distribution'
+                    details: 'Trading profit'
                 };
             }
         });
@@ -753,3 +754,4 @@ function showToast(message, type) {
         toast.remove();
     });
 }
+
