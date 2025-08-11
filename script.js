@@ -38,15 +38,17 @@ const database = getDatabase(app);
 const ADMIN_ID = "KtdjLWRdN5M5uOA1xDokUtrxfe93";
 const ADMIN_NAME = "Ramesh kumar Verma";
 
+// Fixed commission rates
+const COMMISSION_RATES = {
+    admin: 0.60,       // 60% for admin
+    direct: 0.10,      // 10% for direct referral
+    levels: [0.02, 0.02, 0.02, 0.02, 0.02], // 2% each for 5 levels
+    tradingPool: 0.20  // 20% for trading profit pool
+};
+
 // Global Variables
 let currentUser = null;
 let userData = null;
-let systemSettings = {
-    adminCommission: 0.60,
-    directCommission: 0.10,
-    levelCommissions: [0.02, 0.02, 0.02, 0.02, 0.02],
-    tradingProfitPool: 0.20
-};
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
@@ -55,34 +57,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sidebar').classList.toggle('open');
     });
     
-    // Load system settings first
-    loadSystemSettings().then(() => {
-        // Check if user is logged in
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                loadUserData(user.uid);
-                
-                // Hide auth modals if showing
-                document.getElementById('loginModal').style.display = 'none';
-                document.getElementById('signupModal').style.display = 'none';
-                
-                // Show main content
-                document.getElementById('mainContent').style.display = 'block';
-                
-                // Update user avatar
-                updateUserAvatar(user.email || 'User');
-                
-                // Check for referral parameter in URL
-                checkReferralFromURL();
-            } else {
-                // Show login modal if not on auth pages
-                if (!window.location.pathname.includes('login.html') && 
-                    !window.location.pathname.includes('signup.html')) {
-                    showLoginModal();
-                }
+    // Check if user is logged in
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            loadUserData(user.uid);
+            
+            // Hide auth modals if showing
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('signupModal').style.display = 'none';
+            
+            // Show main content
+            document.getElementById('mainContent').style.display = 'block';
+            
+            // Update user avatar
+            updateUserAvatar(user.email || 'User');
+            
+            // Check for referral parameter in URL
+            checkReferralFromURL();
+        } else {
+            // Show login modal if not on auth pages
+            if (!window.location.pathname.includes('login.html') && 
+                !window.location.pathname.includes('signup.html')) {
+                showLoginModal();
             }
-        });
+        }
     });
     
     // Setup package purchase buttons
@@ -170,19 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
         signupSpinner.style.display = 'none';
     });
 });
-
-// Load system settings
-async function loadSystemSettings() {
-    try {
-        const settingsSnapshot = await get(ref(database, 'system/settings'));
-        if (settingsSnapshot.exists()) {
-            systemSettings = settingsSnapshot.val();
-        }
-    } catch (error) {
-        console.error("Error loading settings:", error);
-        showToast('Error loading system settings', 'error');
-    }
-}
 
 // Check for referral parameter in URL
 function checkReferralFromURL() {
@@ -485,11 +471,11 @@ async function processPackagePurchase(packageAmount) {
         };
         
         // Calculate commissions
-        const adminCommission = packageAmount * systemSettings.adminCommission;
-        const directCommission = packageAmount * systemSettings.directCommission;
-        const levelCommissions = systemSettings.levelCommissions.map(rate => packageAmount * rate);
+        const adminCommission = packageAmount * COMMISSION_RATES.admin;
+        const directCommission = packageAmount * COMMISSION_RATES.direct;
+        const levelCommissions = COMMISSION_RATES.levels.map(rate => packageAmount * rate);
         const totalCommissions = adminCommission + directCommission + levelCommissions.reduce((a, b) => a + b, 0);
-        const tradingPool = packageAmount - totalCommissions;
+        const tradingPool = packageAmount * COMMISSION_RATES.tradingPool;
         
         // Prepare all updates
         const updates = {};
@@ -616,9 +602,9 @@ async function processReferralCommissions(referrerId, packageAmount, updates, cu
     // Calculate commission based on level
     let commissionRate = 0;
     if (currentLevel === 1) {
-        commissionRate = systemSettings.directCommission; // Direct referral commission (10%)
+        commissionRate = COMMISSION_RATES.direct; // Direct referral commission (10%)
     } else if (currentLevel <= 5) {
-        commissionRate = systemSettings.levelCommissions[currentLevel-2]; // Level commission (2% each)
+        commissionRate = COMMISSION_RATES.levels[currentLevel-2]; // Level commission (2% each)
     }
     
     const commission = packageAmount * commissionRate;
