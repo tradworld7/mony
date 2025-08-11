@@ -521,6 +521,10 @@
             background-color: rgba(247, 37, 133, 0.1);
             color: var(--danger-color);
         }
+        .status-deactivated {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray-color);
+        }
 
         /* Toast Notifications Container */
         .toast-container {
@@ -624,6 +628,23 @@
             border-top-color: var(--white-color);
             animation: spin 1s ease-in-out infinite;
             display: inline-block;
+        }
+
+        /* Deactivation Notice */
+        .deactivation-notice {
+            background-color: var(--danger-light);
+            border-left: 4px solid var(--danger-color);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deactivation-notice i {
+            color: var(--danger-color);
+            font-size: 1.2rem;
         }
 
         /* Utility Classes */
@@ -749,13 +770,18 @@
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
             <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
             <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
-            <li><a href="team-structure.html"><i class="fas fa-box-open"></i> team-structure</a></li>
+            <li><a href="packages.html"><i class="fas fa-box-open"></i> Investment Packages</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
+        <div id="deactivationNotice" class="deactivation-notice" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Your account has been deactivated. Please purchase a new package to reactivate and start earning again.</span>
+        </div>
+        
         <h1 class="page-title"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
         
         <div class="dashboard-cards">
@@ -907,6 +933,32 @@
                 </table>
             </div>
         </div>
+        
+        <!-- Daily Profit Section -->
+        <div class="trading-section">
+            <div class="trading-header">
+                <h2 class="trading-title">Today's Trading Profit</h2>
+                <span class="text-muted">Updated: <span id="profitUpdated">Just now</span></span>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table profit-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dailyProfitHistory">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No profit distribution yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <!-- Toast Notifications Container -->
@@ -985,7 +1037,9 @@
             set, 
             update, 
             push, 
-            get 
+            get,
+            child,
+            onChildAdded
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -1011,14 +1065,16 @@
 
         // Commission rates
         const COMMISSION_RATES = {
-            admin: 0.70,    // 70% to admin
+            admin: 0.50,    // 50% to admin
             direct: 0.10,   // 10% to direct referrer
-            levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
+            levels: [0.02, 0.02, 0.02, 0.02, 0.02], // 2% each for levels 1-5
+            tradingPool: 0.30 // 30% to trading pool
         };
 
         // Global Variables
         let currentUser = null;
         let userData = null;
+        let profitListener = null;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1045,11 +1101,20 @@
                     
                     // Check for referral parameter in URL
                     checkReferralFromURL();
+                    
+                    // Setup profit distribution listener
+                    setupProfitListener();
                 } else {
                     // Show login modal if not on auth pages
                     if (!window.location.pathname.includes('login.html') && 
                         !window.location.pathname.includes('signup.html')) {
                         showLoginModal();
+                    }
+                    
+                    // Clean up profit listener
+                    if (profitListener) {
+                        profitListener();
+                        profitListener = null;
                     }
                 }
             });
@@ -1140,6 +1205,61 @@
             });
         });
 
+        // Setup listener for profit distributions
+        function setupProfitListener() {
+            if (!currentUser) return;
+            
+            // Remove previous listener if exists
+            if (profitListener) {
+                profitListener();
+            }
+            
+            // Setup new listener
+            profitListener = onChildAdded(
+                ref(database, `users/${currentUser.uid}/dailyProfits`), 
+                (snapshot) => {
+                    const profitData = snapshot.val();
+                    if (profitData) {
+                        addDailyProfitRow(profitData);
+                    }
+                }
+            );
+        }
+
+        // Add a row to the daily profit table
+        function addDailyProfitRow(profitData) {
+            const tbody = document.getElementById('dailyProfitHistory');
+            
+            // Remove the "no profits" row if it exists
+            if (tbody.innerHTML.includes('No profit distribution yet')) {
+                tbody.innerHTML = '';
+            }
+            
+            const row = document.createElement('tr');
+            
+            const time = new Date(profitData.timestamp).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const amount = `$${profitData.amount?.toFixed(2) || '0.00'}`;
+            const status = profitData.status ? profitData.status.charAt(0).toUpperCase() + profitData.status.slice(1) : 'Completed';
+            const details = profitData.details || 'Daily trading profit';
+            
+            row.innerHTML = `
+                <td>${time}</td>
+                <td>${amount}</td>
+                <td><span class="badge status-${profitData.status || 'completed'}">${status}</span></td>
+                <td>${details}</td>
+            `;
+            
+            // Add to the top of the table
+            tbody.insertBefore(row, tbody.firstChild);
+            
+            document.getElementById('profitUpdated').textContent = new Date().toLocaleTimeString();
+        }
+
         // Check for referral parameter in URL
         function checkReferralFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1214,6 +1334,9 @@
                     tradingProfit: 0,
                     referralEarnings: 0,
                     teamEarnings: 0,
+                    totalInvested: 0,
+                    totalWithdrawn: 0,
+                    isActive: true,
                     createdAt: Date.now(),
                     lastActive: Date.now(),
                     teamStructure: {
@@ -1228,7 +1351,8 @@
                     investments: {},
                     invoices: {},
                     transactions: {},
-                    directReferrals: {}
+                    directReferrals: {},
+                    dailyProfits: {}
                 };
                 
                 // Add referral data if provided
@@ -1332,10 +1456,49 @@
                     if (userData.name) {
                         updateUserAvatar(userData.name);
                     }
+                    
+                    // Show/hide deactivation notice
+                    if (userData.isActive === false) {
+                        document.getElementById('deactivationNotice').style.display = 'flex';
+                    } else {
+                        document.getElementById('deactivationNotice').style.display = 'none';
+                    }
+                    
+                    // Load daily profits
+                    loadDailyProfits();
                 }
             }, (error) => {
                 console.error("Error loading user data:", error);
                 showToast('Error loading user data', 'error');
+            });
+        }
+
+        // Load daily profits
+        async function loadDailyProfits() {
+            if (!currentUser) return;
+            
+            const profitsRef = ref(database, `users/${currentUser.uid}/dailyProfits`);
+            
+            onValue(profitsRef, (snapshot) => {
+                const profits = snapshot.val();
+                const tbody = document.getElementById('dailyProfitHistory');
+                tbody.innerHTML = '';
+                
+                if (!profits) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No profit distribution yet</td></tr>';
+                    return;
+                }
+                
+                // Convert to array and sort by timestamp
+                const profitsArray = Object.entries(profits).map(([id, profit]) => ({ id, ...profit }));
+                profitsArray.sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Show all profit distributions
+                profitsArray.forEach(profit => {
+                    addDailyProfitRow(profit);
+                });
+                
+                document.getElementById('profitUpdated').textContent = new Date().toLocaleTimeString();
             });
         }
 
@@ -1441,7 +1604,7 @@
                 
                 // Calculate total commission (70%)
                 const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
-                const tradingPool = packageAmount - totalCommission;
+                const tradingPool = packageAmount * COMMISSION_RATES.tradingPool;
                 
                 // Prepare all updates
                 const updates = {};
@@ -1458,11 +1621,17 @@
                     maturityDate: maturityDate
                 };
                 
-                // 3. Add invoice
+                // 3. Update total invested
+                updates[`users/${currentUser.uid}/totalInvested`] = (userData.totalInvested || 0) + packageAmount;
+                
+                // 4. Reactivate account if it was deactivated
+                updates[`users/${currentUser.uid}/isActive`] = true;
+                
+                // 5. Add invoice
                 updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
                 updates[`invoices/${invoiceId}`] = invoiceData;
                 
-                // 4. Add transaction record
+                // 6. Add transaction record
                 const transactionId = push(ref(database, 'transactions')).key;
                 updates[`transactions/${transactionId}`] = {
                     type: 'investment',
@@ -1480,37 +1649,62 @@
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 
-                // 5. Add admin commission (70%)
+                // 7. Add admin commission (50%)
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
-                // 6. Process referral commissions (if any)
+                // 8. Process referral commissions (if any)
                 if (userData.referredBy) {
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Distribute trading profit (10%) to all active users
+                // 9. Distribute trading profit (30%) to all active users based on their investment ratio
                 const activeUsers = await getActiveUsers();
                 if (activeUsers.length > 0) {
-                    const profitPerUser = tradingPool / activeUsers.length;
-                    
-                    // First get current profits for all users
+                    // First get all users' total investments
                     const usersData = await Promise.all(
                         activeUsers.map(async userId => {
-                            const snapshot = await get(ref(database, `users/${userId}/tradingProfit`));
+                            const snapshot = await get(ref(database, `users/${userId}`));
+                            const user = snapshot.val();
                             return {
                                 userId,
-                                currentProfit: snapshot.val() || 0
+                                totalInvested: user.totalInvested || 0,
+                                currentProfit: user.tradingProfit || 0
                             };
                         })
                     );
                     
-                    // Then update each user's profit by adding the new amount
-                    usersData.forEach(user => {
-                        updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + profitPerUser;
-                    });
+                    // Calculate total investments across all active users
+                    const totalInvestments = usersData.reduce((sum, user) => sum + user.totalInvested, 0);
+                    
+                    if (totalInvestments > 0) {
+                        // Distribute trading pool proportionally
+                        usersData.forEach(user => {
+                            const userShare = (user.totalInvested / totalInvestments) * tradingPool;
+                            updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + userShare;
+                            
+                            // Add transaction record for profit distribution
+                            const profitId = push(ref(database, 'transactions')).key;
+                            updates[`users/${user.userId}/transactions/${profitId}`] = {
+                                type: 'profit',
+                                amount: userShare,
+                                status: 'completed',
+                                timestamp: Date.now(),
+                                details: 'Investment profit distribution'
+                            };
+                            
+                            // Add to daily profits
+                            const dailyProfitId = push(ref(database, 'transactions')).key;
+                            updates[`users/${user.userId}/dailyProfits/${dailyProfitId}`] = {
+                                amount: userShare,
+                                status: 'completed',
+                                timestamp: Date.now(),
+                                details: 'Investment profit distribution'
+                            };
+                        });
+                    }
                 }
                 
                 // Execute all updates
@@ -1527,6 +1721,42 @@
             }
         }
 
+        // Check if user should be deactivated (called after withdrawals)
+        async function checkUserDeactivation(userId) {
+            try {
+                const userSnapshot = await get(ref(database, `users/${userId}`));
+                if (!userSnapshot.exists()) return;
+                
+                const user = userSnapshot.val();
+                
+                // Check if user has withdrawn 200% of their investment
+                if ((user.totalWithdrawn || 0) >= 2 * (user.totalInvested || 0)) {
+                    // Deactivate the user
+                    await update(ref(database, `users/${userId}`), {
+                        isActive: false
+                    });
+                    
+                    // Add deactivation notification
+                    const notificationId = push(ref(database, 'transactions')).key;
+                    await set(ref(database, `users/${userId}/transactions/${notificationId}`), {
+                        type: 'system',
+                        amount: 0,
+                        status: 'deactivated',
+                        timestamp: Date.now(),
+                        details: 'Account deactivated due to reaching 200% profit. Purchase a new package to reactivate.'
+                    });
+                    
+                    // Show toast to user
+                    if (userId === currentUser?.uid) {
+                        showToast('Your account has been deactivated. Purchase a new package to reactivate.', 'warning');
+                        document.getElementById('deactivationNotice').style.display = 'flex';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking user deactivation:', error);
+            }
+        }
+
         // Get all active users (for profit distribution)
         async function getActiveUsers() {
             try {
@@ -1535,8 +1765,10 @@
                 
                 const users = snapshot.val();
                 return Object.keys(users).filter(uid => {
-                    // Consider a user active if they have at least one investment
-                    return users[uid].investments && Object.keys(users[uid].investments).length > 0;
+                    // Consider a user active if they have isActive true and at least one active investment
+                    return users[uid].isActive !== false && 
+                           users[uid].investments && 
+                           Object.values(users[uid].investments).some(inv => inv.status === 'active');
                 });
             } catch (error) {
                 console.error('Error getting active users:', error);
@@ -1707,6 +1939,3 @@
     </script>
 </body>
 </html>
-
-
-
