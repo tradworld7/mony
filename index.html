@@ -521,15 +521,6 @@
             background-color: rgba(247, 37, 133, 0.1);
             color: var(--danger-color);
         }
-        .status-deactivated {
-            background-color: rgba(108, 117, 125, 0.1);
-            color: var(--gray-color);
-        }
-
-        /* Profit distribution highlight */
-        .profit-row {
-            background-color: rgba(76, 201, 240, 0.05);
-        }
 
         /* Toast Notifications Container */
         .toast-container {
@@ -633,23 +624,6 @@
             border-top-color: var(--white-color);
             animation: spin 1s ease-in-out infinite;
             display: inline-block;
-        }
-
-        /* Deactivation Notice */
-        .deactivation-notice {
-            background-color: var(--danger-light);
-            border-left: 4px solid var(--danger-color);
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .deactivation-notice i {
-            color: var(--danger-color);
-            font-size: 1.2rem;
         }
 
         /* Utility Classes */
@@ -782,11 +756,6 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <div id="deactivationNotice" class="deactivation-notice" style="display: none;">
-            <i class="fas fa-exclamation-circle"></i>
-            <span>Your account has been deactivated. Please purchase a new package to reactivate and start earning again.</span>
-        </div>
-        
         <h1 class="page-title"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
         
         <div class="dashboard-cards">
@@ -915,7 +884,7 @@
         <!-- Transaction History Section -->
         <div class="trading-section">
             <div class="trading-header">
-                <h2 class="trading-title">Transaction History</h2>
+                <h2 class="trading-title">Recent Transactions</h2>
                 <span class="text-muted">Updated: <span id="lastUpdated">Just now</span></span>
             </div>
             
@@ -1016,9 +985,7 @@
             set, 
             update, 
             push, 
-            get,
-            child,
-            onChildAdded
+            get 
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -1046,8 +1013,7 @@
         const COMMISSION_RATES = {
             admin: 0.50,    // 50% to admin
             direct: 0.10,   // 10% to direct referrer
-            levels: [0.02, 0.02, 0.02, 0.02, 0.02], // 2% each for levels 1-5
-            tradingPool: 0.30 // 30% to trading pool
+            levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
         };
 
         // Global Variables
@@ -1248,9 +1214,6 @@
                     tradingProfit: 0,
                     referralEarnings: 0,
                     teamEarnings: 0,
-                    totalInvested: 0,
-                    totalWithdrawn: 0,
-                    isActive: true,
                     createdAt: Date.now(),
                     lastActive: Date.now(),
                     teamStructure: {
@@ -1369,13 +1332,6 @@
                     if (userData.name) {
                         updateUserAvatar(userData.name);
                     }
-                    
-                    // Show/hide deactivation notice
-                    if (userData.isActive === false) {
-                        document.getElementById('deactivationNotice').style.display = 'flex';
-                    } else {
-                        document.getElementById('deactivationNotice').style.display = 'none';
-                    }
                 }
             }, (error) => {
                 console.error("Error loading user data:", error);
@@ -1426,9 +1382,6 @@
                 // Show only last 5 transactions
                 transactionsArray.slice(0, 5).forEach(tx => {
                     const row = document.createElement('tr');
-                    if (tx.type === 'profit') {
-                        row.classList.add('profit-row');
-                    }
                     
                     const date = new Date(tx.timestamp).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -1437,14 +1390,26 @@
                         hour: '2-digit',
                         minute: '2-digit'
                     });
-                    const type = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+                    
+                    // Determine transaction type for display
+                    let displayType = tx.type;
+                    if (tx.type === 'investment') {
+                        displayType = 'Investment';
+                    } else if (tx.type === 'referral') {
+                        displayType = 'Referral Bonus';
+                    } else if (tx.type === 'transfer') {
+                        displayType = tx.recipientId ? 'Transfer Sent' : 'Transfer Received';
+                    } else if (tx.type === 'profit') {
+                        displayType = 'Trading Profit';
+                    }
+                    
                     const amount = `$${tx.amount?.toFixed(2) || '0.00'}`;
                     const status = tx.status ? tx.status.charAt(0).toUpperCase() + tx.status.slice(1) : 'Completed';
                     const details = tx.details || '';
                     
                     row.innerHTML = `
                         <td>${date}</td>
-                        <td>${type}</td>
+                        <td>${displayType}</td>
                         <td>${amount}</td>
                         <td><span class="badge status-${tx.status || 'completed'}">${status}</span></td>
                         <td>${details}</td>
@@ -1486,11 +1451,9 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate commissions
-                const adminCommission = packageAmount * COMMISSION_RATES.admin;
-                const directReferralCommission = packageAmount * COMMISSION_RATES.direct;
-                const levelCommissions = packageAmount * COMMISSION_RATES.levels.reduce((a,b) => a + b, 0);
-                const tradingPool = packageAmount * COMMISSION_RATES.tradingPool;
+                // Calculate total commission (50%)
+                const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
+                const tradingPool = packageAmount - totalCommission;
                 
                 // Prepare all updates
                 const updates = {};
@@ -1507,17 +1470,11 @@
                     maturityDate: maturityDate
                 };
                 
-                // 3. Update total invested
-                updates[`users/${currentUser.uid}/totalInvested`] = (userData.totalInvested || 0) + packageAmount;
-                
-                // 4. Reactivate account if it was deactivated
-                updates[`users/${currentUser.uid}/isActive`] = true;
-                
-                // 5. Add invoice
+                // 3. Add invoice
                 updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
                 updates[`invoices/${invoiceId}`] = invoiceData;
                 
-                // 6. Add transaction record
+                // 4. Add transaction record
                 const transactionId = push(ref(database, 'transactions')).key;
                 updates[`transactions/${transactionId}`] = {
                     type: 'investment',
@@ -1535,54 +1492,47 @@
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 
-                // 7. Add admin commission (50%)
+                // 5. Add admin commission (50%)
+                const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
-                // 8. Process referral commissions (if any)
+                // 6. Process referral commissions (if any)
                 if (userData.referredBy) {
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 9. Distribute trading profit (30%) to all active users based on their investment ratio
+                // 7. Distribute trading profit (30%) to all active users
                 const activeUsers = await getActiveUsers();
                 if (activeUsers.length > 0) {
-                    // First get all users' total investments
+                    const profitPerUser = tradingPool / activeUsers.length;
+                    
+                    // First get current profits for all users
                     const usersData = await Promise.all(
                         activeUsers.map(async userId => {
-                            const snapshot = await get(ref(database, `users/${userId}`));
-                            const user = snapshot.val();
+                            const snapshot = await get(ref(database, `users/${userId}/tradingProfit`));
                             return {
                                 userId,
-                                totalInvested: user.totalInvested || 0,
-                                currentProfit: user.tradingProfit || 0
+                                currentProfit: snapshot.val() || 0
                             };
                         })
                     );
                     
-                    // Calculate total investments across all active users
-                    const totalInvestments = usersData.reduce((sum, user) => sum + user.totalInvested, 0);
-                    
-                    if (totalInvestments > 0) {
-                        // Distribute trading pool proportionally
-                        usersData.forEach(user => {
-                            const userShare = (user.totalInvested / totalInvestments) * tradingPool;
-                            if (userShare > 0) {
-                                updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + userShare;
-                                
-                                // Add transaction record for profit distribution
-                                const profitId = push(ref(database, 'transactions')).key;
-                                updates[`users/${user.userId}/transactions/${profitId}`] = {
-                                    type: 'profit',
-                                    amount: userShare,
-                                    status: 'completed',
-                                    timestamp: Date.now(),
-                                    details: 'Investment profit '
-                                };
-                            }
-                        });
-                    }
+                    // Then update each user's profit by adding the new amount
+                    usersData.forEach(user => {
+                        updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + profitPerUser;
+                        
+                        // Add transaction record for profit distribution
+                        const profitTransactionId = push(ref(database, 'transactions')).key;
+                        updates[`users/${user.userId}/transactions/${profitTransactionId}`] = {
+                            type: 'profit',
+                            amount: profitPerUser,
+                            status: 'completed',
+                            timestamp: Date.now(),
+                            details: `Trading profit from package purchase`
+                        };
+                    });
                 }
                 
                 // Execute all updates
@@ -1599,42 +1549,6 @@
             }
         }
 
-        // Check if user should be deactivated (called after withdrawals)
-        async function checkUserDeactivation(userId) {
-            try {
-                const userSnapshot = await get(ref(database, `users/${userId}`));
-                if (!userSnapshot.exists()) return;
-                
-                const user = userSnapshot.val();
-                
-                // Check if user has withdrawn 200% of their investment
-                if ((user.totalWithdrawn || 0) >= 2 * (user.totalInvested || 0)) {
-                    // Deactivate the user
-                    await update(ref(database, `users/${userId}`), {
-                        isActive: false
-                    });
-                    
-                    // Add deactivation notification
-                    const notificationId = push(ref(database, 'transactions')).key;
-                    await set(ref(database, `users/${userId}/transactions/${notificationId}`), {
-                        type: 'system',
-                        amount: 0,
-                        status: 'deactivated',
-                        timestamp: Date.now(),
-                        details: 'Account deactivated due to reaching 200% profit. Purchase a new package to reactivate.'
-                    });
-                    
-                    // Show toast to user
-                    if (userId === currentUser?.uid) {
-                        showToast('Your account has been deactivated. Purchase a new package to reactivate.', 'warning');
-                        document.getElementById('deactivationNotice').style.display = 'flex';
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking user deactivation:', error);
-            }
-        }
-
         // Get all active users (for profit distribution)
         async function getActiveUsers() {
             try {
@@ -1643,10 +1557,8 @@
                 
                 const users = snapshot.val();
                 return Object.keys(users).filter(uid => {
-                    // Consider a user active if they have isActive true and at least one active investment
-                    return users[uid].isActive !== false && 
-                           users[uid].investments && 
-                           Object.values(users[uid].investments).some(inv => inv.status === 'active');
+                    // Consider a user active if they have at least one investment
+                    return users[uid].investments && Object.keys(users[uid].investments).length > 0;
                 });
             } catch (error) {
                 console.error('Error getting active users:', error);
@@ -1817,5 +1729,3 @@
     </script>
 </body>
 </html>
-
-
