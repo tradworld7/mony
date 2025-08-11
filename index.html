@@ -521,6 +521,10 @@
             background-color: rgba(247, 37, 133, 0.1);
             color: var(--danger-color);
         }
+        .status-deactivated {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray-color);
+        }
 
         /* Toast Notifications Container */
         .toast-container {
@@ -812,6 +816,11 @@
             </div>
         </div>
         
+        <!-- Account Status Alert -->
+        <div id="accountStatusAlert" class="alert" style="display: none; background-color: var(--warning-light); color: var(--warning-color); padding: 1rem; border-radius: var(--border-radius); margin-bottom: 1.5rem;">
+            <i class="fas fa-exclamation-circle"></i> <span id="accountStatusMessage"></span>
+        </div>
+        
         <!-- Transfer Funds Section -->
         <div class="transfer-form">
             <h2 class="section-title">Transfer Funds</h2>
@@ -985,7 +994,8 @@
             set, 
             update, 
             push, 
-            get 
+            get,
+            child
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -1214,6 +1224,9 @@
                     tradingProfit: 0,
                     referralEarnings: 0,
                     teamEarnings: 0,
+                    isActive: true,
+                    totalInvested: 0,
+                    totalEarned: 0,
                     createdAt: Date.now(),
                     lastActive: Date.now(),
                     teamStructure: {
@@ -1332,11 +1345,42 @@
                     if (userData.name) {
                         updateUserAvatar(userData.name);
                     }
+                    
+                    // Check account status
+                    checkAccountStatus(userData);
                 }
             }, (error) => {
                 console.error("Error loading user data:", error);
                 showToast('Error loading user data', 'error');
             });
+        }
+        
+        // Check if account should be deactivated
+        function checkAccountStatus(userData) {
+            const alertElement = document.getElementById('accountStatusAlert');
+            const messageElement = document.getElementById('accountStatusMessage');
+            
+            if (!userData.isActive) {
+                alertElement.style.display = 'block';
+                alertElement.style.backgroundColor = 'var(--danger-light)';
+                alertElement.style.color = 'var(--danger-color)';
+                messageElement.textContent = 'Your account is deactivated. Please purchase a new package to reactivate.';
+                return;
+            }
+            
+            if (userData.totalEarned >= (userData.totalInvested * 2)) {
+                // Deactivate account
+                update(ref(database, `users/${currentUser.uid}`), {
+                    isActive: false
+                });
+                
+                alertElement.style.display = 'block';
+                alertElement.style.backgroundColor = 'var(--warning-light)';
+                alertElement.style.color = 'var(--warning-color)';
+                messageElement.textContent = 'Your account has been deactivated because you have earned 200% of your investment. Please purchase a new package to reactivate.';
+            } else {
+                alertElement.style.display = 'none';
+            }
         }
 
         function updateDashboardUI(data) {
@@ -1451,9 +1495,9 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate total commission (50%)
+                // Calculate total commission (50% admin + 10% direct + 10% upline = 70%)
                 const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
-                const tradingPool = packageAmount - totalCommission;
+                const tradingPool = packageAmount * 0.30; // 30% for trading profit distribution
                 
                 // Prepare all updates
                 const updates = {};
@@ -1461,7 +1505,13 @@
                 // 1. Deduct from user balance
                 updates[`users/${currentUser.uid}/balance`] = (userData.balance || 0) - packageAmount;
                 
-                // 2. Add to investments
+                // 2. Update user's total invested amount
+                updates[`users/${currentUser.uid}/totalInvested`] = (userData.totalInvested || 0) + packageAmount;
+                
+                // 3. Reactivate account if it was deactivated
+                updates[`users/${currentUser.uid}/isActive`] = true;
+                
+                // 4. Add to investments
                 updates[`users/${currentUser.uid}/investments/${invoiceId}`] = {
                     amount: packageAmount,
                     purchaseDate: purchaseDate,
@@ -1470,11 +1520,11 @@
                     maturityDate: maturityDate
                 };
                 
-                // 3. Add invoice
+                // 5. Add invoice
                 updates[`users/${currentUser.uid}/invoices/${invoiceId}`] = invoiceData;
                 updates[`invoices/${invoiceId}`] = invoiceData;
                 
-                // 4. Add transaction record
+                // 6. Add transaction record
                 const transactionId = push(ref(database, 'transactions')).key;
                 updates[`transactions/${transactionId}`] = {
                     type: 'investment',
@@ -1492,48 +1542,19 @@
                     details: `Purchased ${invoiceData.packageName}`
                 };
                 
-                // 5. Add admin commission (50%)
+                // 7. Add admin commission (50%)
                 const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
                 
-                // 6. Process referral commissions (if any)
+                // 8. Process referral commissions (if any)
                 if (userData.referredBy) {
                     await processReferralCommissions(userData.referredBy, packageAmount, updates);
                 }
                 
-                // 7. Distribute trading profit (30%) to all active users
-                const activeUsers = await getActiveUsers();
-                if (activeUsers.length > 0) {
-                    const profitPerUser = tradingPool / activeUsers.length;
-                    
-                    // First get current profits for all users
-                    const usersData = await Promise.all(
-                        activeUsers.map(async userId => {
-                            const snapshot = await get(ref(database, `users/${userId}/tradingProfit`));
-                            return {
-                                userId,
-                                currentProfit: snapshot.val() || 0
-                            };
-                        })
-                    );
-                    
-                    // Then update each user's profit by adding the new amount
-                    usersData.forEach(user => {
-                        updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + profitPerUser;
-                        
-                        // Add transaction record for profit distribution
-                        const profitTransactionId = push(ref(database, 'transactions')).key;
-                        updates[`users/${user.userId}/transactions/${profitTransactionId}`] = {
-                            type: 'profit',
-                            amount: profitPerUser,
-                            status: 'completed',
-                            timestamp: Date.now(),
-                            details: `Trading profit`
-                        };
-                    });
-                }
+                // 9. Distribute trading profit (30%) to all active users proportionally
+                await distributeTradingProfit(packageAmount, updates);
                 
                 // Execute all updates
                 await update(ref(database), updates);
@@ -1549,20 +1570,55 @@
             }
         }
 
-        // Get all active users (for profit distribution)
-        async function getActiveUsers() {
+        // Distribute trading profit proportionally to active users
+        async function distributeTradingProfit(packageAmount, updates) {
             try {
-                const snapshot = await get(ref(database, 'users'));
-                if (!snapshot.exists()) return [];
+                const tradingPool = packageAmount * 0.30; // 30% of the package amount
                 
-                const users = snapshot.val();
-                return Object.keys(users).filter(uid => {
-                    // Consider a user active if they have at least one investment
-                    return users[uid].investments && Object.keys(users[uid].investments).length > 0;
-                });
+                // Get all active users with their total investments
+                const usersSnapshot = await get(ref(database, 'users'));
+                if (!usersSnapshot.exists()) return;
+                
+                const allUsers = usersSnapshot.val();
+                
+                // Filter active users who have investments
+                const activeUsers = Object.entries(allUsers)
+                    .filter(([uid, user]) => user.isActive && user.totalInvested > 0)
+                    .map(([uid, user]) => ({
+                        uid,
+                        totalInvested: user.totalInvested || 0
+                    }));
+                
+                if (activeUsers.length === 0) return;
+                
+                // Calculate total investment across all active users
+                const totalInvestment = activeUsers.reduce((sum, user) => sum + user.totalInvested, 0);
+                
+                // Distribute trading pool proportionally
+                for (const user of activeUsers) {
+                    const userShare = (user.totalInvested / totalInvestment) * tradingPool;
+                    const currentProfit = await getValue(`users/${user.uid}/tradingProfit`);
+                    
+                    // Update user's trading profit
+                    updates[`users/${user.uid}/tradingProfit`] = (currentProfit || 0) + userShare;
+                    
+                    // Update user's total earned
+                    updates[`users/${user.uid}/totalEarned`] = (await getValue(`users/${user.uid}/totalEarned`)) + userShare;
+                    
+                    // Add transaction record for profit distribution
+                    const profitTransactionId = push(ref(database, 'transactions')).key;
+                    updates[`users/${user.uid}/transactions/${profitTransactionId}`] = {
+                        type: 'profit',
+                        amount: userShare,
+                        status: 'completed',
+                        timestamp: Date.now(),
+                        details: `Trading profit from package purchase`
+                    };
+                }
+                
             } catch (error) {
-                console.error('Error getting active users:', error);
-                return [];
+                console.error('Error distributing trading profit:', error);
+                showToast('Error distributing trading profits', 'error');
             }
         }
 
@@ -1604,6 +1660,7 @@
                 // Update referrer's earnings
                 updates[`users/${referrerId}/referralEarnings`] = (referrerData.referralEarnings || 0) + commission;
                 updates[`users/${referrerId}/teamEarnings`] = (referrerData.teamEarnings || 0) + commission;
+                updates[`users/${referrerId}/totalEarned`] = (referrerData.totalEarned || 0) + commission;
                 
                 // Add transaction record for referrer
                 const transactionId = push(ref(database, 'transactions')).key;
@@ -1729,5 +1786,3 @@
     </script>
 </body>
 </html>
-
-
