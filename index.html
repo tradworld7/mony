@@ -526,6 +526,11 @@
             color: var(--gray-color);
         }
 
+        /* Profit distribution highlight */
+        .profit-row {
+            background-color: rgba(76, 201, 240, 0.05);
+        }
+
         /* Toast Notifications Container */
         .toast-container {
             position: fixed;
@@ -910,7 +915,7 @@
         <!-- Transaction History Section -->
         <div class="trading-section">
             <div class="trading-header">
-                <h2 class="trading-title">Recent Transactions</h2>
+                <h2 class="trading-title">Transaction History</h2>
                 <span class="text-muted">Updated: <span id="lastUpdated">Just now</span></span>
             </div>
             
@@ -928,32 +933,6 @@
                     <tbody id="transactionHistory">
                         <tr>
                             <td colspan="5" class="text-center text-muted">No transactions yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Daily Profit Section -->
-        <div class="trading-section">
-            <div class="trading-header">
-                <h2 class="trading-title">Today's Trading Profit</h2>
-                <span class="text-muted">Updated: <span id="profitUpdated">Just now</span></span>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table profit-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dailyProfitHistory">
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">No profit distribution yet</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1074,7 +1053,6 @@
         // Global Variables
         let currentUser = null;
         let userData = null;
-        let profitListener = null;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1101,20 +1079,11 @@
                     
                     // Check for referral parameter in URL
                     checkReferralFromURL();
-                    
-                    // Setup profit distribution listener
-                    setupProfitListener();
                 } else {
                     // Show login modal if not on auth pages
                     if (!window.location.pathname.includes('login.html') && 
                         !window.location.pathname.includes('signup.html')) {
                         showLoginModal();
-                    }
-                    
-                    // Clean up profit listener
-                    if (profitListener) {
-                        profitListener();
-                        profitListener = null;
                     }
                 }
             });
@@ -1204,61 +1173,6 @@
                 signupSpinner.style.display = 'none';
             });
         });
-
-        // Setup listener for profit distributions
-        function setupProfitListener() {
-            if (!currentUser) return;
-            
-            // Remove previous listener if exists
-            if (profitListener) {
-                profitListener();
-            }
-            
-            // Setup new listener
-            profitListener = onChildAdded(
-                ref(database, `users/${currentUser.uid}/dailyProfits`), 
-                (snapshot) => {
-                    const profitData = snapshot.val();
-                    if (profitData) {
-                        addDailyProfitRow(profitData);
-                    }
-                }
-            );
-        }
-
-        // Add a row to the daily profit table
-        function addDailyProfitRow(profitData) {
-            const tbody = document.getElementById('dailyProfitHistory');
-            
-            // Remove the "no profits" row if it exists
-            if (tbody.innerHTML.includes('No profit distribution yet')) {
-                tbody.innerHTML = '';
-            }
-            
-            const row = document.createElement('tr');
-            
-            const time = new Date(profitData.timestamp).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            
-            const amount = `$${profitData.amount?.toFixed(2) || '0.00'}`;
-            const status = profitData.status ? profitData.status.charAt(0).toUpperCase() + profitData.status.slice(1) : 'Completed';
-            const details = profitData.details || 'Daily trading profit';
-            
-            row.innerHTML = `
-                <td>${time}</td>
-                <td>${amount}</td>
-                <td><span class="badge status-${profitData.status || 'completed'}">${status}</span></td>
-                <td>${details}</td>
-            `;
-            
-            // Add to the top of the table
-            tbody.insertBefore(row, tbody.firstChild);
-            
-            document.getElementById('profitUpdated').textContent = new Date().toLocaleTimeString();
-        }
 
         // Check for referral parameter in URL
         function checkReferralFromURL() {
@@ -1351,8 +1265,7 @@
                     investments: {},
                     invoices: {},
                     transactions: {},
-                    directReferrals: {},
-                    dailyProfits: {}
+                    directReferrals: {}
                 };
                 
                 // Add referral data if provided
@@ -1463,42 +1376,10 @@
                     } else {
                         document.getElementById('deactivationNotice').style.display = 'none';
                     }
-                    
-                    // Load daily profits
-                    loadDailyProfits();
                 }
             }, (error) => {
                 console.error("Error loading user data:", error);
                 showToast('Error loading user data', 'error');
-            });
-        }
-
-        // Load daily profits
-        async function loadDailyProfits() {
-            if (!currentUser) return;
-            
-            const profitsRef = ref(database, `users/${currentUser.uid}/dailyProfits`);
-            
-            onValue(profitsRef, (snapshot) => {
-                const profits = snapshot.val();
-                const tbody = document.getElementById('dailyProfitHistory');
-                tbody.innerHTML = '';
-                
-                if (!profits) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No profit distribution yet</td></tr>';
-                    return;
-                }
-                
-                // Convert to array and sort by timestamp
-                const profitsArray = Object.entries(profits).map(([id, profit]) => ({ id, ...profit }));
-                profitsArray.sort((a, b) => b.timestamp - a.timestamp);
-                
-                // Show all profit distributions
-                profitsArray.forEach(profit => {
-                    addDailyProfitRow(profit);
-                });
-                
-                document.getElementById('profitUpdated').textContent = new Date().toLocaleTimeString();
             });
         }
 
@@ -1545,6 +1426,9 @@
                 // Show only last 5 transactions
                 transactionsArray.slice(0, 5).forEach(tx => {
                     const row = document.createElement('tr');
+                    if (tx.type === 'profit') {
+                        row.classList.add('profit-row');
+                    }
                     
                     const date = new Date(tx.timestamp).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -1602,8 +1486,10 @@
                     packageName: getPackageName(packageAmount)
                 };
                 
-                // Calculate total commission (70%)
-                const totalCommission = packageAmount * (COMMISSION_RATES.admin + COMMISSION_RATES.direct + COMMISSION_RATES.levels.reduce((a,b) => a + b, 0));
+                // Calculate commissions
+                const adminCommission = packageAmount * COMMISSION_RATES.admin;
+                const directReferralCommission = packageAmount * COMMISSION_RATES.direct;
+                const levelCommissions = packageAmount * COMMISSION_RATES.levels.reduce((a,b) => a + b, 0);
                 const tradingPool = packageAmount * COMMISSION_RATES.tradingPool;
                 
                 // Prepare all updates
@@ -1650,7 +1536,6 @@
                 };
                 
                 // 7. Add admin commission (50%)
-                const adminCommission = packageAmount * COMMISSION_RATES.admin;
                 const currentAdminProfit = await getValue(`users/${ADMIN_ID}/tradingProfit`);
                 updates[`users/${ADMIN_ID}/tradingProfit`] = (currentAdminProfit || 0) + adminCommission;
                 updates[`system/adminEarnings`] = (await getValue('system/adminEarnings')) + adminCommission;
@@ -1683,26 +1568,19 @@
                         // Distribute trading pool proportionally
                         usersData.forEach(user => {
                             const userShare = (user.totalInvested / totalInvestments) * tradingPool;
-                            updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + userShare;
-                            
-                            // Add transaction record for profit distribution
-                            const profitId = push(ref(database, 'transactions')).key;
-                            updates[`users/${user.userId}/transactions/${profitId}`] = {
-                                type: 'profit',
-                                amount: userShare,
-                                status: 'completed',
-                                timestamp: Date.now(),
-                                details: 'Investment profit distribution'
-                            };
-                            
-                            // Add to daily profits
-                            const dailyProfitId = push(ref(database, 'transactions')).key;
-                            updates[`users/${user.userId}/dailyProfits/${dailyProfitId}`] = {
-                                amount: userShare,
-                                status: 'completed',
-                                timestamp: Date.now(),
-                                details: 'Investment profit distribution'
-                            };
+                            if (userShare > 0) {
+                                updates[`users/${user.userId}/tradingProfit`] = user.currentProfit + userShare;
+                                
+                                // Add transaction record for profit distribution
+                                const profitId = push(ref(database, 'transactions')).key;
+                                updates[`users/${user.userId}/transactions/${profitId}`] = {
+                                    type: 'profit',
+                                    amount: userShare,
+                                    status: 'completed',
+                                    timestamp: Date.now(),
+                                    details: 'Investment profit distribution'
+                                };
+                            }
                         });
                     }
                 }
