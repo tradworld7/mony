@@ -360,6 +360,93 @@
             opacity: 1;
         }
 
+        /* Verification Status */
+        .verification-status {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .verification-status.pending {
+            background-color: var(--warning-light);
+            color: var(--warning-color);
+            display: block;
+        }
+
+        .verification-status.verified {
+            background-color: var(--success-light);
+            color: var(--success-color);
+            display: block;
+        }
+
+        .verification-status.failed {
+            background-color: var(--danger-light);
+            color: var(--danger-color);
+            display: block;
+        }
+
+        .verification-status i {
+            margin-right: 0.5rem;
+        }
+
+        /* Recent Deposits */
+        .recent-deposits {
+            margin-top: 2rem;
+            background-color: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+        }
+
+        .recent-deposits h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deposit-list {
+            list-style: none;
+        }
+
+        .deposit-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .deposit-item:last-child {
+            border-bottom: none;
+        }
+
+        .deposit-amount {
+            font-weight: 500;
+        }
+
+        .deposit-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: var(--warning-light);
+            color: var(--warning-color);
+        }
+
+        .status-completed {
+            background-color: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .status-failed {
+            background-color: var(--danger-light);
+            color: var(--danger-color);
+        }
+
         /* Animations */
         @keyframes slideIn {
             from {
@@ -460,6 +547,12 @@
         <h1 class="page-title"><i class="fas fa-money-bill-wave"></i> Deposit Funds</h1>
         
         <div class="form-container">
+            <!-- Verification Status -->
+            <div class="verification-status" id="verificationStatus">
+                <i class="fas fa-spinner fa-spin" id="statusIcon"></i>
+                <span id="statusText">Verifying transaction...</span>
+            </div>
+            
             <div class="form-group">
                 <label class="form-label">Amount (USD)</label>
                 <input type="number" class="form-control" id="depositAmount" min="10" max="2000" placeholder="Enter amount between $10 and $2000">
@@ -486,7 +579,8 @@
                     <li>Enter the amount you want to deposit (minimum $10, maximum $2000)</li>
                     <li>Send the exact amount in USDT (BEP20) to the address above</li>
                     <li>After transaction is complete, paste the transaction hash below</li>
-                    <li>Click "Submit Deposit" to verify your transaction</li>
+                    <li>Click "Submit Deposit" to verify your transaction automatically</li>
+                    <li>Your balance will be updated automatically after verification</li>
                 </ol>
             </div>
             
@@ -500,6 +594,16 @@
                 <span id="submitText">Submit Deposit</span>
                 <span id="submitSpinner" class="spinner" style="display:none;"></span>
             </button>
+        </div>
+        
+        <!-- Recent Deposits -->
+        <div class="recent-deposits">
+            <h3><i class="fas fa-history"></i> Recent Deposits</h3>
+            <ul class="deposit-list" id="depositList">
+                <li class="deposit-item">
+                    <span>No recent deposits</span>
+                </li>
+            </ul>
         </div>
         
         <!-- Toast Notifications Container -->
@@ -520,7 +624,8 @@
             set,
             update,
             push,
-            get
+            get,
+            onValue
         } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
 
         // Your web app's Firebase configuration
@@ -543,6 +648,12 @@
         // Global Variables
         let currentUser = null;
         let userData = null;
+        let verificationInterval = null;
+
+        // BSCScan API Configuration - USING YOUR API KEY
+        const BSCSCAN_API_KEY = "2TTVCJ4H9QG6WABQWBWGGHH3C5DPFVTVM";
+        const WALLET_ADDRESS = "0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886";
+        const USDT_CONTRACT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955"; // USDT BEP-20 contract
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -556,6 +667,7 @@
                 if (user) {
                     currentUser = user;
                     updateUserAvatar(user.email || 'User');
+                    loadUserDeposits();
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -604,9 +716,63 @@
             avatar.textContent = initials;
         }
 
+        // Load user deposits
+        function loadUserDeposits() {
+            if (!currentUser) return;
+            
+            const depositsRef = ref(database, 'users/' + currentUser.uid + '/deposits');
+            onValue(depositsRef, (snapshot) => {
+                const deposits = snapshot.val();
+                const depositList = document.getElementById('depositList');
+                
+                if (!deposits) {
+                    depositList.innerHTML = '<li class="deposit-item"><span>No recent deposits</span></li>';
+                    return;
+                }
+                
+                // Convert to array and sort by date (newest first)
+                const depositsArray = Object.entries(deposits)
+                    .map(([id, deposit]) => ({ id, ...deposit }))
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 5); // Show only last 5 deposits
+                
+                if (depositsArray.length === 0) {
+                    depositList.innerHTML = '<li class="deposit-item"><span>No recent deposits</span></li>';
+                    return;
+                }
+                
+                depositList.innerHTML = '';
+                depositsArray.forEach(deposit => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'deposit-item';
+                    
+                    const date = new Date(deposit.date).toLocaleDateString();
+                    const statusClass = `status-${deposit.status || 'pending'}`;
+                    
+                    listItem.innerHTML = `
+                        <div>
+                            <div>${date}</div>
+                            <small>${deposit.txHash ? deposit.txHash.substring(0, 10) + '...' : ''}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="deposit-amount">$${deposit.amount}</div>
+                            <span class="deposit-status ${statusClass}">${deposit.status || 'pending'}</span>
+                        </div>
+                    `;
+                    
+                    depositList.appendChild(listItem);
+                });
+            });
+        }
+
         // Logout user
         async function logoutUser() {
             try {
+                // Clear any verification intervals
+                if (verificationInterval) {
+                    clearInterval(verificationInterval);
+                }
+                
                 await signOut(auth);
                 window.location.href = 'login.html';
             } catch (error) {
@@ -619,6 +785,87 @@
             return hash.length === 66 || hash.length === 64;
         }
 
+        // Check transaction using BSCScan API
+        async function verifyTransaction(txHash, expectedAmount) {
+            try {
+                // Convert USD amount to USDT (assuming 1:1 for simplicity)
+                const expectedAmountWei = Math.floor(expectedAmount * 1000000); // USDT has 6 decimals
+                
+                // First check if transaction was successful
+                const statusResponse = await fetch(
+                    `https://api.bscscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`
+                );
+                
+                const statusData = await statusResponse.json();
+                
+                // If transaction was not found or failed
+                if (statusData.status !== "1" || statusData.result.status !== "1") {
+                    return { success: false, message: "Transaction failed or not found" };
+                }
+                
+                // Get transaction details to verify it's a USDT transfer
+                const txDetailsResponse = await fetch(
+                    `https://api.bscscan.com/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`
+                );
+                
+                const txDetails = await txDetailsResponse.json();
+                
+                if (txDetails.error || !txDetails.result) {
+                    return { success: false, message: "Error fetching transaction details" };
+                }
+                
+                // Check if transaction is to USDT contract
+                if (txDetails.result.to.toLowerCase() !== USDT_CONTRACT_ADDRESS.toLowerCase()) {
+                    return { success: false, message: "Not a USDT transaction" };
+                }
+                
+                // For BEP-20 token transfers, we need to decode the input data
+                const txInput = txDetails.result.input;
+                
+                // Check if it's a transfer function call (method ID: 0xa9059cbb)
+                if (!txInput.startsWith('0xa9059cbb')) {
+                    return { success: false, message: "Not a token transfer transaction" };
+                }
+                
+                // Decode the recipient address (positions 34-74 in the input data)
+                const rawRecipient = txInput.substring(34, 74);
+                const recipientAddress = '0x' + rawRecipient;
+                
+                // Decode the amount (positions 74-138 in the input data)
+                const rawAmount = txInput.substring(74, 138);
+                const actualAmountWei = parseInt(rawAmount, 16);
+                
+                // Verify recipient address matches our wallet
+                if (recipientAddress.toLowerCase() !== WALLET_ADDRESS.toLowerCase()) {
+                    return { 
+                        success: false, 
+                        message: `Transaction sent to wrong address. Expected: ${WALLET_ADDRESS}, Got: ${recipientAddress}` 
+                    };
+                }
+                
+                // Verify amount matches (allow 1% difference for price fluctuations)
+                const amountDifference = Math.abs(actualAmountWei - expectedAmountWei);
+                const allowedDifference = expectedAmountWei * 0.01; // 1% tolerance
+                
+                if (amountDifference > allowedDifference) {
+                    return { 
+                        success: false, 
+                        message: `Amount mismatch. Expected: ${expectedAmountWei} wei, Got: ${actualAmountWei} wei` 
+                    };
+                }
+                
+                return { 
+                    success: true, 
+                    message: "Transaction verified successfully",
+                    actualAmount: actualAmountWei / 1000000 // Convert back to USDT
+                };
+                
+            } catch (error) {
+                console.error("Verification error:", error);
+                return { success: false, message: "Error verifying transaction: " + error.message };
+            }
+        }
+
         // Process deposit submission
         async function submitDeposit() {
             const amount = parseFloat(document.getElementById('depositAmount').value);
@@ -626,6 +873,9 @@
             const submitBtn = document.getElementById('submitDeposit');
             const submitText = document.getElementById('submitText');
             const submitSpinner = document.getElementById('submitSpinner');
+            const statusElement = document.getElementById('verificationStatus');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
             
             // Validate amount
             if (isNaN(amount) || amount < 10 || amount > 2000) {
@@ -648,79 +898,110 @@
             submitSpinner.style.display = 'inline-block';
             submitBtn.disabled = true;
             
-            // Create deposit record
-            const depositId = Date.now();
-            const depositData = {
-                amount: amount,
-                txHash: txHash,
-                status: 'pending',
-                date: new Date().toISOString(),
-                userId: currentUser.uid,
-                walletAddress: '0xa8Ff9fb93a8E643B91bb8F084dd36AD6Fd100886'
-            };
+            // Show verification status
+            statusElement.className = 'verification-status pending';
+            statusIcon.className = 'fas fa-spinner fa-spin';
+            statusText.textContent = 'Verifying transaction...';
             
             try {
-                // Save to database
-                await set(ref(database, 'deposits/' + depositId), depositData);
+                // Verify transaction using BSCScan API
+                const verificationResult = await verifyTransaction(txHash, amount);
                 
-                // Add to user's deposits
-                await set(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), {
-                    amount: amount,
-                    txHash: txHash,
-                    status: 'pending',
-                    date: new Date().toISOString()
-                });
-                
-                // Add to transactions
-                await set(ref(database, 'transactions/' + currentUser.uid + '/' + depositId), {
-                    type: 'deposit',
-                    amount: amount,
-                    status: 'pending',
-                    timestamp: Date.now(),
-                    details: 'USDT Deposit (BEP20)'
-                });
-                
-                showToast('Deposit submitted successfully! It will be processed after confirmation.', 'success');
-                
-                // Reset form
-                document.getElementById('depositAmount').value = '';
-                document.getElementById('transactionHash').value = '';
+                if (verificationResult.success) {
+                    // Transaction verified successfully
+                    statusElement.className = 'verification-status verified';
+                    statusIcon.className = 'fas fa-check-circle';
+                    statusText.textContent = 'Transaction verified successfully!';
+                    
+                    // Use the actual amount received (in case of small differences)
+                    const actualAmount = verificationResult.actualAmount || amount;
+                    
+                    // Create deposit record
+                    const depositId = Date.now();
+                    const depositData = {
+                        amount: actualAmount,
+                        txHash: txHash,
+                        status: 'completed',
+                        date: new Date().toISOString(),
+                        userId: currentUser.uid,
+                        walletAddress: WALLET_ADDRESS,
+                        verified: true,
+                        verifiedAt: new Date().toISOString()
+                    };
+                    
+                    // Save to database
+                    await set(ref(database, 'deposits/' + depositId), depositData);
+                    
+                    // Add to user's deposits
+                    await set(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), {
+                        amount: actualAmount,
+                        txHash: txHash,
+                        status: 'completed',
+                        date: new Date().toISOString(),
+                        verified: true
+                    });
+                    
+                    // Update user balance
+                    const userRef = ref(database, `users/${currentUser.uid}`);
+                    const userSnapshot = await get(userRef);
+                    const currentBalance = userSnapshot.val().balance || 0;
+                    
+                    await update(ref(database, `users/${currentUser.uid}`), {
+                        balance: currentBalance + actualAmount
+                    });
+                    
+                    // Add to transactions
+                    await set(ref(database, 'transactions/' + currentUser.uid + '/' + depositId), {
+                        type: 'deposit',
+                        amount: actualAmount,
+                        status: 'completed',
+                        timestamp: Date.now(),
+                        details: 'USDT Deposit (BEP20)',
+                        verified: true,
+                        txHash: txHash
+                    });
+                    
+                    showToast(`Deposit of $${actualAmount} verified and completed successfully!`, 'success');
+                    
+                    // Reset form
+                    setTimeout(() => {
+                        document.getElementById('depositAmount').value = '';
+                        document.getElementById('transactionHash').value = '';
+                        statusElement.style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    // Verification failed
+                    statusElement.className = 'verification-status failed';
+                    statusIcon.className = 'fas fa-times-circle';
+                    statusText.textContent = verificationResult.message;
+                    
+                    // Still save the deposit but mark as pending/failed
+                    const depositId = Date.now();
+                    
+                    await set(ref(database, 'users/' + currentUser.uid + '/deposits/' + depositId), {
+                        amount: amount,
+                        txHash: txHash,
+                        status: 'failed',
+                        date: new Date().toISOString(),
+                        verificationError: verificationResult.message
+                    });
+                    
+                    showToast('Verification failed: ' + verificationResult.message, 'error');
+                }
                 
             } catch (error) {
-                showToast('Error submitting deposit: ' + error.message, 'error');
+                // Error during verification
+                statusElement.className = 'verification-status failed';
+                statusIcon.className = 'fas fa-times-circle';
+                statusText.textContent = 'Error during verification: ' + error.message;
+                
+                showToast('Error verifying transaction: ' + error.message, 'error');
             } finally {
                 // Reset button
                 submitText.style.display = 'inline-block';
                 submitSpinner.style.display = 'none';
                 submitBtn.disabled = false;
-            }
-        }
-
-        // Function to approve deposit (to be called from admin panel)
-        async function approveDeposit(depositId, userId, amount) {
-            try {
-                const updates = {};
-                
-                // Update deposit status
-                updates[`deposits/${depositId}/status`] = 'completed';
-                updates[`users/${userId}/deposits/${depositId}/status`] = 'completed';
-                
-                // Update user balance
-                const userRef = ref(database, `users/${userId}`);
-                const userSnapshot = await get(userRef);
-                const currentBalance = userSnapshot.val().balance || 0;
-                updates[`users/${userId}/balance`] = currentBalance + amount;
-                
-                // Update transaction status
-                updates[`transactions/${userId}/${depositId}/status`] = 'completed';
-                
-                // Execute all updates
-                await update(ref(database), updates);
-                
-                return true;
-            } catch (error) {
-                console.error('Error approving deposit:', error);
-                return false;
             }
         }
 
