@@ -648,7 +648,6 @@
         // Global Variables
         let currentUser = null;
         let userData = null;
-        let verificationInterval = null;
 
         // BSCScan API Configuration - USING YOUR API KEY
         const BSCSCAN_API_KEY = "2TTVCJ4H9QG6WABQWBWGGHH3C5DPFVTVM";
@@ -768,11 +767,6 @@
         // Logout user
         async function logoutUser() {
             try {
-                // Clear any verification intervals
-                if (verificationInterval) {
-                    clearInterval(verificationInterval);
-                }
-                
                 await signOut(auth);
                 window.location.href = 'login.html';
             } catch (error) {
@@ -785,13 +779,13 @@
             return hash.length === 66 || hash.length === 64;
         }
 
-        // Check transaction using BSCScan API
+        // Check transaction using BSCScan API - FIXED VERSION
         async function verifyTransaction(txHash, expectedAmount) {
             try {
                 // Convert USD amount to USDT (assuming 1:1 for simplicity)
                 const expectedAmountWei = Math.floor(expectedAmount * 1000000); // USDT has 6 decimals
                 
-                // First check if transaction was successful
+                // First check if transaction was successful - use transaction status API
                 const statusResponse = await fetch(
                     `https://api.bscscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`
                 );
@@ -800,40 +794,46 @@
                 
                 // If transaction was not found or failed
                 if (statusData.status !== "1" || statusData.result.status !== "1") {
-                    return { success: false, message: "Transaction failed or not found" };
+                    return { success: false, message: "Transaction failed or not found on blockchain" };
                 }
                 
-                // Get transaction details to verify it's a USDT transfer
-                const txDetailsResponse = await fetch(
-                    `https://api.bscscan.com/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`
+                // Now check for USDT token transfer using the logs API
+                const logsResponse = await fetch(
+                    `https://api.bscscan.com/api?module=logs&action=getLogs&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`
                 );
                 
-                const txDetails = await txDetailsResponse.json();
+                const logsData = await logsResponse.json();
                 
-                if (txDetails.error || !txDetails.result) {
-                    return { success: false, message: "Error fetching transaction details" };
+                if (logsData.status !== "1" || !logsData.result || logsData.result.length === 0) {
+                    return { success: false, message: "No transfer logs found for this transaction" };
                 }
                 
-                // Check if transaction is to USDT contract
-                if (txDetails.result.to.toLowerCase() !== USDT_CONTRACT_ADDRESS.toLowerCase()) {
-                    return { success: false, message: "Not a USDT transaction" };
+                // Look for USDT Transfer events
+                let transferFound = false;
+                let actualAmountWei = 0;
+                let recipientAddress = "";
+                
+                for (const log of logsData.result) {
+                    // USDT Transfer event signature is 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+                    if (log.topics[0] === "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
+                        // This is a Transfer event
+                        if (log.address.toLowerCase() === USDT_CONTRACT_ADDRESS.toLowerCase()) {
+                            transferFound = true;
+                            
+                            // The recipient address is in topics[2] (remove '0x' and pad to 40 chars)
+                            recipientAddress = '0x' + log.topics[2].substring(26);
+                            
+                            // The amount is in the data field
+                            actualAmountWei = parseInt(log.data, 16);
+                            
+                            break;
+                        }
+                    }
                 }
                 
-                // For BEP-20 token transfers, we need to decode the input data
-                const txInput = txDetails.result.input;
-                
-                // Check if it's a transfer function call (method ID: 0xa9059cbb)
-                if (!txInput.startsWith('0xa9059cbb')) {
-                    return { success: false, message: "Not a token transfer transaction" };
+                if (!transferFound) {
+                    return { success: false, message: "No USDT transfer found in transaction" };
                 }
-                
-                // Decode the recipient address (positions 34-74 in the input data)
-                const rawRecipient = txInput.substring(34, 74);
-                const recipientAddress = '0x' + rawRecipient;
-                
-                // Decode the amount (positions 74-138 in the input data)
-                const rawAmount = txInput.substring(74, 138);
-                const actualAmountWei = parseInt(rawAmount, 16);
                 
                 // Verify recipient address matches our wallet
                 if (recipientAddress.toLowerCase() !== WALLET_ADDRESS.toLowerCase()) {
@@ -944,7 +944,8 @@
                     // Update user balance
                     const userRef = ref(database, `users/${currentUser.uid}`);
                     const userSnapshot = await get(userRef);
-                    const currentBalance = userSnapshot.val().balance || 0;
+                    const userData = userSnapshot.val();
+                    const currentBalance = userData.balance || 0;
                     
                     await update(ref(database, `users/${currentUser.uid}`), {
                         balance: currentBalance + actualAmount
