@@ -774,6 +774,13 @@
                         levelStats[level].count++;
                         levelStats[level].earnings += earnings;
                         
+                        // Get referrer name instead of ID
+                        let referrerName = "Direct";
+                        if (member.referredBy) {
+                            const referrerData = allUsers[member.referredBy];
+                            referrerName = referrerData ? (referrerData.name || referrerData.email || "Unknown") : "Unknown";
+                        }
+                        
                         // Add to team members list
                         teamMembers.push({
                             uid,
@@ -782,7 +789,7 @@
                             joinDate: member.createdAt ? new Date(member.createdAt).toLocaleDateString() : 'Unknown',
                             investment: totalInvestment,
                             earnings,
-                            referredBy: member.referredBy || 'Direct'
+                            referredBy: referrerName
                         });
                     }
                 }
