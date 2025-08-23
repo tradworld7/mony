@@ -578,16 +578,20 @@
                 <ol>
                     <li>Enter the amount you want to deposit (minimum $10, maximum $2000)</li>
                     <li>Send the exact amount in USDT (BEP20) to the address above</li>
-                    <li>After transaction is complete, paste the transaction hash below</li>
+                    <li>After transaction is complete, paste the complete transaction hash below</li>
                     <li>Click "Submit Deposit" to verify your transaction automatically</li>
                     <li>Your balance will be updated automatically after verification</li>
                 </ol>
+                <p style="color: var(--warning-color); margin-top: 10px;">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    <strong>Important:</strong> Make sure to enter the complete 66-character transaction hash
+                </p>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Transaction Hash</label>
-                <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash">
-                <div class="error-text" id="hashError">Please enter a valid transaction hash</div>
+                <input type="text" class="form-control" id="transactionHash" placeholder="Enter your complete transaction hash (66 characters)">
+                <div class="error-text" id="hashError">Please enter a valid transaction hash (66 characters starting with 0x)</div>
             </div>
             
             <button class="btn btn-primary btn-block" id="submitDeposit">
@@ -774,17 +778,15 @@
             }
         }
 
-        // Validate transaction hash (basic validation)
+        // Validate transaction hash (improved validation)
         function validateTransactionHash(hash) {
-            return hash.length === 66 || hash.length === 64;
+            // Check if it starts with 0x and has correct length (66 characters)
+            return hash.startsWith('0x') && (hash.length === 66 || hash.length === 64);
         }
 
         // Check transaction using BSCScan API - FIXED VERSION
         async function verifyTransaction(txHash, expectedAmount) {
             try {
-                // Convert USD amount to USDT (assuming 1:1 for simplicity)
-                const expectedAmountWei = Math.floor(expectedAmount * 1000000); // USDT has 6 decimals
-                
                 // First check if transaction was successful - use transaction status API
                 const statusResponse = await fetch(
                     `https://api.bscscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${BSCSCAN_API_KEY}`
@@ -794,7 +796,10 @@
                 
                 // If transaction was not found or failed
                 if (statusData.status !== "1" || statusData.result.status !== "1") {
-                    return { success: false, message: "Transaction failed or not found on blockchain" };
+                    return { 
+                        success: false, 
+                        message: "Transaction failed or not found on blockchain. Please check the transaction hash and try again." 
+                    };
                 }
                 
                 // Now check for USDT token transfer using the logs API
@@ -805,7 +810,10 @@
                 const logsData = await logsResponse.json();
                 
                 if (logsData.status !== "1" || !logsData.result || logsData.result.length === 0) {
-                    return { success: false, message: "No transfer logs found for this transaction" };
+                    return { 
+                        success: false, 
+                        message: "No transfer logs found for this transaction. It may still be processing." 
+                    };
                 }
                 
                 // Look for USDT Transfer events
@@ -832,7 +840,10 @@
                 }
                 
                 if (!transferFound) {
-                    return { success: false, message: "No USDT transfer found in transaction" };
+                    return { 
+                        success: false, 
+                        message: "No USDT transfer found in transaction. Please make sure you sent USDT (BEP-20)." 
+                    };
                 }
                 
                 // Verify recipient address matches our wallet
@@ -843,6 +854,9 @@
                     };
                 }
                 
+                // Convert USD amount to USDT (assuming 1:1 for simplicity)
+                const expectedAmountWei = Math.floor(expectedAmount * 1000000); // USDT has 6 decimals
+                
                 // Verify amount matches (allow 1% difference for price fluctuations)
                 const amountDifference = Math.abs(actualAmountWei - expectedAmountWei);
                 const allowedDifference = expectedAmountWei * 0.01; // 1% tolerance
@@ -850,7 +864,7 @@
                 if (amountDifference > allowedDifference) {
                     return { 
                         success: false, 
-                        message: `Amount mismatch. Expected: ${expectedAmountWei} wei, Got: ${actualAmountWei} wei` 
+                        message: `Amount mismatch. Expected: $${expectedAmount} USDT, Got: $${(actualAmountWei / 1000000).toFixed(2)} USDT` 
                     };
                 }
                 
@@ -862,7 +876,10 @@
                 
             } catch (error) {
                 console.error("Verification error:", error);
-                return { success: false, message: "Error verifying transaction: " + error.message };
+                return { 
+                    success: false, 
+                    message: "Error verifying transaction. Please try again later or contact support." 
+                };
             }
         }
 
@@ -887,6 +904,7 @@
             
             // Validate transaction hash
             if (!validateTransactionHash(txHash)) {
+                document.getElementById('hashError').textContent = "Please enter a valid transaction hash (66 characters starting with 0x)";
                 document.getElementById('hashError').style.display = 'block';
                 return;
             } else {
@@ -902,6 +920,7 @@
             statusElement.className = 'verification-status pending';
             statusIcon.className = 'fas fa-spinner fa-spin';
             statusText.textContent = 'Verifying transaction...';
+            statusElement.style.display = 'block';
             
             try {
                 // Verify transaction using BSCScan API
