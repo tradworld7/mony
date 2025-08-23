@@ -9,15 +9,25 @@
     <style>
         :root {
             --primary-color: #4361ee;
+            --primary-light: #e6e9ff;
             --secondary-color: #3f37c9;
             --success-color: #4cc9f0;
+            --success-light: #e6f7fd;
             --danger-color: #f72585;
+            --danger-light: #fde6ef;
             --warning-color: #f8961e;
+            --warning-light: #fef3e6;
+            --info-color: #4895ef;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --gray-color: #6c757d;
+            --gray-light: #e9ecef;
             --white-color: #ffffff;
             --sidebar-width: 250px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -31,6 +41,7 @@
             background-color: #f5f7fa;
             color: var(--dark-color);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* Header Styles */
@@ -46,6 +57,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
+            height: var(--header-height);
         }
 
         .logo {
@@ -65,6 +77,24 @@
             color: var(--dark-color);
         }
 
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
         .menu-toggle {
             background: none;
             border: none;
@@ -79,13 +109,12 @@
             background-color: var(--white-color);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             width: var(--sidebar-width);
-            height: 100vh;
+            height: calc(100vh - var(--header-height));
             position: fixed;
-            top: 0;
+            top: var(--header-height);
             left: 0;
-            padding-top: 70px;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            transition: var(--transition);
             z-index: 999;
         }
 
@@ -100,17 +129,18 @@
             padding: 0.8rem 1.5rem;
             color: var(--dark-color);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             gap: 0.8rem;
+            border-left: 3px solid transparent;
         }
 
         .sidebar-menu li a:hover {
-            background-color: rgba(67, 97, 238, 0.1);
+            background-color: var(--primary-light);
             color: var(--primary-color);
         }
 
         .sidebar-menu li a.active {
-            background-color: rgba(67, 97, 238, 0.2);
+            background-color: var(--primary-light);
             color: var(--primary-color);
             border-left: 3px solid var(--primary-color);
         }
@@ -118,19 +148,48 @@
         .sidebar-menu li a i {
             width: 20px;
             text-align: center;
+            font-size: 1.1rem;
         }
 
         /* Main Content Styles */
         .main-content {
-            margin-top: 70px;
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
             padding: 2rem;
-            transition: margin-left 0.3s ease;
+            transition: var(--transition);
+            min-height: calc(100vh - var(--header-height));
         }
 
         .page-title {
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
             color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-title i {
+            color: var(--primary-color);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--dark-color);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
         }
 
         /* Dashboard Cards */
@@ -143,15 +202,36 @@
 
         .card {
             background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: var(--transition);
+            border-top: 4px solid var(--primary-color);
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.level1 {
+            border-top-color: var(--success-color);
+        }
+
+        .card.level2 {
+            border-top-color: var(--primary-color);
+        }
+
+        .card.level3 {
+            border-top-color: var(--warning-color);
+        }
+
+        .card.level4 {
+            border-top-color: var(--danger-color);
+        }
+
+        .card.level5 {
+            border-top-color: var(--info-color);
         }
 
         .card-header {
@@ -159,13 +239,15 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--gray-light);
         }
 
         .card-title {
             font-size: 1rem;
             font-weight: 500;
             color: var(--gray-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .card-icon {
@@ -199,8 +281,8 @@
         }
 
         .card-icon.level5 {
-            background-color: rgba(108, 117, 125, 0.1);
-            color: var(--gray-color);
+            background-color: rgba(72, 149, 239, 0.1);
+            color: var(--info-color);
         }
 
         .card-value {
@@ -212,24 +294,25 @@
 
         .card-footer {
             padding: 1rem 1.5rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            border-top: 1px solid var(--gray-light);
             font-size: 0.9rem;
             color: var(--gray-color);
+            background-color: rgba(0, 0, 0, 0.02);
         }
 
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
             background-color: var(--white-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             margin-bottom: 2rem;
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
         }
 
         .table th {
@@ -238,33 +321,52 @@
             text-align: left;
             font-weight: 500;
             color: var(--gray-color);
+            white-space: nowrap;
         }
 
         .table td {
             padding: 0.8rem 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--gray-light);
         }
 
         .table tr:last-child td {
             border-bottom: none;
         }
 
-        .level-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: white;
+        .table tr:hover td {
+            background-color: rgba(0, 0, 0, 0.01);
         }
 
-        .level-1 { background-color: var(--success-color); }
-        .level-2 { background-color: var(--primary-color); }
-        .level-3 { background-color: var(--warning-color); }
-        .level-4 { background-color: var(--danger-color); }
-        .level-5 { background-color: var(--gray-color); }
+        .level-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
 
-        /* Toast Notifications */
+        .level-1 {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+        .level-2 {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+        .level-3 {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning-color);
+        }
+        .level-4 {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger-color);
+        }
+        .level-5 {
+            background-color: rgba(72, 149, 239, 0.1);
+            color: var(--info-color);
+        }
+
+        /* Toast Notifications Container */
         .toast-container {
             position: fixed;
             top: 1rem;
@@ -277,14 +379,15 @@
 
         .toast {
             padding: 1rem 1.5rem;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             color: var(--white-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--box-shadow);
             animation: slideIn 0.3s ease forwards;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
+            min-width: 300px;
         }
 
         .toast.success {
@@ -295,12 +398,33 @@
             background-color: var(--danger-color);
         }
 
+        .toast.warning {
+            background-color: var(--warning-color);
+        }
+
         .toast-close {
             background: none;
             border: none;
             color: var(--white-color);
             cursor: pointer;
             font-size: 1rem;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--white-color);
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
         }
 
         /* Responsive Styles */
@@ -322,18 +446,31 @@
             }
         }
 
-        @media (min-width: 992px) {
-            .main-content {
-                margin-left: var(--sidebar-width);
-            }
-        }
-
         @media (max-width: 768px) {
             .dashboard-cards {
                 grid-template-columns: 1fr;
             }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
         }
 
+        @media (max-width: 576px) {
+            header {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .card-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Animations */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -344,6 +481,10 @@
                 opacity: 1;
             }
         }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -353,6 +494,11 @@
             <i class="fas fa-chart-line logo-icon"></i>
             <span class="logo-text">Trade World</span>
         </div>
+        
+        <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">U</div>
+        </div>
+        
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
         </button>
@@ -363,9 +509,12 @@
         <ul class="sidebar-menu">
             <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
             <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="withdrawal.html"><i class="fas fa-money-bill-wave"></i> Withdraw Funds</a></li>
+            <li><a href="deposit.html"><i class="fas fa-money-bill-wave"></i> Deposit Funds</a></li>
+            <li><a href="withdrawal.html"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+            <li><a href="transfer.html"><i class="fas fa-exchange-alt"></i> Transfer Funds</a></li>
             <li><a href="referral.html"><i class="fas fa-users"></i> Referral Program</a></li>
-            <li><a href="trading-history.html"><i class="fas fa-history"></i> Trading History</a></li>
+            <li><a href="trading-history.html"><i class="fas fa-history"></i> Transaction History</a></li>
+            <li><a href="invoices.html"><i class="fas fa-file-invoice"></i> My Invoices</a></li>
             <li><a href="team-structure.html" class="active"><i class="fas fa-sitemap"></i> Team Structure</a></li>
             <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -373,10 +522,10 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <h1 class="page-title">Team Structure</h1>
+        <h1 class="page-title"><i class="fas fa-sitemap"></i> Team Structure</h1>
         
         <div class="dashboard-cards">
-            <div class="card">
+            <div class="card level1">
                 <div class="card-header">
                     <span class="card-title">Level 1 (Direct)</span>
                     <div class="card-icon level1">
@@ -384,10 +533,12 @@
                     </div>
                 </div>
                 <div class="card-value" id="level1Count">0</div>
-                <div class="card-footer">Earnings: <span id="level1Earnings">$0.00</span></div>
+                <div class="card-footer">
+                    <i class="fas fa-info-circle"></i> Earnings: <span id="level1Earnings">$0.00</span>
+                </div>
             </div>
             
-            <div class="card">
+            <div class="card level2">
                 <div class="card-header">
                     <span class="card-title">Level 2</span>
                     <div class="card-icon level2">
@@ -395,10 +546,12 @@
                     </div>
                 </div>
                 <div class="card-value" id="level2Count">0</div>
-                <div class="card-footer">Earnings: <span id="level2Earnings">$0.00</span></div>
+                <div class="card-footer">
+                    <i class="fas fa-info-circle"></i> Earnings: <span id="level2Earnings">$0.00</span>
+                </div>
             </div>
             
-            <div class="card">
+            <div class="card level3">
                 <div class="card-header">
                     <span class="card-title">Level 3</span>
                     <div class="card-icon level3">
@@ -406,10 +559,12 @@
                     </div>
                 </div>
                 <div class="card-value" id="level3Count">0</div>
-                <div class="card-footer">Earnings: <span id="level3Earnings">$0.00</span></div>
+                <div class="card-footer">
+                    <i class="fas fa-info-circle"></i> Earnings: <span id="level3Earnings">$0.00</span>
+                </div>
             </div>
             
-            <div class="card">
+            <div class="card level4">
                 <div class="card-header">
                     <span class="card-title">Level 4</span>
                     <div class="card-icon level4">
@@ -417,10 +572,12 @@
                     </div>
                 </div>
                 <div class="card-value" id="level4Count">0</div>
-                <div class="card-footer">Earnings: <span id="level4Earnings">$0.00</span></div>
+                <div class="card-footer">
+                    <i class="fas fa-info-circle"></i> Earnings: <span id="level4Earnings">$0.00</span>
+                </div>
             </div>
             
-            <div class="card">
+            <div class="card level5">
                 <div class="card-header">
                     <span class="card-title">Level 5</span>
                     <div class="card-icon level5">
@@ -428,11 +585,13 @@
                     </div>
                 </div>
                 <div class="card-value" id="level5Count">0</div>
-                <div class="card-footer">Earnings: <span id="level5Earnings">$0.00</span></div>
+                <div class="card-footer">
+                    <i class="fas fa-info-circle"></i> Earnings: <span id="level5Earnings">$0.00</span>
+                </div>
             </div>
         </div>
         
-        <h2 class="page-title" style="margin-top: 2rem;">Team Members</h2>
+        <h2 class="section-title">Team Members</h2>
         
         <div class="table-responsive">
             <table class="table">
@@ -448,7 +607,9 @@
                 </thead>
                 <tbody id="teamMembersList">
                     <tr>
-                        <td colspan="6" style="text-align: center;">Loading team members...</td>
+                        <td colspan="6" style="text-align: center; padding: 2rem;" class="text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading team members...
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -458,311 +619,247 @@
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Firebase and App Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script>
-        // Firebase configuration
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            onValue, 
+            get 
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBshAGZScyo7PJegLHMzORbkkrCLGD6U5s",
             authDomain: "mywebsite-600d3.firebaseapp.com",
             databaseURL: "https://mywebsite-600d3-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "mywebsite-600d3",
-            storageBucket: "mywebsite-600d3.firebasestorage.app",
+            storageBucket: "mywebsite-600d3.appspot.com",
             messagingSenderId: "584485288598",
             appId: "1:584485288598:web:01856eaa18ba5ada49e0b7",
             measurementId: "G-GQ9J9QH42J"
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Commission rates (same as in index.html)
+        const COMMISSION_RATES = {
+            direct: 0.10,   // 10% to direct referrer
+            levels: [0.02, 0.02, 0.02, 0.02, 0.02] // 2% each for levels 1-5
+        };
+
+        // Global Variables
         let currentUser = null;
+        let userData = null;
 
-        // DOM Elements
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const logoutLink = document.getElementById('logoutLink');
-        const teamMembersList = document.getElementById('teamMembersList');
-        const toastContainer = document.getElementById('toastContainer');
-
-        // Level counters
-        const levelCounts = {
-            1: document.getElementById('level1Count'),
-            2: document.getElementById('level2Count'),
-            3: document.getElementById('level3Count'),
-            4: document.getElementById('level4Count'),
-            5: document.getElementById('level5Count')
-        };
-
-        // Level earnings
-        const levelEarnings = {
-            1: document.getElementById('level1Earnings'),
-            2: document.getElementById('level2Earnings'),
-            3: document.getElementById('level3Earnings'),
-            4: document.getElementById('level4Earnings'),
-            5: document.getElementById('level5Earnings')
-        };
-
-        // Commission percentages updated as per requirements
-        const commissionRates = {
-            1: 10, // 10% for Level 1 (Direct referrals)
-            2: 2,  // 2% for Level 2
-            3: 2,  // 2% for Level 3
-            4: 2,  // 2% for Level 4
-            5: 2   // 2% for Level 5
-        };
-
-        // Toggle Sidebar
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
-
-        // Check Authentication State
-        function checkAuthState() {
-            firebase.auth().onAuthStateChanged(user => {
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup sidebar toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+            
+            // Check if user is logged in
+            onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
-                    loadTeamStructure(user.uid);
+                    loadUserData(user.uid);
+                    
+                    // Update user avatar
+                    updateUserAvatar(user.email || 'User');
                 } else {
                     window.location.href = 'login.html';
                 }
             });
+            
+            // Setup logout
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                logoutUser();
+            });
+        });
+
+        // Update user avatar with initials
+        function updateUserAvatar(email) {
+            const avatar = document.getElementById('userAvatar');
+            if (!avatar) return;
+            
+            // Extract initials from email or name
+            let initials = 'U';
+            if (email) {
+                const namePart = email.split('@')[0];
+                if (namePart.includes('.')) {
+                    initials = namePart.split('.').map(n => n[0]).join('').toUpperCase();
+                } else {
+                    initials = namePart.substring(0, 2).toUpperCase();
+                }
+            }
+            
+            avatar.textContent = initials;
         }
 
-        // Load Team Structure
+        // Load user data from Firebase
+        function loadUserData(userId) {
+            const userRef = ref(database, 'users/' + userId);
+            
+            onValue(userRef, (snapshot) => {
+                userData = snapshot.val();
+                if (userData) {
+                    // Load team structure
+                    loadTeamStructure(userId);
+                }
+            }, (error) => {
+                console.error("Error loading user data:", error);
+                showToast('Error loading user data', 'error');
+            });
+        }
+
+        // Load team structure
         async function loadTeamStructure(userId) {
             try {
-                // Initialize level stats
+                // Get all users
+                const allUsersSnapshot = await get(ref(database, 'users'));
+                if (!allUsersSnapshot.exists()) {
+                    document.getElementById('teamMembersList').innerHTML = 
+                        '<tr><td colspan="6" style="text-align: center;">No team members found</td></tr>';
+                    return;
+                }
+                
+                const allUsers = allUsersSnapshot.val();
+                const teamMembers = [];
                 const levelStats = {
-                    1: { count: 0, earnings: 0, members: [] },
-                    2: { count: 0, earnings: 0, members: [] },
-                    3: { count: 0, earnings: 0, members: [] },
-                    4: { count: 0, earnings: 0, members: [] },
-                    5: { count: 0, earnings: 0, members: [] }
+                    1: { count: 0, earnings: 0 },
+                    2: { count: 0, earnings: 0 },
+                    3: { count: 0, earnings: 0 },
+                    4: { count: 0, earnings: 0 },
+                    5: { count: 0, earnings: 0 }
                 };
                 
-                // Clear the table
-                teamMembersList.innerHTML = '<tr><td colspan="6" style="text-align: center;">Loading team members...</td></tr>';
-                
-                // First, get all users to build the referral tree
-                const allUsersSnapshot = await database.ref('users').once('value');
-                const allUsers = allUsersSnapshot.val() || {};
-                
-                // Get direct referrals (Level 1) - only users who were directly referred by current user
-                const directReferrals = [];
+                // Find all users in the team (levels 1-5)
                 for (const uid in allUsers) {
-                    if (allUsers[uid].referredBy === userId) {
-                        directReferrals.push(uid);
-                    }
-                }
-                
-                // Process direct referrals (Level 1)
-                for (const uid of directReferrals) {
-                    if (allUsers[uid]) {
-                        await processTeamMember(uid, 1, levelStats, allUsers);
-                    }
-                }
-                levelStats[1].count = directReferrals.length;
-                
-                // Now process other levels (2-5) using the referral tree
-                const referralTree = buildReferralTree(allUsers, userId);
-                
-                // Process each level from 2 to 5
-                for (let level = 2; level <= 5; level++) {
-                    const levelUsers = getUsersAtLevel(referralTree, level);
-                    levelStats[level].count = levelUsers.length;
+                    if (uid === userId) continue; // Skip current user
                     
-                    // Process each user in this level
-                    for (const userId of levelUsers) {
-                        const userData = allUsers[userId];
-                        if (userData) {
-                            await processTeamMember(userId, level, levelStats, allUsers);
+                    const member = allUsers[uid];
+                    const level = findMemberLevel(userId, uid, allUsers);
+                    
+                    if (level > 0 && level <= 5) {
+                        // Calculate total investment
+                        let totalInvestment = 0;
+                        if (member.investments) {
+                            Object.values(member.investments).forEach(inv => {
+                                totalInvestment += parseFloat(inv.amount) || 0;
+                            });
                         }
+                        
+                        // Calculate earnings for this level
+                        let commissionRate = 0;
+                        if (level === 1) {
+                            commissionRate = COMMISSION_RATES.direct;
+                        } else if (level >= 2 && level <= 5) {
+                            commissionRate = COMMISSION_RATES.levels[level - 2];
+                        }
+                        
+                        const earnings = totalInvestment * commissionRate;
+                        
+                        // Add to level stats
+                        levelStats[level].count++;
+                        levelStats[level].earnings += earnings;
+                        
+                        // Add to team members list
+                        teamMembers.push({
+                            uid,
+                            name: member.name || member.email || 'Unknown User',
+                            level,
+                            joinDate: member.createdAt ? new Date(member.createdAt).toLocaleDateString() : 'Unknown',
+                            investment: totalInvestment,
+                            earnings,
+                            referredBy: member.referredBy || 'Direct'
+                        });
                     }
                 }
                 
-                // Update the UI
-                updateLevelStats(levelStats);
-                renderTeamMembers(levelStats);
+                // Update level stats UI
+                for (let level = 1; level <= 5; level++) {
+                    document.getElementById(`level${level}Count`).textContent = levelStats[level].count;
+                    document.getElementById(`level${level}Earnings`).textContent = `$${levelStats[level].earnings.toFixed(2)}`;
+                }
+                
+                // Render team members table
+                renderTeamMembers(teamMembers);
                 
             } catch (error) {
                 console.error('Error loading team structure:', error);
                 showToast('Error loading team data', 'error');
-                teamMembersList.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: red;">Error loading team data. Please try again.</td>
-                    </tr>
-                `;
+                document.getElementById('teamMembersList').innerHTML = 
+                    '<tr><td colspan="6" style="text-align: center; color: var(--danger-color);">Error loading team data</td></tr>';
             }
         }
 
-        // Build referral tree structure
-        function buildReferralTree(allUsers, rootUserId) {
-            const tree = {
-                userId: rootUserId,
-                children: []
-            };
+        // Find the level of a team member in the referral hierarchy
+        function findMemberLevel(rootUserId, memberId, allUsers, currentLevel = 1, maxLevel = 5) {
+            if (currentLevel > maxLevel) return 0;
             
-            // Map to find users quickly
-            const userMap = {};
-            userMap[rootUserId] = tree;
+            const member = allUsers[memberId];
+            if (!member || !member.referredBy) return 0;
             
-            // First pass - build the tree structure
-            for (const userId in allUsers) {
-                if (userId === rootUserId) continue;
-                
-                const user = allUsers[userId];
-                if (user.referredBy) {
-                    const node = {
-                        userId: userId,
-                        children: []
-                    };
-                    
-                    userMap[userId] = node;
-                }
+            if (member.referredBy === rootUserId) {
+                return currentLevel;
             }
             
-            // Second pass - connect children to parents
-            for (const userId in userMap) {
-                if (userId === rootUserId) continue;
-                
-                const user = allUsers[userId];
-                if (user.referredBy && userMap[user.referredBy]) {
-                    userMap[user.referredBy].children.push(userMap[userId]);
-                }
-            }
-            
-            return tree;
+            return findMemberLevel(rootUserId, member.referredBy, allUsers, currentLevel + 1, maxLevel);
         }
 
-        // Get all user IDs at a specific level in the referral tree
-        function getUsersAtLevel(tree, targetLevel, currentLevel = 1, result = []) {
-            if (currentLevel === targetLevel) {
-                if (tree.userId !== currentUser.uid) { // Exclude current user from the list
-                    result.push(tree.userId);
-                }
-                return result;
-            }
+        // Render team members in the table
+        function renderTeamMembers(members) {
+            const tbody = document.getElementById('teamMembersList');
             
-            for (const child of tree.children) {
-                getUsersAtLevel(child, targetLevel, currentLevel + 1, result);
-            }
-            
-            return result;
-        }
-
-        // Process team member data
-        async function processTeamMember(userId, level, levelStats, allUsers) {
-            try {
-                const userData = allUsers[userId];
-                if (!userData) return;
-                
-                // Calculate total investment
-                let totalInvestment = 0;
-                if (userData.investments) {
-                    Object.values(userData.investments).forEach(investment => {
-                        totalInvestment += parseFloat(investment.amount) || 0;
-                    });
-                }
-                
-                // Calculate earnings for this level based on commission rate
-                const commissionPercentage = commissionRates[level];
-                const earnings = totalInvestment * (commissionPercentage / 100);
-                levelStats[level].earnings += earnings;
-                
-                // Format join date
-                const joinDate = new Date(userData.joinDate || Date.now());
-                const formattedDate = joinDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-                
-                // Get referrer name
-                let referrerName = "Direct";
-                if (level > 1 && userData.referredBy) {
-                    const referrerData = allUsers[userData.referredBy];
-                    referrerName = referrerData?.name || referrerData?.email || "Unknown";
-                } else if (level === 1) {
-                    referrerName = "You";
-                }
-                
-                // Add to members list for this level
-                levelStats[level].members.push({
-                    name: userData.name || userData.email || "Unknown",
-                    level,
-                    joinDate: formattedDate,
-                    investment: totalInvestment,
-                    earnings,
-                    referredBy: referrerName
-                });
-                
-            } catch (error) {
-                console.error(`Error processing user ${userId}:`, error);
-            }
-        }
-
-        // Render all team members in the table
-        function renderTeamMembers(levelStats) {
-            teamMembersList.innerHTML = '';
-            
-            // Combine all members from all levels
-            const allMembers = [];
-            for (let level = 1; level <= 5; level++) {
-                allMembers.push(...levelStats[level].members);
-            }
-            
-            if (allMembers.length === 0) {
-                teamMembersList.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center;">No team members found</td>
-                    </tr>
-                `;
+            if (members.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No team members found</td></tr>';
                 return;
             }
             
-            // Sort by level (optional)
-            allMembers.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+            // Sort by level
+            members.sort((a, b) => a.level - b.level);
             
-            // Add rows to table
-            allMembers.forEach(member => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${member.name}</td>
-                    <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
-                    <td>${member.joinDate}</td>
-                    <td>$${member.investment.toFixed(2)}</td>
-                    <td>$${member.earnings.toFixed(2)} (${commissionRates[member.level]}%)</td>
-                    <td>${member.referredBy}</td>
+            let html = '';
+            members.forEach(member => {
+                html += `
+                    <tr>
+                        <td>${member.name}</td>
+                        <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
+                        <td>${member.joinDate}</td>
+                        <td>$${member.investment.toFixed(2)}</td>
+                        <td>$${member.earnings.toFixed(2)}</td>
+                        <td>${member.referredBy}</td>
+                    </tr>
                 `;
-                teamMembersList.appendChild(row);
             });
+            
+            tbody.innerHTML = html;
         }
 
-        // Update level statistics display
-        function updateLevelStats(stats) {
-            for (const level in stats) {
-                if (stats.hasOwnProperty(level)) {
-                    levelCounts[level].textContent = stats[level].count;
-                    levelEarnings[level].textContent = `$${stats[level].earnings.toFixed(2)}`;
-                }
+        // Logout user
+        async function logoutUser() {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                showToast('Error logging out: ' + error.message, 'error');
             }
         }
 
-        // Logout User
-        function logoutUser() {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                showToast('Error logging out', 'error');
-                console.error('Logout error:', error);
-            });
-        }
-
-        // Show Toast Notification
-        function showToast(message, type = 'error') {
+        // Show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.innerHTML = `
@@ -772,26 +869,16 @@
             
             toastContainer.appendChild(toast);
             
-            // Close button
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
-            });
-            
             // Auto remove after 5 seconds
             setTimeout(() => {
                 toast.remove();
             }, 5000);
-        }
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthState();
             
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                logoutUser();
+            // Close button
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
             });
-        });
+        }
     </script>
 </body>
 </html>
